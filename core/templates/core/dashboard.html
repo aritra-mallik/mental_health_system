@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid md:grid-cols-2 gap-6">
+
+    <!-- Mood Chart -->
+    <div class="bg-white p-5 rounded-2xl shadow">
+        <h3 class="font-bold mb-3">Mood Trends</h3>
+        <canvas id="moodChart"></canvas>
+    </div>
+
+    <!-- Assessment Chart -->
+    <div class="bg-white p-5 rounded-2xl shadow">
+        <h3 class="font-bold mb-3">Assessment Scores</h3>
+        <canvas id="assessmentChart"></canvas>
+    </div>
+
+
+    <div id="view"></div>
+
+    <button onclick="loadAssessment()">Start Assessment</button>
+    <button onclick="loadDashboard()">Dashboard</button>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function loadAssessment(){
+    window.location.href = "/api/core/assessment-page/";
+}
+if (!localStorage.getItem("access")) {
+    window.location.href = "/api/accounts/login-page/";
+}
+
+async function loadDashboard(){
+
+    const token = localStorage.getItem("access");
+
+    const moodRes = await fetch("/api/core/mood/", {
+        headers: { "Authorization": "Bearer " + token }
+    });
+
+    const moodData = await moodRes.json();
+
+    const assessRes = await fetch("/api/core/assessment-history/", {
+        headers: { "Authorization": "Bearer " + token }
+    });
+
+    const assessData = await assessRes.json();
+
+    renderMoodChart(moodData);
+    renderAssessmentChart(assessData);
+}
+
+let moodChartInstance = null;
+let assessmentChartInstance = null;
+
+function renderMoodChart(data){
+    const ctx = document.getElementById("moodChart");
+
+    if (moodChartInstance) {
+        moodChartInstance.destroy();   // ✅ destroy old chart
+    }
+
+    moodChartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: data.map(d => d.created_at),
+            datasets: [{
+                label: "Mood",
+                data: data.map(d => mapMood(d.mood))
+            }]
+        }
+    });
+}
+
+function mapMood(m){
+    return {
+        happy: 5,
+        neutral: 3,
+        sad: 2,
+        anxious: 1,
+        angry: 0
+    }[m] || 3;
+}
+
+function renderAssessmentChart(data){
+    const ctx = document.getElementById("assessmentChart");
+
+    if (assessmentChartInstance) {
+        assessmentChartInstance.destroy();  // ✅ destroy old chart
+    }
+
+    assessmentChartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: data.map(d => d.created_at),
+            datasets: [{
+                label: "Score",
+                data: data.map(d => d.score)
+            }]
+        }
+    });
+}
+
+loadDashboard();
+</script>
+{% endblock %}
+
+
+{% comment %} 
+function loadDashboard(){
+    document.getElementById("view").innerHTML = `
+        <h2>Dashboard</h2>
+        <canvas id="moodChart"></canvas>
+    `;
+    loadCharts();
+}
+
+function loadAssessment(){
+    document.getElementById("view").innerHTML = `
+        <h2>Assessment</h2>
+        <div id="questionBox"></div>
+    `;
+    startAssessment();
+}
+
+// default load
+loadDashboard(); 
+{% endcomment %}

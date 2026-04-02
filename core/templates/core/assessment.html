@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}Assessment{% endblock %}
+
+{% block content %}
+
+<style>
+.btn {
+    background: #1d4ed8;
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.option-btn {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    text-align: left;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.option-btn:hover {
+    background: #f3f4f6;
+}
+
+.option-btn.selected {
+    background: #1d4ed8;
+    color: white;
+    border-color: #1d4ed8;
+    transform: scale(1.02);
+}
+</style>
+
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow">
+    <div id="app"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const app = document.getElementById("app");
+
+/* ---------- QUESTIONS ---------- */
+const QUESTIONS = {
+    phq9: [
+        "Little interest or pleasure in doing things?",
+        "Feeling down, depressed, or hopeless?",
+        "Trouble sleeping?",
+        "Feeling tired or low energy?",
+        "Poor appetite or overeating?",
+        "Feeling bad about yourself?",
+        "Trouble concentrating?",
+        "Moving/speaking slowly or restlessness?",
+        "Thoughts of self-harm?"
+    ],
+    gad7: [
+        "Feeling nervous or anxious?",
+        "Not being able to stop worrying?",
+        "Worrying too much?",
+        "Trouble relaxing?",
+        "Restlessness?",
+        "Easily annoyed?",
+        "Feeling afraid?"
+    ]
+};
+
+const OPTIONS = [
+    {label: "Not at all", value: 0},
+    {label: "Several days", value: 1},
+    {label: "More than half the days", value: 2},
+    {label: "Nearly every day", value: 3}
+];
+
+/* ---------- STATE ---------- */
+let state = {
+    step: 0,
+    type: null,
+    index: 0,
+    answers: [],
+    results: {
+        phq9: null,
+        gad7: null
+    }
+};
+
+/* ---------- ROUTER ---------- */
+function render(){
+    switch(state.step){
+        case 0: return renderWelcome();
+        case 1: return renderSelect();
+        case 2: return renderIntro();
+        case 3: return renderQuestion();
+        case 4: return renderReview();
+        case 5: return renderResult();
+    }
+}
+
+/* ---------- STEP 0 ---------- */
+function renderWelcome(){
+    app.innerHTML = `
+        <div class="text-center">
+            <h1 class="text-2xl font-bold mb-4">Mental Health Check</h1>
+            <p class="mb-6 text-gray-600">Takes 2–3 minutes</p>
+            <button onclick="nextStep()" class="btn">Start</button>
+        </div>
+    `;
+}
+
+/* ---------- STEP 1 ---------- */
+function renderSelect(){
+    app.innerHTML = `
+        <h2 class="mb-4 font-bold">Choose Assessment</h2>
+        <button onclick="selectType('phq9')" class="btn w-full mb-2">
+            PHQ-9 (Depression)
+        </button>
+        <button onclick="selectType('gad7')" class="btn w-full">
+            GAD-7 (Anxiety)
+        </button>
+    `;
+}
+
+function selectType(type){
+    state.type = type;
+    nextStep();
+}
+
+/* ---------- STEP 2 ---------- */
+function renderIntro(){
+    app.innerHTML = `
+        <h2 class="font-bold mb-2">${state.type.toUpperCase()}</h2>
+        <p class="mb-6 text-gray-500">
+            Answer based on how you felt over the last 2 weeks.
+        </p>
+        <button onclick="nextStep()" class="btn">Begin</button>
+    `;
+}
+
+/* ---------- STEP 3 ---------- */
+function renderQuestion(){
+    const q = QUESTIONS[state.type][state.index];
+    const selected = state.answers[state.index];
+
+    app.innerHTML = `
+        <div class="mb-4 text-sm text-gray-500">
+            ${state.index + 1} / ${QUESTIONS[state.type].length}
+        </div>
+
+        <div class="text-lg font-medium mb-6">${q}</div>
+
+        ${OPTIONS.map(o => `
+            <button onclick="answer(${o.value})"
+                class="option-btn ${selected === o.value ? 'selected' : ''}">
+                ${o.label}
+            </button>
+        `).join("")}
+
+        <button onclick="nextQuestion()" class="btn w-full mt-4">
+            Next
+        </button>
+    `;
+}
+
+function answer(val){
+    state.answers[state.index] = val;
+    renderQuestion();
+}
+
+function nextQuestion(){
+    if(state.answers[state.index] === undefined){
+        alert("Please select an option");
+        return;
+    }
+
+    state.index++;
+
+    if(state.index >= QUESTIONS[state.type].length){
+        state.step = 4;
+    }
+
+    render();
+}
+
+/* ---------- STEP 4 ---------- */
+function renderReview(){
+    app.innerHTML = `
+        <h2 class="font-bold mb-4">Review Answers</h2>
+
+        ${state.answers.map((a,i)=>`
+            <div class="mb-2 text-sm">Q${i+1}: ${a}</div>
+        `).join("")}
+
+        <button onclick="submitAssessment()" class="btn mt-4 w-full">
+            Submit
+        </button>
+    `;
+}
+
+/* ---------- STEP 5 ---------- */
+function renderResult(){
+    app.innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Assessment Complete</h2>
+
+        <button onclick="renderReport()" class="btn w-full mb-2">
+            View Full Report
+        </button>
+
+        ${
+            state.type === "phq9" && !state.results.gad7
+            ? `<button onclick="startNext('gad7')" class="btn w-full mb-2">
+                Continue with GAD-7
+               </button>`
+            : ''
+        }
+
+        <button onclick="goDashboard()" class="btn w-full">
+            Go to Dashboard
+        </button>
+    `;
+}
+
+/* ---------- REPORT ---------- */
+let reportChart = null;
+
+function renderReport(){
+    const phq = state.results.phq9;
+    const gad = state.results.gad7;
+
+    app.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Mental Health Report</h2>
+
+        <canvas id="chart" class="mb-6"></canvas>
+
+        <p class="mb-4">
+            ${phq ? `Depression: ${phq.risk_level}` : ""}
+            ${gad ? ` | Anxiety: ${gad.risk_level}` : ""}
+        </p>
+
+        <ul class="mb-6 list-disc ml-5">
+            ${generateInsights(phq, gad)}
+        </ul>
+
+        <ul class="mb-6 list-disc ml-5">
+            ${generateRecommendations(phq, gad)}
+        </ul>
+
+        <button onclick="goDashboard()" class="btn w-full">
+            Back to Dashboard
+        </button>
+    `;
+
+    renderChart(phq, gad);
+}
+
+function renderChart(phq, gad){
+    const ctx = document.getElementById("chart");
+
+    if(reportChart) reportChart.destroy();
+
+    reportChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["Depression", "Anxiety"],
+            datasets: [{
+                label: "Score",
+                data: [
+                    phq ? phq.score : 0,
+                    gad ? gad.score : 0
+                ]
+            }]
+        }
+    });
+}
+
+/* ---------- INSIGHTS ---------- */
+function generateInsights(phq, gad){
+    let out = "";
+
+    if(phq && phq.risk_level !== "minimal"){
+        out += "<li>Elevated depressive symptoms detected.</li>";
+    }
+
+    if(gad && gad.risk_level !== "minimal"){
+        out += "<li>Elevated anxiety levels detected.</li>";
+    }
+
+    if(phq && gad){
+        out += "<li>Possible overlap between mood and anxiety patterns.</li>";
+    }
+
+    return out;
+}
+
+/* ---------- RECOMMENDATIONS ---------- */
+function generateRecommendations(phq, gad){
+    return `
+        <li>Maintain consistent sleep schedule</li>
+        <li>Engage in light physical activity</li>
+        <li>Practice breathing or grounding techniques</li>
+        <li>Consider speaking to a professional if symptoms persist</li>
+    `;
+}
+
+/* ---------- API ---------- */
+async function submitAssessment(){
+    const token = localStorage.getItem("access");
+
+    const res = await fetch("/api/core/assessment/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            type: state.type,
+            answers: state.answers
+        })
+    });
+
+    const data = await res.json();
+
+    state.results[state.type] = data.data;
+
+    state.step = 5;
+    render();
+}
+
+/* ---------- NAV ---------- */
+function startNext(type){
+    state.type = type;
+    state.index = 0;
+    state.answers = [];
+    state.step = 2;
+    render();
+}
+
+function nextStep(){
+    state.step++;
+    render();
+}
+
+function goDashboard(){
+    window.location.href = "/api/core/dashboard-page/";
+}
+
+render();
+</script>
+
+{% endblock %}
