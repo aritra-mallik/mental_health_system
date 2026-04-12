@@ -13,6 +13,7 @@ media/
 
 # Environment variables
 .env
+*.env
 
 # VS Code
 .vscode/
