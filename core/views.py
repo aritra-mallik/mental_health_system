@@ -14,6 +14,7 @@ class AssessmentView(APIView):
     def post(self, request):
         test_type = request.data.get("type")
         answers = request.data.get("answers")
+        message = request.data.get("message", "")  
 
         # --- VALIDATION ---
         if test_type not in ["phq9", "gad7"]:
@@ -28,8 +29,17 @@ class AssessmentView(APIView):
         if test_type == "gad7" and len(answers) != 7:
             return Response({"error": "GAD-7 requires 7 answers"}, status=400)
 
-        # --- SCORING ---
-        result = AssessmentEngine.evaluate(test_type, answers)
+        # --- Inject message into request for chatbot ---
+        # request.POST = request.POST.copy()
+        # request.POST["message"] = message
+        message = request.data.get("message", "")
+        # --- CORE ENGINE ---
+        result = AssessmentEngine.evaluate(
+            request,
+            test_type,
+            answers,
+            message=message 
+        )
 
         # --- SAVE ---
         Assessment.objects.create(

@@ -197,6 +197,11 @@ function renderReview(){
             <div class="mb-2 text-sm">Q${i+1}: ${a}</div>
         `).join("")}
 
+        <textarea id="message" 
+            class="w-full border p-2 rounded mt-4"
+            placeholder="How are you feeling? (optional)">
+        </textarea>
+
         <button onclick="submitAssessment()" class="btn mt-4 w-full">
             Submit
         </button>
@@ -205,8 +210,22 @@ function renderReview(){
 
 /* ---------- STEP 5 ---------- */
 function renderResult(){
+
+    const result = state.results[state.type];
+
     app.innerHTML = `
         <h2 class="text-xl font-bold mb-4">Assessment Complete</h2>
+
+        <div class="bg-gray-100 p-4 rounded mb-4">
+            <p><strong>Score:</strong> ${result.score}</p>
+            <p><strong>Risk:</strong> ${result.risk_level}</p>
+            <p><strong>Insight:</strong> ${result.insight}</p>
+        </div>
+
+        <div class="bg-blue-50 p-4 rounded mb-4">
+            <strong>Support Response:</strong>
+            <p>${result.chat}</p>
+        </div>
 
         <button onclick="renderReport()" class="btn w-full mb-2">
             View Full Report
@@ -225,7 +244,6 @@ function renderResult(){
         </button>
     `;
 }
-
 /* ---------- REPORT ---------- */
 let reportChart = null;
 
@@ -312,6 +330,9 @@ function generateRecommendations(phq, gad){
 async function submitAssessment(){
     const token = localStorage.getItem("access");
 
+    const messageInput = document.getElementById("message");
+    const message = messageInput ? messageInput.value : "";
+
     const res = await fetch("/api/core/assessment/", {
         method: "POST",
         headers: {
@@ -320,7 +341,8 @@ async function submitAssessment(){
         },
         body: JSON.stringify({
             type: state.type,
-            answers: state.answers
+            answers: state.answers,
+            message: message   
         })
     });
 
@@ -349,7 +371,42 @@ function nextStep(){
 function goDashboard(){
     window.location.href = "/api/core/dashboard-page/";
 }
+async function submitAssessment(){
 
+    try {
+
+        const token = localStorage.getItem("access");
+
+        const messageInput = document.getElementById("message");
+        const message = messageInput ? messageInput.value : "";
+
+        const res = await fetch("/api/core/assessment/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                type: state.type,
+                answers: state.answers,
+                message: message   
+            })
+        });
+
+        const data = await res.json();
+
+        console.log("API RESPONSE:", data);
+
+        state.results[state.type] = data.data;
+
+        state.step = 5;
+        render();
+
+    } catch (err) {
+        console.error("ERROR:", err);
+        alert("Something went wrong");
+    }
+}
 render();
 </script>
 
