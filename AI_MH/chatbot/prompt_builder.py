@@ -1,24 +1,60 @@
-def build_prompt(conversation, strategy, is_critical=False):
+def build_prompt(input_data, strategy, is_critical=False):
+    """
+    Supports:
+    - string (assessment flow)
+    - list of ChatMessage (chat flow)
+    """
 
-    return f"""
+    # -------------------------
+    # 1. Handle BOTH input types
+    # -------------------------
+    if isinstance(input_data, str):
+        # OLD FLOW (assessment)
+        history = f"User: {input_data}\n"
+
+    else:
+        # NEW FLOW (chat messages)
+        history = ""
+        for m in input_data:
+            role = "User" if m.role == "user" else "Assistant"
+            history += f"{role}: {m.content}\n"
+
+    # -------------------------
+    # 2. Strategy instructions
+    # -------------------------
+    strategy_instructions = {
+        "NORMAL": "Respond naturally and supportively.",
+        "GUIDANCE": "Gently guide the user with helpful suggestions.",
+        "SUPPORT": "Provide emotional support and validation.",
+        "ESCALATE": "Encourage seeking help and emphasize importance.",
+        "CRITICAL": "Respond with urgency and encourage immediate professional help."
+    }
+
+    strategy_text = strategy_instructions.get(
+        strategy,
+        "Respond supportively."
+    )
+
+    if is_critical:
+        strategy_text = "User may be in crisis. Encourage immediate help and support."
+
+    # -------------------------
+    # 3. Final prompt
+    # -------------------------
+    prompt = f"""
 You are a mental health support assistant.
 
-USER MESSAGE:
-\"\"\"{conversation}\"\"\"
+CONVERSATION:
+{history}
 
-STRICT RULES:
-- You MUST respond directly to the USER MESSAGE above
-- You MUST mention something from the user's message
+INSTRUCTIONS:
+- Respond to the LAST user message
+- Be empathetic and specific
 - Do NOT give generic responses
-- Do NOT say "Hello"
-- Start with empathy (e.g., "I'm sorry you're feeling...")
-- Keep it to 2 sentences maximum
-
-BAD RESPONSE (DO NOT DO):
-"Hello, how can I help you?"
-
-GOOD RESPONSE:
-"I'm sorry you're feeling overwhelmed. It sounds like things have been really difficult for you lately."
+- Keep response concise (2–4 sentences)
+- {strategy_text}
 
 Now respond:
 """
+
+    return prompt.strip()

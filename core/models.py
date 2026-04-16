@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 User = settings.AUTH_USER_MODEL
 
@@ -54,3 +55,38 @@ class ActivityLog(models.Model):
     metadata = models.JSONField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+# =========================
+# Chat Session
+# =========================
+class ChatSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Session {self.id} - {self.user.username}"
+
+
+# =========================
+# Chat Messages (bounded memory)
+# =========================
+class ChatMessage(models.Model):
+    ROLE_CHOICES = (
+        ("user", "User"),
+        ("bot", "Bot"),
+    )
+
+    session = models.ForeignKey(
+        ChatSession,
+        on_delete=models.CASCADE,
+        related_name="messages"
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.role} - {self.content[:30]}"

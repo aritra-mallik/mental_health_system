@@ -39,6 +39,14 @@
 <div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow">
     <div id="app"></div>
 </div>
+<div id="chatBox" style="display:none; margin-top:20px;">
+    <div id="messages" style="border:1px solid #ddd; padding:10px; height:200px; overflow-y:auto;"></div>
+
+    <input id="chatInput" type="text" placeholder="Type a message..."
+        style="width:80%; padding:10px; margin-top:10px;" />
+
+    <button onclick="sendMessage()" class="btn">Send</button>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -238,7 +246,11 @@ function renderResult(){
                </button>`
             : ''
         }
-
+        ${state.chatSessionId ? `
+            <button onclick="openChat()" class="btn w-full mb-2">
+                Continue Chat
+            </button>
+        ` : ''}
         <button onclick="goDashboard()" class="btn w-full">
             Go to Dashboard
         </button>
@@ -328,50 +340,6 @@ function generateRecommendations(phq, gad){
 
 /* ---------- API ---------- */
 async function submitAssessment(){
-    const token = localStorage.getItem("access");
-
-    const messageInput = document.getElementById("message");
-    const message = messageInput ? messageInput.value : "";
-
-    const res = await fetch("/api/core/assessment/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-            type: state.type,
-            answers: state.answers,
-            message: message   
-        })
-    });
-
-    const data = await res.json();
-
-    state.results[state.type] = data.data;
-
-    state.step = 5;
-    render();
-}
-
-/* ---------- NAV ---------- */
-function startNext(type){
-    state.type = type;
-    state.index = 0;
-    state.answers = [];
-    state.step = 2;
-    render();
-}
-
-function nextStep(){
-    state.step++;
-    render();
-}
-
-function goDashboard(){
-    window.location.href = "/api/core/dashboard-page/";
-}
-async function submitAssessment(){
 
     try {
 
@@ -397,7 +365,8 @@ async function submitAssessment(){
 
         console.log("API RESPONSE:", data);
 
-        state.results[state.type] = data.data;
+        state.results[state.type] = data.data; 
+        state.chatSessionId = data.chat_session_id;
 
         state.step = 5;
         render();
@@ -408,6 +377,81 @@ async function submitAssessment(){
     }
 }
 render();
+
+/* ---------- NAV ---------- */
+function startNext(type){
+    state.type = type;
+    state.index = 0;
+    state.answers = [];
+    state.step = 2;
+    render();
+}
+
+function nextStep(){
+    state.step++;
+    render();
+}
+
+function goDashboard(){
+    window.location.href = "/api/core/dashboard-page/";
+}
+function openChat() {
+    const box = document.getElementById("chatBox");
+    const msgBox = document.getElementById("messages");
+
+    box.style.display = "block";
+    msgBox.innerHTML = "";  // 🔥 clear old messages
+
+    appendMessage("system", "Chat started. You can continue the conversation.");
+}
+
+function appendMessage(role, text) {
+    const msgBox = document.getElementById("messages");
+
+    const div = document.createElement("div");
+    div.innerHTML = `<strong>${role}:</strong> ${text}`;
+    div.style.marginBottom = "8px";
+
+    msgBox.appendChild(div);
+    msgBox.scrollTop = msgBox.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById("chatInput");
+    const text = input.value;
+
+    if (!text) return;
+
+    appendMessage("user", text);
+    input.value = "";
+
+    const token = localStorage.getItem("access");
+
+    const res = await fetch("/api/core/chat/send/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            session_id: state.chatSessionId,
+            message: text
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.reply) {
+        appendMessage("bot", data.reply);
+    } else {
+        appendMessage("bot", "Something went wrong.");
+    }
+    }
+document.getElementById("chatInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
 </script>
 
 {% endblock %}
