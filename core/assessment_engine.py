@@ -1,3 +1,6 @@
+#core/assessment_engine.py
+
+from core.ml_bridge import run_assessment
 class AssessmentEngine:
 
     CONFIG = {
@@ -48,14 +51,58 @@ class AssessmentEngine:
 
         raise ValueError("Invalid score")
 
+      
+
+
     @classmethod
-    def evaluate(cls, test_type, answers):
+    def evaluate(cls, request, test_type, answers, message=""):
         score = cls.calculate_score(answers)
-        risk = cls.get_risk_level(test_type, score)
+
+        # --- Store latest scores ---
+        if test_type == "phq9":
+            request.session["phq_score"] = score
+
+        elif test_type == "gad7":
+            request.session["gad_score"] = score
+
+        # --- Get available scores ---
+        phq_score = request.session.get("phq_score")
+        gad_score = request.session.get("gad_score")
+
+        # --- Always run ML with available data ---
+        result = run_assessment(
+            phq_score=phq_score,
+            gad_score=gad_score,
+            conversation = message   
+        )
+
+        # --- Decide which risk to show ---
+        if phq_score is not None and gad_score is not None:
+            final_risk = result["final_risk"]  # combined
+
+        elif phq_score is not None:
+            final_risk = result["phq_risk"]
+
+        elif gad_score is not None:
+            final_risk = result["gad_risk"]
+
+        else:
+            final_risk = "LOW"  # fallback
+
+        # --- Map to existing labels ---
+        RISK_MAP = {
+            "LOW": "minimal",
+            "MEDIUM": "moderate",
+            "HIGH": "severe"
+        }
+
+        mapped_risk = RISK_MAP.get(final_risk, "minimal")
 
         return {
             "score": score,
-            "risk_level": risk,
-            "insight": cls.INTERPRETATION[risk],
-            "disclaimer": cls.DISCLAIMER
+            "risk_level": mapped_risk,
+            "insight": cls.INTERPRETATION[mapped_risk],
+            "disclaimer": cls.DISCLAIMER,
+            "chat": result["chat_response"],
+            "ml": result
         }

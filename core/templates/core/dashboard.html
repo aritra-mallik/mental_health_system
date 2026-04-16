@@ -17,12 +17,20 @@
         <h3 class="font-bold mb-3">Assessment Scores</h3>
         <canvas id="assessmentChart"></canvas>
     </div>
+    <div id="chatBox" style="display:none; margin-top:20px;">
+        <div id="messages" style="border:1px solid #ddd; padding:10px; height:200px; overflow-y:auto;"></div>
 
+        <input id="chatInput" type="text" placeholder="Type a message..."
+            style="width:80%; padding:10px; margin-top:10px;" />
+
+        <button onclick="sendMessage()" class="btn">Send</button>
+    </div>
 
     <div id="view"></div>
 
     <button onclick="loadAssessment()">Start Assessment</button>
     <button onclick="loadDashboard()">Dashboard</button>
+    <button onclick="startChat()" class="btn">Start Chat</button>
 
 </div>
 {% endblock %}
@@ -107,6 +115,71 @@ function renderAssessmentChart(data){
 }
 
 loadDashboard();
+let sessionId = null;
+
+async function startChat() {
+    const token = localStorage.getItem("access");
+
+    const res = await fetch("/api/core/chat/create/", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    const data = await res.json();
+
+    sessionId = data.session_id;
+
+    document.getElementById("chatBox").style.display = "block";
+}
+
+function appendMessage(role, text) {
+    const msgBox = document.getElementById("messages");
+
+    const div = document.createElement("div");
+    div.innerHTML = `<strong>${role}:</strong> ${text}`;
+    div.style.marginBottom = "8px";
+
+    msgBox.appendChild(div);
+    msgBox.scrollTop = msgBox.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById("chatInput");
+    const text = input.value;
+
+    if (!sessionId) {
+        alert("Start a chat first");
+        return;
+    }
+
+    appendMessage("user", text);
+    input.value = "";
+
+    const token = localStorage.getItem("access");
+
+    const res = await fetch("/api/core/chat/send/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            session_id: sessionId,
+            message: text
+        })
+    });
+
+    const data = await res.json();
+
+    appendMessage("bot", data.reply);
+}
+document.getElementById("chatInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
 </script>
 {% endblock %}
 
