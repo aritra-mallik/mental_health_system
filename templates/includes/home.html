@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+{% include "accounts/intro_header.html" %}
+<div class="main-container">
+    <div class="welcome-section">
+        <h2>Welcome Home 🏡</h2>
+        <p>Take a deep breath and step inside. 🍃🍂</p>
+    </div>
+
+    <div class="login-card">
+        <div class="card-header">
+            <h1>Login</h1>
+            <div class="underline"></div>
+        </div>
+
+        <form method="post" action="{% url 'accounts:login' %}" class="login-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="
+</div>
+
+{% endblock %}
+
+{% comment %} <p id="message" class="text-red-500 text-center mt-4"></p> {% endcomment %}

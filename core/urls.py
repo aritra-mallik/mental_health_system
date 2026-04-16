@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import MoodView, JournalView, AssessmentView, AssessmentHistoryView, app_dashboard, app_assessment
+from .views import MoodView, JournalView, AssessmentView, AssessmentHistoryView, app_dashboard, app_assessment, home    
 
 urlpatterns = [
+    path("", home, name="home"),
+
     path("mood/", MoodView.as_view()),
     path("journal/", JournalView.as_view()),
     path("assessment/", AssessmentView.as_view()),

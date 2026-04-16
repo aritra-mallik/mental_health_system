@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<style>
+body {
+    background: linear-gradient(135deg, #1e1e2f, #2a2a40, #3b2c4a);
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.hero {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 18px;
+    color: #ccc;
+}
+
+.buttons {
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 25px;
+    margin: 10px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: black;
+}
+
+.btn-secondary {
+    border: 1px solid white;
+    color: white;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 40px;
+}
+
+.card {
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.card h3 {
+    margin-bottom: 10px;
+}
+</style>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Your Mental Health Matters</h1>
+    <p>Track your mood, talk to AI, and improve your well-being.</p>
+
+    <div class="buttons">
+        <a href="/api/accounts/register-page/" class="btn btn-primary">
+            Begin Journey
+        </a>
+        <a href="/api/accounts/login-page/" class="btn btn-secondary">
+            Login
+        </a>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<div class="features">
+    <div class="card">
+        <h3>Track Mood</h3>
+        <p>Understand your emotional patterns daily.</p>
+    </div>
+
+    <div class="card">
+        <h3>AI Support</h3>
+        <p>Talk freely and get intelligent responses.</p>
+    </div>
+
+    <div class="card">
+        <h3>Journal</h3>
+        <p>Write and reflect your thoughts securely.</p>
+    </div>
+
+    <div class="card">
+        <h3>Assessment</h3>
+        <p>Check your mental health with guided tests.</p>
+    </div>
+</div>
+
+{% endblock %}

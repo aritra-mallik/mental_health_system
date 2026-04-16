@@ -109,6 +109,8 @@ class AssessmentHistoryView(APIView):
         )
         return Response(list(data))
 
+def home(request):
+    return render(request, "core/home.html")
   
 def app_dashboard(request): return render(request, "core/dashboard.html")
 
