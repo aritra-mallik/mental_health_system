@@ -1,18 +1,22 @@
-#AI_MH/rules/safety.py
+# AI_MH/rules/safety.py
 
 def check_critical(text):
+    if not text:
+        return False
+
     t = text.lower()
 
-    keywords = [
+    # High-confidence phrases only
+    CRITICAL_PATTERNS = [
         "kill myself",
         "killing myself",
-        "suicide",
         "end my life",
         "want to die",
-        "die",
+        "suicide",
         "no reason to live",
-        "give up",
-        "giving up"
+        "better off dead",
+        "hurt myself",
+        "self harm"
     ]
 
-    return any(k in t for k in keywords)
+    return any(p in t for p in CRITICAL_PATTERNS)
