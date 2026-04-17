@@ -227,7 +227,8 @@ class ChatMessageView(APIView):
         result = predict_all(
             sentiment,
             phq_score,
-            gad_score
+            gad_score,
+            user_message
         )
 
         strategy = result["strategy"]
@@ -235,7 +236,11 @@ class ChatMessageView(APIView):
         # -------------------------
         # 5. Build prompt (IMPORTANT)
         # -------------------------
-        prompt = build_prompt(messages, strategy)
+        prompt = build_prompt(
+            messages,
+            strategy,
+            result.get("is_critical", False)
+        )
 
         # -------------------------
         # 6. Generate response

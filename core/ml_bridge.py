@@ -31,7 +31,8 @@ def run_assessment(phq_score=None, gad_score=None, conversation=""):
     result = predict_all(
         mh_input.sentiment,
         mh_input.phq_score if phq_score is not None else None,
-        mh_input.gad_score if gad_score is not None else None
+        mh_input.gad_score if gad_score is not None else None,
+        mh_input.text
     )
 
     # result contains:
@@ -40,7 +41,11 @@ def run_assessment(phq_score=None, gad_score=None, conversation=""):
     strategy = result["strategy"]
 
     # --- Step 3: Build prompt for chatbot ---
-    prompt = build_prompt(conversation, strategy)
+    prompt = build_prompt(
+        conversation,
+        strategy,
+        result.get("is_critical", False)
+    )
 
     # --- Step 4: Generate chatbot response ---
     chat_response = generate_response(prompt)

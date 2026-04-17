@@ -1,19 +1,39 @@
-#AI_MH/chatbot/llm_client.py
-import requests
+from dotenv import load_dotenv
+import os
+from groq import Groq
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+load_dotenv()
 
-def generate_response(prompt):
-    payload = {
-        "model": "phi",
-        "prompt": prompt,
-        "stream": False
-    }
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-    response = requests.post(OLLAMA_URL, json=payload)
+MODEL = "llama-3.1-8b-instant"
 
-    if response.status_code != 200:
-        return "Error: Unable to reach local model"
+SYSTEM_PROMPT = """
+You are a mental health support assistant.
 
-    data = response.json()
-    return data.get("response", "").strip() or "I'm here for you. Can you tell me more?"
+RULES:
+- Respond ONLY to the last user message
+- Keep responses between 2–4 sentences
+- Ask at most ONE question
+- Be empathetic but concise
+- Do NOT provide medical or clinical advice
+- Avoid generic responses
+"""
+
+def generate_response(prompt: str) -> str:
+    try:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.6,
+            max_tokens=120
+        )
+
+        return response.choices[0].message.content.strip()
+
+    except Exception as e:
+        print("LLM ERROR:", e)
+        return "I'm here for you. Something went wrong—can you try again?"
