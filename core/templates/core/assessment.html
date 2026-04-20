@@ -277,6 +277,10 @@ function renderResult(){
                 ${state.type === "phq9" && !state.results.gad7 
                     ? `<button onclick="startNext('gad7')" class="${BTN_SECONDARY} border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400">Continue with GAD-7</button>` 
                     : ''}
+
+                ${state.type === "gad7" && !state.results.phq9 
+                    ? `<button onclick="startNext('phq9')" class="${BTN_SECONDARY} border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400">Continue with PHQ-9</button>` 
+                    : ''}    
                 
                 <button onclick="goDashboard()" class="${BTN_SECONDARY}">Return to Dashboard</button>
             </div>
