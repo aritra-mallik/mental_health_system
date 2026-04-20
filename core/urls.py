@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MoodView, JournalView, AssessmentView, AssessmentHistoryView, app_dashboard, app_assessment
+from .views import MoodView, JournalView, AssessmentView, AssessmentHistoryView, app_dashboard, app_assessment,app_chat
 from .views import (
     ChatSessionCreateView,
     ChatMessageView,
@@ -16,4 +16,5 @@ urlpatterns = [
     path("chat/create/", ChatSessionCreateView.as_view()),
     path("chat/send/", ChatMessageView.as_view()),
     path("chat/close/", ChatSessionCloseView.as_view()),
+    path("chat-page/", app_chat, name="chat_page"),
 ]

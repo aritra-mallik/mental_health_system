@@ -282,3 +282,6 @@ class ChatSessionCloseView(APIView):
             return Response({"message": "Session closed"})
         except ChatSession.DoesNotExist:
             return Response({"error": "Invalid session"}, status=404)
+        
+def app_chat(request):
+    return render(request, "core/chat.html")

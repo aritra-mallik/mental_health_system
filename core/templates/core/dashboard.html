@@ -17,20 +17,12 @@
         <h3 class="font-bold mb-3">Assessment Scores</h3>
         <canvas id="assessmentChart"></canvas>
     </div>
-    <div id="chatBox" style="display:none; margin-top:20px;">
-        <div id="messages" style="border:1px solid #ddd; padding:10px; height:200px; overflow-y:auto;"></div>
-
-        <input id="chatInput" type="text" placeholder="Type a message..."
-            style="width:80%; padding:10px; margin-top:10px;" />
-
-        <button onclick="sendMessage()" class="btn">Send</button>
-    </div>
 
     <div id="view"></div>
 
     <button onclick="loadAssessment()">Start Assessment</button>
     <button onclick="loadDashboard()">Dashboard</button>
-    <button onclick="startChat()" class="btn">Start Chat</button>
+    <button onclick="openChat()" class="btn">Start Chat</button>
 
 </div>
 {% endblock %}
@@ -180,6 +172,9 @@ document.getElementById("chatInput").addEventListener("keypress", function(e) {
         sendMessage();
     }
 });
+function openChat(){
+    window.location.href = "/api/core/chat-page/";
+}
 </script>
 {% endblock %}
 
