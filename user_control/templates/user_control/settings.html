@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6 max-w-5xl mx-auto">
+
+    <div class="flex-1 space-y-6">
+        <header>
+            <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
+            <p class="text-gray-500 dark:text-gray-400">Manage your interface preferences and accessibility.</p>
+        </header>
+
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
+            <form id="settingsForm" class="divide-y divide-gray-100 dark:divide-gray-700">
+                
+                <div class="p-6 space-y-4">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Appearance</h3>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-black dark:text-white">Dark Mode</p>
+                            <p class="text-sm text-gray-500">Switch between light and dark themes.</p>
+                        </div>
+                        
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="dark_mode" class="sr-only peer">
+                            <div class="w-14 h-7 bg-blue-300 dark:bg-gray-700 rounded-full flex items-center justify-between px-1.5 transition-colors shadow-inner">
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                                <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 2.32a1 1 0 011.415 0l.708.707a1 1 0 01-1.414 1.415l-.708-.708a1 1 0 010-1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zm-2.32 4.22a1 1 0 010 1.415l-.707.708a1 1 0 01-1.415-1.414l.707-.708a1 1 0 011.415 0zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.22-2.32a1 1 0 01-1.415 0l-.708-.707a1 1 0 011.414-1.415l.708.708a1 1 0 010 1.414zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm2.32-4.22a1 1 0 010-1.415l.707-.708a1 1 0 011.415 1.414l-.707.708a1 1 0 01-1.415 0zM10 5a5 5 0 100 10 5 5 0 000-10z" clip-rule="evenodd"></path></svg> 
+                            </div>
+                            <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 peer-checked:translate-x-7 shadow-md"></div>
+                        </label>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p class="font-medium text-black dark:text-white">Text Size</p>
+                        <div class="grid grid-cols-3 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="font_size" value="small" class="sr-only peer">
+                                <div class="text-blue-500 p-3 text-center border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all">Small</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="font_size" value="medium" class="sr-only peer">
+                                <div class="text-blue-500 p-3 text-center border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all">Default</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="font_size" value="large" class="sr-only peer">
+                                <div class="text-blue-500 p-3 text-center border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all">Large</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Localization</h3>
+                    <div class="space-y-2">
+                        <p class="font-medium text-black dark:text-white">Language</p>
+                        <select name="preferred_language" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white">
+                            <option value="en">English (US)</option>
+                            <option value="bn">Bengali (বাংলা)</option>
+                            <option value="hi">Hindi (हिन्दी)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row gap-3">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95">
+                        Save Changes
+                    </button>
+                    <button type="button" onclick="window.location.href='/api/core/dashboard-page/'" class="text-blue-600 flex-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-600">
+                        Back to Dashboard
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Load existing settings into the form
+async function loadFormDefaults() {
+    const { res, data } = await apiRequest("/api/user/profile/");
+    
+    // Pull from localStorage as a fallback just in case the backend hasn't been updated yet
+    const cachedStr = localStorage.getItem('user_settings');
+    const cachedSettings = cachedStr ? JSON.parse(cachedStr) : null;
+
+    const isDark = data?.dark_mode ?? cachedSettings?.dark_mode ?? false;
+    const fontSize = data?.font_size ?? cachedSettings?.font_size ?? 'medium';
+    const lang = data?.preferred_language ?? cachedSettings?.lang ?? 'en';
+
+    const form = document.getElementById("settingsForm");
+    
+    // Check toggle
+    form.elements['dark_mode'].checked = isDark;
+    
+    // Select radio
+    const radio = form.querySelector(`input[name="font_size"][value="${fontSize}"]`);
+    if (radio) radio.checked = true;
+    
+    // Set language
+    if (form.elements['preferred_language']) {
+        form.elements['preferred_language'].value = lang;
+    }
+}
+
+document.getElementById("settingsForm").onsubmit = async function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const payload = Object.fromEntries(formData);
+    
+    // Explicitly handle checkbox (boolean) since FormData gives "on" string
+    payload.dark_mode = this.elements['dark_mode'].checked;
+
+    const { res, data } = await apiRequest("/api/user/profile/", "PATCH", payload);
+
+    if (res && res.ok) {
+        
+        // Save to cache so other pages apply it instantly
+        localStorage.setItem('user_settings', JSON.stringify({
+            dark_mode: payload.dark_mode,
+            font_size: payload.font_size,
+            lang: payload.preferred_language
+        }));
+
+        // Apply immediately to current page
+        if (typeof applyUserSettings === 'function') {
+            applyUserSettings();
+        } else {
+            if (payload.dark_mode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        if(typeof showToast === 'function') showToast("success", "Your preferences have been saved.");
+        else alert("Your preferences have been saved.");
+    } else {
+        if(typeof showToast === 'function') showToast("error", data?.message || "Failed to update settings");
+        else alert(data?.message || "Failed to update settings");
+    }
+};
+
+// Initial load
+document.addEventListener("DOMContentLoaded", loadFormDefaults);
+</script>
+{% endblock %}
+

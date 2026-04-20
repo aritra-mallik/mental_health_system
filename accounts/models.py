@@ -59,6 +59,9 @@ class User(AbstractUser):
     consent_encryption = models.BooleanField(default=False)
     consent_terms = models.BooleanField(default=False)
 
+    # 🔥 ADD THIS LINE HERE
+    is_onboarded = models.BooleanField(default=False)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

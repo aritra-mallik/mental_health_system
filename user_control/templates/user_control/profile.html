@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6 max-w-5xl mx-auto">
+
+    <div class="flex-1 space-y-6">
+        <header>
+            <h1 class="text-3xl font-bold tracking-tight">Profile</h1>
+            <p class="text-gray-500 dark:text-gray-400">Manage your personal information and account security.</p>
+        </header>
+
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
+            <form id="profileForm" class="divide-y divide-gray-100 dark:divide-gray-700">
+                
+                <div class="p-6 space-y-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Personal Information</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
+                            <input name="first_name" placeholder="First Name" class="text-black dark:text-white w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Middle Name</label>
+                            <input name="middle_name" placeholder="Middle Name" class="text-black dark:text-white w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
+                            <input name="last_name" placeholder="Last Name" class="text-black dark:text-white w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</label>
+                        <input name="display_name" placeholder="Display Full Name" disabled class="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl text-gray-500 cursor-not-allowed transition-all">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Date of Birth</label>
+                            <input id="dob" disabled class="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
+                            <input id="gender" disabled class="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-gray-50 dark:bg-gray-800/50">
+                    <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95">
+                        Save Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden mt-6">
+            <div class="p-6 space-y-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Security & Authentication</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="space-y-1 relative">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex justify-between items-center">
+                                Email Address
+                                <span id="email_verified" class="hidden"></span>
+                            </label>
+                            <input name="email" disabled class="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                        </div>
+
+                        <div class="space-y-1 relative">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex justify-between items-center">
+                                Phone Number
+                                <span id="phone_verified" class="hidden"></span>
+                            </label>
+                            <input name="phone" disabled class="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Old Password</label>
+                            <input id="old_password" type="password" placeholder="••••••••" class="text-black dark:text-white w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
+                            <input id="new_password" type="password" placeholder="••••••••" class="text-black dark:text-white w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        </div>
+                        
+                        <button type="button" onclick="changePassword()" class="w-full bg-white dark:bg-gray-700 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-95">
+                            Update Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-start">
+            <button class="text-blue-600 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-95 shadow-sm" onclick="window.location.href='/api/core/dashboard-page/'">
+                Back to Dashboard
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setVerification(elId, isVerified) {
+  const el = document.getElementById(elId);
+
+  if (isVerified) {
+    el.innerHTML = "✔ Verified";
+    el.className = "text-[10px] font-bold uppercase tracking-wide bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-md";
+  } else {
+    el.innerHTML = "✖ Unverified";
+    el.className = "text-[10px] font-bold uppercase tracking-wide bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded-md";
+  }
+
+  el.classList.remove("hidden");
+}
+
+function updateDisplayName() {
+  const first = document.querySelector('[name="first_name"]').value || "";
+  const middle = document.querySelector('[name="middle_name"]').value || "";
+  const last = document.querySelector('[name="last_name"]').value || "";
+
+  const full = [first, middle, last].filter(Boolean).join(" ");
+  document.querySelector('[name="display_name"]').value = full;
+}
+
+// Attach listeners
+["first_name", "middle_name", "last_name"].forEach(name => {
+  document.querySelector(`[name="${name}"]`)
+    .addEventListener("input", updateDisplayName);
+});
+
+(async function(){  
+  const { data } = await apiRequest("/api/user/profile/");
+
+  if (data) {
+    Object.keys(data).forEach(key => {
+      const el = document.querySelector(`[name=${key}]`);
+      if (el) el.value = data[key];
+    });
+
+    document.getElementById("dob").value = data.date_of_birth || '';
+    document.getElementById("gender").value = data.gender || '';
+
+    setVerification("email_verified", data.is_email_verified);
+    setVerification("phone_verified", data.is_phone_verified);
+  }
+})();
+
+// Update Profile
+document.getElementById("profileForm").onsubmit = async function(e){
+  e.preventDefault();
+  const formData = new FormData(this);
+
+  const { res } = await apiRequest(
+    "/api/user/profile/",
+    "PATCH",
+    Object.fromEntries(formData)
+  );
+
+  if (res && res.ok) {
+      // Assuming showToast is available globally from main.js
+      if(typeof showToast === 'function') showToast("success", "Profile updated successfully.");
+      else alert("Profile updated successfully.");
+  } else {
+      if(typeof showToast === 'function') showToast("error", "Failed to update profile.");
+      else alert("Failed to update profile.");
+  }
+};
+
+// Change Password
+async function changePassword() {
+  const old_password = document.getElementById("old_password").value;
+  const new_password = document.getElementById("new_password").value;
+
+  if (!old_password || !new_password) {
+      if(typeof showToast === 'function') showToast("error", "Please fill in both password fields.");
+      else alert("Please fill in both password fields.");
+      return;
+  }
+
+  const { res, data } = await apiRequest(
+    "/api/accounts/change-password/",
+    "POST",
+    { old_password, new_password }
+  );
+
+  if (res && res.ok) {
+      if(typeof showToast === 'function') showToast("success", data?.message || "Password changed successfully.");
+      else alert(data?.message || "Password changed successfully.");
+      
+      // Clear fields
+      document.getElementById("old_password").value = '';
+      document.getElementById("new_password").value = '';
+  } else {
+      if(typeof showToast === 'function') showToast("error", data?.message || "Failed to change password.");
+      else alert(data?.message || "Failed to change password.");
+  }
+};
+</script>
+{% endblock %}
+

@@ -5,48 +5,11 @@
 
 {% block content %}
 
-<style>
-.btn {
-    background: #1d4ed8;
-    color: white;
-    padding: 12px;
-    border-radius: 12px;
-}
-
-.option-btn {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    text-align: left;
-    transition: all 0.2s ease;
-    background: white;
-}
-
-.option-btn:hover {
-    background: #f3f4f6;
-}
-
-.option-btn.selected {
-    background: #1d4ed8;
-    color: white;
-    border-color: #1d4ed8;
-    transform: scale(1.02);
-}
-</style>
-
-<div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow">
-    <div id="app"></div>
+<div class="max-w-3xl mx-auto">
+    <div id="app" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+        </div>
 </div>
-<div id="chatBox" style="display:none; margin-top:20px;">
-    <div id="messages" style="border:1px solid #ddd; padding:10px; height:200px; overflow-y:auto;"></div>
 
-    <input id="chatInput" type="text" placeholder="Type a message..."
-        style="width:80%; padding:10px; margin-top:10px;" />
-
-    <button onclick="sendMessage()" class="btn">Send</button>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -99,8 +62,22 @@ let state = {
     }
 };
 
+/* ---------- DESIGN SYSTEM CLASSES ---------- */
+const BTN_PRIMARY = 
+    "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95";
+
+const BTN_SECONDARY = 
+    "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-95 shadow-sm text-gray-900 dark:text-gray-100";
+
+const OPTION =
+    "w-full p-4 mb-3 border border-gray-200 dark:border-gray-700 rounded-xl text-left transition-all bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium cursor-pointer";
+
+const OPTION_SELECTED =
+    "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 scale-[1.02] shadow-sm";
+
 /* ---------- ROUTER ---------- */
 function render(){
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     switch(state.step){
         case 0: return renderWelcome();
         case 1: return renderSelect();
@@ -114,10 +91,15 @@ function render(){
 /* ---------- STEP 0 ---------- */
 function renderWelcome(){
     app.innerHTML = `
-        <div class="text-center">
-            <h1 class="text-2xl font-bold mb-4">Mental Health Check</h1>
-            <p class="mb-6 text-gray-600">Takes 2–3 minutes</p>
-            <button onclick="nextStep()" class="btn">Start</button>
+        <div class="p-8 md:p-12 text-center space-y-6">
+            <div class="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight text-black dark:text-white">Mental Health Check</h1>
+            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Take a few minutes to check in with yourself. This brief assessment helps track your mood and anxiety levels.</p>
+            <div class="pt-4">
+                <button onclick="nextStep()" class="${BTN_PRIMARY} w-full sm:w-auto sm:px-12">Start Assessment</button>
+            </div>
         </div>
     `;
 }
@@ -125,13 +107,24 @@ function renderWelcome(){
 /* ---------- STEP 1 ---------- */
 function renderSelect(){
     app.innerHTML = `
-        <h2 class="mb-4 font-bold">Choose Assessment</h2>
-        <button onclick="selectType('phq9')" class="btn w-full mb-2">
-            PHQ-9 (Depression)
-        </button>
-        <button onclick="selectType('gad7')" class="btn w-full">
-            GAD-7 (Anxiety)
-        </button>
+        <div class="p-6 md:p-8 space-y-6">
+            <header class="text-center mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
+                <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Choose Assessment</h2>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Select the questionnaire you'd like to complete.</p>
+            </header>
+            
+            <div class="grid gap-4 max-w-md mx-auto">
+                <button onclick="selectType('phq9')" class="${OPTION} hover:border-blue-500 group flex items-center justify-between">
+                    <span class="font-semibold text-lg">PHQ-9</span>
+                    <span class="text-sm text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Depression Check &rarr;</span>
+                </button>
+
+                <button onclick="selectType('gad7')" class="${OPTION} hover:border-blue-500 group flex items-center justify-between">
+                    <span class="font-semibold text-lg">GAD-7</span>
+                    <span class="text-sm text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Anxiety Check &rarr;</span>
+                </button>
+            </div>
+        </div>
     `;
 }
 
@@ -143,47 +136,88 @@ function selectType(type){
 /* ---------- STEP 2 ---------- */
 function renderIntro(){
     app.innerHTML = `
-        <h2 class="font-bold mb-2">${state.type.toUpperCase()}</h2>
-        <p class="mb-6 text-gray-500">
-            Answer based on how you felt over the last 2 weeks.
-        </p>
-        <button onclick="nextStep()" class="btn">Begin</button>
+        <div class="p-6 md:p-8 text-center space-y-6">
+            <h2 class="text-2xl font-bold tracking-tight uppercase text-black dark:text-white">${state.type}</h2>
+            
+            <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-5 rounded-xl max-w-md mx-auto text-sm border border-blue-100 dark:border-blue-800/50">
+                <p class="font-semibold mb-1">Instruction:</p>
+                <p>Over the last 2 weeks, how often have you been bothered by the following problems?</p>
+            </div>
+
+            <div class="pt-4">
+                <button onclick="nextStep()" class="${BTN_PRIMARY} w-full sm:w-auto sm:px-12">Begin Questionnaire</button>
+            </div>
+        </div>
     `;
 }
 
 /* ---------- STEP 3 ---------- */
 function renderQuestion(){
+    const totalQ = QUESTIONS[state.type].length;
+    const currentQ = state.index + 1;
+    const progress = Math.round((state.index / totalQ) * 100);
     const q = QUESTIONS[state.type][state.index];
     const selected = state.answers[state.index];
 
     app.innerHTML = `
-        <div class="mb-4 text-sm text-gray-500">
-            ${state.index + 1} / ${QUESTIONS[state.type].length}
+        <div class="p-6 md:p-8 space-y-6">
+            
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Question ${currentQ} of ${totalQ}</span>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">${progress}% Complete</span>
+            </div>
+            
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-6 overflow-hidden">
+                <div class="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" style="width: ${progress}%"></div>
+            </div>
+
+            <h3 class="text-xl md:text-2xl font-semibold mb-6 text-gray-900 dark:text-white leading-relaxed">
+                ${q}
+            </h3>
+
+            <div class="space-y-3">
+                ${OPTIONS.map(o => `
+                    <button onclick="answer(${o.value})"
+                        class="${OPTION} ${selected === o.value ? OPTION_SELECTED : ''}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selected === o.value ? 'border-blue-600' : 'border-gray-400 dark:border-gray-500'}">
+                                ${selected === o.value ? '<div class="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>' : ''}
+                            </div>
+                            ${o.label}
+                        </div>
+                    </button>
+                `).join("")}
+            </div>
+
+            <div class="pt-6 border-t border-gray-100 dark:border-gray-700 mt-6 flex justify-between items-center">
+                <button onclick="prevQuestion()" class="text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium text-sm transition-colors ${state.index === 0 ? 'invisible' : ''}">
+                    &larr; Previous
+                </button>
+                
+                <button onclick="nextQuestion()" class="${BTN_PRIMARY} px-8">
+                    ${state.index === totalQ - 1 ? 'Review Answers' : 'Next'}
+                </button>
+            </div>
         </div>
-
-        <div class="text-lg font-medium mb-6">${q}</div>
-
-        ${OPTIONS.map(o => `
-            <button onclick="answer(${o.value})"
-                class="option-btn ${selected === o.value ? 'selected' : ''}">
-                ${o.label}
-            </button>
-        `).join("")}
-
-        <button onclick="nextQuestion()" class="btn w-full mt-4">
-            Next
-        </button>
     `;
 }
 
 function answer(val){
     state.answers[state.index] = val;
-    renderQuestion();
+    renderQuestion(); // Re-render to show selection instantly
+}
+
+function prevQuestion() {
+    if (state.index > 0) {
+        state.index--;
+        render();
+    }
 }
 
 function nextQuestion(){
     if(state.answers[state.index] === undefined){
-        alert("Please select an option");
+        if(typeof showToast === 'function') showToast("error", "Please select an option to continue.");
+        else alert("Please select an option");
         return;
     }
 
@@ -199,63 +233,57 @@ function nextQuestion(){
 /* ---------- STEP 4 ---------- */
 function renderReview(){
     app.innerHTML = `
-        <h2 class="font-bold mb-4">Review Answers</h2>
+        <div class="p-6 md:p-8 space-y-6">
+            <header class="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4 text-center sm:text-left">
+                <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Review Your Answers</h2>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Please review your responses before submitting.</p>
+            </header>
 
-        ${state.answers.map((a,i)=>`
-            <div class="mb-2 text-sm">Q${i+1}: ${a}</div>
-        `).join("")}
+            <div class="space-y-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                ${state.answers.map((a,i)=>`
+                    <div class="p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl flex flex-col gap-1 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <span class="text-blue-600 dark:text-blue-400 mr-1">Q${i+1}.</span> ${QUESTIONS[state.type][i]}
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 pl-6 border-l-2 border-gray-200 dark:border-gray-700 ml-1 mt-1">
+                            ${OPTIONS.find(opt => opt.value === a).label}
+                        </p>
+                    </div>
+                `).join("")}
+            </div>
 
-        <textarea id="message" 
-            class="w-full border p-2 rounded mt-4"
-            placeholder="How are you feeling? (optional)">
-        </textarea>
-
-        <button onclick="submitAssessment()" class="btn mt-4 w-full">
-            Submit
-        </button>
+            <div class="pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+                <button onclick="state.step = 3; state.index = 0; render();" class="${BTN_SECONDARY} w-full sm:w-auto">Edit Answers</button>
+                <button onclick="submitAssessment()" class="${BTN_PRIMARY} w-full sm:w-auto">Submit Assessment</button>
+            </div>
+        </div>
     `;
 }
 
 /* ---------- STEP 5 ---------- */
 function renderResult(){
-
-    const result = state.results[state.type];
-
     app.innerHTML = `
-        <h2 class="text-xl font-bold mb-4">Assessment Complete</h2>
-
-        <div class="bg-gray-100 p-4 rounded mb-4">
-            <p><strong>Score:</strong> ${result.score}</p>
-            <p><strong>Risk:</strong> ${result.risk_level}</p>
-            <p><strong>Insight:</strong> ${result.insight}</p>
+        <div class="p-8 md:p-12 text-center space-y-6">
+            <div class="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            
+            <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Assessment Complete</h2>
+            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Your responses have been securely saved and analyzed.</p>
+            
+            <div class="flex flex-col gap-3 max-w-sm mx-auto pt-6">
+                <button onclick="renderReport()" class="${BTN_PRIMARY}">View Full Report</button>
+                
+                ${state.type === "phq9" && !state.results.gad7 
+                    ? `<button onclick="startNext('gad7')" class="${BTN_SECONDARY} border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400">Continue with GAD-7</button>` 
+                    : ''}
+                
+                <button onclick="goDashboard()" class="${BTN_SECONDARY}">Return to Dashboard</button>
+            </div>
         </div>
-
-        <div class="bg-blue-50 p-4 rounded mb-4">
-            <strong>Support Response:</strong>
-            <p>${result.chat}</p>
-        </div>
-
-        <button onclick="renderReport()" class="btn w-full mb-2">
-            View Full Report
-        </button>
-
-        ${
-            state.type === "phq9" && !state.results.gad7
-            ? `<button onclick="startNext('gad7')" class="btn w-full mb-2">
-                Continue with GAD-7
-               </button>`
-            : ''
-        }
-        ${state.chatSessionId ? `
-            <button onclick="openChat()" class="btn w-full mb-2">
-                Continue Chat
-            </button>
-        ` : ''}
-        <button onclick="goDashboard()" class="btn w-full">
-            Go to Dashboard
-        </button>
     `;
 }
+
 /* ---------- REPORT ---------- */
 let reportChart = null;
 
@@ -264,26 +292,52 @@ function renderReport(){
     const gad = state.results.gad7;
 
     app.innerHTML = `
-        <h2 class="text-2xl font-bold mb-4">Mental Health Report</h2>
+        <div class="p-6 md:p-8 space-y-8">
+            <header class="border-b border-gray-100 dark:border-gray-700 pb-4">
+                <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Mental Health Report</h2>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Analysis based on your recent assessment.</p>
+            </header>
 
-        <canvas id="chart" class="mb-6"></canvas>
+            <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                <canvas id="chart" height="200"></canvas>
+            </div>
 
-        <p class="mb-4">
-            ${phq ? `Depression: ${phq.risk_level}` : ""}
-            ${gad ? ` | Anxiety: ${gad.risk_level}` : ""}
-        </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                ${phq ? `
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Depression (PHQ-9)</p>
+                    <p class="text-lg font-bold capitalize text-gray-900 dark:text-white">${phq.risk_level}</p>
+                </div>` : ""}
+                
+                ${gad ? `
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Anxiety (GAD-7)</p>
+                    <p class="text-lg font-bold capitalize text-gray-900 dark:text-white">${gad.risk_level}</p>
+                </div>` : ""}
+            </div>
 
-        <ul class="mb-6 list-disc ml-5">
-            ${generateInsights(phq, gad)}
-        </ul>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">Key Insights</h3>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300 text-sm">
+                        ${generateInsights(phq, gad)}
+                    </ul>
+                </div>
 
-        <ul class="mb-6 list-disc ml-5">
-            ${generateRecommendations(phq, gad)}
-        </ul>
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-green-600 dark:text-green-400 mb-3">Recommendations</h3>
+                    <ul class="space-y-2 text-gray-700 dark:text-gray-300 text-sm">
+                        ${generateRecommendations(phq, gad)}
+                    </ul>
+                </div>
+            </div>
 
-        <button onclick="goDashboard()" class="btn w-full">
-            Back to Dashboard
-        </button>
+            <div class="pt-6 border-t border-gray-100 dark:border-gray-700">
+                <button onclick="goDashboard()" class="${BTN_SECONDARY} w-full sm:w-auto">
+                    Back to Dashboard
+                </button>
+            </div>
+        </div>
     `;
 
     renderChart(phq, gad);
@@ -291,20 +345,48 @@ function renderReport(){
 
 function renderChart(phq, gad){
     const ctx = document.getElementById("chart");
-
     if(reportChart) reportChart.destroy();
+
+    // Check for dark mode to set text color properly
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#9ca3af' : '#4b5563'; 
+    const gridColor = isDark ? '#374151' : '#e5e7eb';
 
     reportChart = new Chart(ctx, {
         type: "bar",
         data: {
-            labels: ["Depression", "Anxiety"],
+            labels: ["Depression Score", "Anxiety Score"],
             datasets: [{
                 label: "Score",
                 data: [
                     phq ? phq.score : 0,
                     gad ? gad.score : 0
-                ]
+                ],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.8)', // blue-500
+                    'rgba(16, 185, 129, 0.8)'  // emerald-500
+                ],
+                borderRadius: 6
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 27, // Max score for both PHQ9 and GAD7
+                    ticks: { color: textColor },
+                    grid: { color: gridColor }
+                },
+                x: {
+                    ticks: { color: textColor },
+                    grid: { display: false }
+                }
+            }
         }
     });
 }
@@ -312,71 +394,55 @@ function renderChart(phq, gad){
 /* ---------- INSIGHTS ---------- */
 function generateInsights(phq, gad){
     let out = "";
+    const liClass = "flex items-start gap-2 before:content-['•'] before:text-blue-500";
 
     if(phq && phq.risk_level !== "minimal"){
-        out += "<li>Elevated depressive symptoms detected.</li>";
+        out += `<li class="${liClass}">Elevated depressive symptoms detected.</li>`;
     }
-
     if(gad && gad.risk_level !== "minimal"){
-        out += "<li>Elevated anxiety levels detected.</li>";
+        out += `<li class="${liClass}">Elevated anxiety levels detected.</li>`;
     }
-
     if(phq && gad){
-        out += "<li>Possible overlap between mood and anxiety patterns.</li>";
+        out += `<li class="${liClass}">Possible overlap between mood and anxiety patterns.</li>`;
     }
-
+    if (out === "") {
+        out += `<li class="${liClass}">Your scores indicate minimal to no significant symptoms currently.</li>`;
+    }
     return out;
 }
 
 /* ---------- RECOMMENDATIONS ---------- */
 function generateRecommendations(phq, gad){
+    const liClass = "flex items-start gap-2 before:content-['✓'] before:text-green-500 before:font-bold";
     return `
-        <li>Maintain consistent sleep schedule</li>
-        <li>Engage in light physical activity</li>
-        <li>Practice breathing or grounding techniques</li>
-        <li>Consider speaking to a professional if symptoms persist</li>
+        <li class="${liClass}">Maintain consistent sleep schedule to support mood regulation.</li>
+        <li class="${liClass}">Engage in light physical activity for at least 20 minutes daily.</li>
+        <li class="${liClass}">Practice breathing or grounding techniques when feeling overwhelmed.</li>
+        <li class="${liClass}">Consider speaking to a professional if symptoms persist or disrupt daily life.</li>
     `;
 }
 
 /* ---------- API ---------- */
 async function submitAssessment(){
+    // Show a basic loader state on the button if possible, but keeping it simple for now
+    const { res, data } = await apiRequest(
+        "/api/core/assessment/",
+        "POST",
+        {
+            type: state.type,
+            answers: state.answers
+        }
+    );
 
-    try {
-
-        const token = localStorage.getItem("access");
-
-        const messageInput = document.getElementById("message");
-        const message = messageInput ? messageInput.value : "";
-
-        const res = await fetch("/api/core/assessment/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({
-                type: state.type,
-                answers: state.answers,
-                message: message   
-            })
-        });
-
-        const data = await res.json();
-
-        console.log("API RESPONSE:", data);
-
-        state.results[state.type] = data.data; 
-        state.chatSessionId = data.chat_session_id;
-
+    if (res && res.ok) {
+        state.results[state.type] = data.data;
         state.step = 5;
         render();
-
-    } catch (err) {
-        console.error("ERROR:", err);
-        alert("Something went wrong");
+    } else {
+        if(typeof showToast === 'function') showToast("error", "Failed to submit assessment.");
+        else alert("Failed to submit assessment.");
     }
 }
-render();
 
 /* ---------- NAV ---------- */
 function startNext(type){
@@ -395,63 +461,9 @@ function nextStep(){
 function goDashboard(){
     window.location.href = "/api/core/dashboard-page/";
 }
-function openChat() {
-    const box = document.getElementById("chatBox");
-    const msgBox = document.getElementById("messages");
 
-    box.style.display = "block";
-    msgBox.innerHTML = "";  // 🔥 clear old messages
-
-    appendMessage("system", "Chat started. You can continue the conversation.");
-}
-
-function appendMessage(role, text) {
-    const msgBox = document.getElementById("messages");
-
-    const div = document.createElement("div");
-    div.innerHTML = `<strong>${role}:</strong> ${text}`;
-    div.style.marginBottom = "8px";
-
-    msgBox.appendChild(div);
-    msgBox.scrollTop = msgBox.scrollHeight;
-}
-
-async function sendMessage() {
-    const input = document.getElementById("chatInput");
-    const text = input.value;
-
-    if (!text) return;
-
-    appendMessage("user", text);
-    input.value = "";
-
-    const token = localStorage.getItem("access");
-
-    const res = await fetch("/api/core/chat/send/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-            session_id: state.chatSessionId,
-            message: text
-        })
-    });
-
-    const data = await res.json();
-
-    if (data.reply) {
-        appendMessage("bot", data.reply);
-    } else {
-        appendMessage("bot", "Something went wrong.");
-    }
-    }
-document.getElementById("chatInput").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-        sendMessage();
-    }
-});
+// Initial Render
+render();
 </script>
 
 {% endblock %}

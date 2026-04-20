@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "public_base.html" %}
 {% load i18n static %}
 
 {% block title %}Register{% endblock %}
@@ -151,12 +151,6 @@
 {% block extra_js %}
 
 <script>
-function getCSRFToken() {
-    return document.cookie
-        .split("; ")
-        .find(row => row.startsWith("csrftoken"))
-        ?.split("=")[1];
-}
 const form = document.getElementById("registerForm");
 
 console.log("Form:", form);

@@ -122,7 +122,7 @@ class LoginView(APIView):
         return Response({"status": "error", "message": "Invalid credentials", "error": serializer.errors}, status=400)
 
 class LogoutView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
 

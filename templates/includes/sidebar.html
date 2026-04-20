@@ -1,0 +1,76 @@
+<style>
+    /* COLLAPSED STATE */
+    .sidebar-collapsed {
+        width: 80px !important; /* Slightly wider to accommodate padding comfortably */
+    }
+
+    .sidebar-collapsed .label {
+        display: none;
+    }
+
+    .sidebar-collapsed #sidebarTitle {
+        display: none;
+    }
+    
+    .sidebar-collapsed .nav-icon-wrapper {
+        margin: 0 auto;
+    }
+</style>
+
+<aside id="sidebar"
+     class="bg-white dark:bg-gray-800 border-r md:border border-gray-200 dark:border-gray-700 shadow-2xl md:shadow-sm md:rounded-2xl p-4 h-screen md:h-fit md:sticky top-4
+            transition-all duration-300 ease-in-out flex flex-col
+            w-64 md:w-64 fixed md:relative z-40 -translate-x-full md:translate-x-0">
+
+  <div class="flex items-center justify-between mb-8 px-2 mt-2">
+    <h2 id="sidebarTitle" class="font-bold text-lg text-gray-900 dark:text-white tracking-tight transition-all">Menu</h2>
+
+    <button onclick="toggleSidebar()" class="hidden md:flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+
+    <button onclick="toggleMobileSidebar()" class="md:flex hidden items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+  </div>
+
+  <nav class="space-y-1.5 flex-1">
+
+    <a href="/api/user/profile-page/" class="nav-item group flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-medium">
+      <span class="nav-icon-wrapper text-xl group-hover:scale-110 transition-transform">👤</span>
+      <span class="label">Profile</span>
+    </a>
+
+    <a href="/api/user/settings-page/" class="nav-item group flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-medium">
+      <span class="nav-icon-wrapper text-xl group-hover:scale-110 transition-transform">⚙️</span>
+      <span class="label">Settings</span>
+    </a>
+
+    <a href="/api/user/consent-page/" class="nav-item group flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-medium">
+      <span class="nav-icon-wrapper text-xl group-hover:scale-110 transition-transform">🔐</span>
+      <span class="label">Consent</span>
+    </a>
+
+    <hr class="border-gray-100 dark:border-gray-700 my-4">
+
+    <button onclick="exportData()" class="nav-item group flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-medium w-full text-left">
+      <span class="nav-icon-wrapper text-xl group-hover:scale-110 transition-transform">📥</span>
+      <span class="label">Export Data</span>
+    </button>
+
+    <button onclick="logoutUser()" class="nav-item group flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-medium w-full text-left">
+        <span class="nav-icon-wrapper text-xl group-hover:scale-110 transition-transform">🚪</span>
+        <span class="label">Logout</span>
+    </button>
+
+    <button onclick="deleteAccount()" class="nav-item group flex items-center space-x-3 p-3 mt-2 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-medium w-full text-left">
+      <span class="nav-icon-wrapper text-xl group-hover:scale-110 transition-transform">🗑️</span>
+      <span class="label">Delete Account</span>
+    </button>
+
+  </nav>
+</aside>
+
+<div id="sidebarOverlay"
+     onclick="toggleMobileSidebar()"
+     class="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm hidden z-30 transition-opacity"></div>

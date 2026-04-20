@@ -7,14 +7,20 @@
   <title>{% block title %}Mental Health Support{% endblock %}</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <script>
+    if (localStorage.getItem("access")) {
+      document.documentElement.classList.add("user-ready");
+    }
+  </script>
   <!-- Tailwind -->
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   {% block extra_head %}{% endblock %}
 </head>
-  <body class="bg-gray-50 text-gray-900 min-h-screen">
+  <body id="app-body"
+      data-auth="true"
+      class="bg-gray-50 text-gray-900 min-h-screen transition-colors duration-300">
 
   {% include "includes/navbar.html" %}
 
@@ -31,6 +37,9 @@
   <script src="{% static 'js/main.js' %}"></script>
   
   {% block extra_js %}{% endblock %}
+  <div id="global-loader" class="fixed inset-0 bg-black/30 flex items-center justify-center hidden z-50">
+    <div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+  </div>
 </body>
 
 </html>
@@ -45,4 +54,7 @@
   {% include "includes/footer.html" %}
 
   {% block extra_js %}{% endblock %}
-</body> {% endcomment %}
+</body> 
+
+  <body class="bg-gray-50 text-gray-900 min-h-screen">
+{% endcomment %}

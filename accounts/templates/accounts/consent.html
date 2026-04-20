@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "public_base.html" %}
 {% load i18n static %}
 
 {% block title %}User Consent{% endblock %}
@@ -128,14 +128,8 @@
 {% block extra_js %}
 
 <script>
-function getCSRFToken() {
-    return document.cookie
-        .split("; ")
-        .find(row => row.startsWith("csrftoken"))
-        ?.split("=")[1];
-}
 
-document.getElementById("consentForm").addEventListener("submit", function(e){
+document.getElementById("consentForm").addEventListener("submit", async function(e){
 
 e.preventDefault()
 
@@ -156,7 +150,20 @@ localStorage.setItem("toast", JSON.stringify({
     message: "Account created successfully"
 }));
 
-window.location.href = "/api/accounts/login-page/"
+const { res } = await apiRequest(
+  "/api/user/consent/",
+  "PATCH",
+  {
+    consent_data_policy: dataPolicy,
+    consent_ai_policy: aiPolicy,
+    consent_encryption: encryptionPolicy,
+    consent_terms: termsPolicy
+  }
+);
+
+if (res && res.ok) {
+    window.location.href = "/api/accounts/login-page/";
+}
 
 })
 

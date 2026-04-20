@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "accounts",
     "core",
+    "user_control",
 ]
 
 MIDDLEWARE = [
@@ -192,3 +193,5 @@ CACHES = {
 }
 
 ENCRYPTION_KEY = env("ENCRYPTION_KEY").encode()
+
+GROQ_API_KEY = env("GROQ_API_KEY")

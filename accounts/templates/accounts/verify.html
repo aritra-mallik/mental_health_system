@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "public_base.html" %}
 {% load i18n %}
 
 {% block title %}Verify OTP{% endblock %}
@@ -90,13 +90,6 @@
 {% block extra_js %}
 
 <script>
-function getCSRFToken() {
-    return document.cookie
-        .split("; ")
-        .find(row => row.startsWith("csrftoken"))
-        ?.split("=")[1];
-}
-
 const params = new URLSearchParams(window.location.search);
 
 let email = params.get("email");
@@ -141,9 +134,13 @@ document.getElementById("otpForm").addEventListener("submit", async function(e){
     );
 
     if(res && res.ok){
-
+        localStorage.setItem("login", Date.now());
+        
         localStorage.setItem("access", data.data.tokens.access);
         localStorage.setItem("refresh", data.data.tokens.refresh);
+        
+        const payload = JSON.parse(atob(data.data.tokens.access.split('.')[1]));
+        localStorage.setItem("access_exp", payload.exp);
 
         window.location.href = "/api/accounts/consent/";
     } else {
