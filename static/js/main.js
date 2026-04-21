@@ -2,20 +2,48 @@ let isRefreshing = false;
 let refreshPromise = null;
 
 function showToast(type, message) {
-    const colors = {
-        success: "bg-green-600",
-        error: "bg-red-600",
-        info: "bg-blue-600",
-        warning: "bg-yellow-500"
+    // 1. Soft, modern color palettes for both light and dark modes
+    const styles = {
+        success: "bg-green-50 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50",
+        error: "bg-red-50 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50",
+        info: "bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50",
+        warning: "bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/50"
+    };
+
+    // 2. Clean SVG icons for each state
+    const icons = {
+        success: `<svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+        error: `<svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+        info: `<svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+        warning: `<svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`
     };
 
     const toast = document.createElement("div");
-    toast.className = `${colors[type] || "bg-gray-800"} text-white px-4 py-2 rounded shadow`;
-    toast.innerText = message;
+    
+    // 3. Base layout with transition utility classes prepared for animation
+    const baseClasses = "flex items-center w-full min-w-[300px] max-w-sm px-4 py-3 mb-3 border rounded-xl shadow-lg backdrop-blur-sm transform transition-all duration-300 ease-out translate-y-[-1rem] opacity-0";
+    const colorClasses = styles[type] || styles.info; // fallback to info
 
-    document.getElementById("toast-container").appendChild(toast);
+    toast.className = `${baseClasses} ${colorClasses}`;
+    toast.innerHTML = `${icons[type] || icons.info} <span class="font-medium text-sm tracking-wide">${message}</span>`;
 
-    setTimeout(() => toast.remove(), 3000);
+    const container = document.getElementById("toast-container");
+    container.appendChild(toast);
+
+    // 4. Trigger entrance animation slightly after appending
+    requestAnimationFrame(() => {
+        toast.classList.remove("translate-y-[-1rem]", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+    });
+
+    // 5. Trigger exit animation before removing from DOM
+    setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-[-1rem]", "opacity-0");
+        
+        // Wait for the 300ms transition to finish before destroying the element
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
 }
 
 function showLoader() {
@@ -104,9 +132,7 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
 
     let loaderTimeout;
 
-    if (!isPublic) {
-        loaderTimeout = setTimeout(showLoader, 200);
-    }
+    loaderTimeout = setTimeout(showLoader, 100);
 
     const options = {
         method,
@@ -125,10 +151,8 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
         const res = await fetch(url, options);
 
         // 🔥 STEP 3: LOADER STOP (VERY IMPORTANT)
-        if (!isPublic) {
-            clearTimeout(loaderTimeout);
-            hideLoader();
-        }
+        clearTimeout(loaderTimeout);
+        hideLoader();
 
         if (res.status === 401) {
 
@@ -163,10 +187,8 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
     } catch (err) {
 
         // 🔥 STEP 4: LOADER STOP ON ERROR
-        if (!isPublic) {
-            clearTimeout(loaderTimeout);
-            hideLoader();
-        }
+        clearTimeout(loaderTimeout);
+        hideLoader();
 
         showToast("error", "Network error");
         return { res: null, data: null };

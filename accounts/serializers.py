@@ -4,6 +4,7 @@ from datetime import date
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime
+from .utils import validate_password_strength
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -23,8 +24,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        if data["password"] != data["confirm_password"]:
+        password = data.get("password")
+        confirm_password = data.get("confirm_password")
+
+        if password != confirm_password:
             raise serializers.ValidationError("Passwords do not match")
+
+        # 🔥 ADD THIS
+        error = validate_password_strength(password)
+        if error:
+            raise serializers.ValidationError(error)
 
         dob = data.get("date_of_birth")
 

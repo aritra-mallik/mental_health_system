@@ -87,6 +87,15 @@
                         <div class="space-y-1">
                             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
                             <input id="new_password" type="password" placeholder="••••••••" class="text-black dark:text-white w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <div id="password-strength-container" class="hidden mt-2 space-y-1.5 px-1 animate-[fadeIn_0.5s_ease-out]">
+                                <div class="flex gap-1.5 h-1.5 w-full rounded-full overflow-hidden">
+                                    <div id="strength-bar-1" class="h-full w-1/4 bg-stone-200/50 dark:bg-gray-600 transition-colors duration-300"></div>
+                                    <div id="strength-bar-2" class="h-full w-1/4 bg-stone-200/50 dark:bg-gray-600 transition-colors duration-300"></div>
+                                    <div id="strength-bar-3" class="h-full w-1/4 bg-stone-200/50 dark:bg-gray-600 transition-colors duration-300"></div>
+                                    <div id="strength-bar-4" class="h-full w-1/4 bg-stone-200/50 dark:bg-gray-600 transition-colors duration-300"></div>
+                                </div>
+                                <p id="strength-text" class="text-[10px] font-bold uppercase tracking-wider text-right transition-colors duration-300"></p>
+                            </div>
                         </div>
                         
                         <button type="button" onclick="changePassword()" class="w-full bg-white dark:bg-gray-700 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-95">
@@ -176,6 +185,66 @@ document.getElementById("profileForm").onsubmit = async function(e){
   }
 };
 
+// NEW: Password Strength Logic
+document.getElementById('new_password').addEventListener('input', function(e) {
+    const val = e.target.value;
+    const container = document.getElementById('password-strength-container');
+    const text = document.getElementById('strength-text');
+    const bars = [
+        document.getElementById('strength-bar-1'),
+        document.getElementById('strength-bar-2'),
+        document.getElementById('strength-bar-3'),
+        document.getElementById('strength-bar-4')
+    ];
+
+    if (!val) {
+        container.classList.add('hidden');
+        return;
+    }
+    
+    container.classList.remove('hidden');
+
+    let strength = 0;
+    if (val.length >= 8) strength += 1;
+    if (val.match(/[a-z]/) && val.match(/[A-Z]/)) strength += 1;
+    if (val.match(/\d/)) strength += 1;
+    if (val.match(/[^a-zA-Z\d]/)) strength += 1;
+
+    // Reset all bars to default empty state, handling dark mode correctly
+    bars.forEach(bar => bar.className = 'h-full w-1/4 bg-stone-200/50 dark:bg-gray-600 transition-colors duration-300');
+
+    if (strength === 0 || strength === 1) {
+        bars[0].classList.add('bg-red-500');
+        bars[0].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
+        text.textContent = 'Weak';
+        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-red-500';
+    } else if (strength === 2) {
+        bars[0].classList.add('bg-amber-400');
+        bars[1].classList.add('bg-amber-400');
+        bars[0].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
+        bars[1].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
+        text.textContent = 'Fair';
+        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-amber-500';
+    } else if (strength === 3) {
+        bars[0].classList.add('bg-blue-500');
+        bars[1].classList.add('bg-blue-500');
+        bars[2].classList.add('bg-blue-500');
+        bars[0].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
+        bars[1].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
+        bars[2].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
+        text.textContent = 'Good';
+        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-blue-600 dark:text-blue-400';
+    } else if (strength === 4) {
+        bars[0].classList.add('bg-green-500');
+        bars[1].classList.add('bg-green-500');
+        bars[2].classList.add('bg-green-500');
+        bars[3].classList.add('bg-green-500');
+        bars.forEach(bar => bar.classList.remove('bg-stone-200/50', 'dark:bg-gray-600'));
+        text.textContent = 'Strong';
+        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-green-600 dark:text-green-400';
+    }
+});
+
 // Change Password
 async function changePassword() {
   const old_password = document.getElementById("old_password").value;
@@ -194,16 +263,10 @@ async function changePassword() {
   );
 
   if (res && res.ok) {
-      if(typeof showToast === 'function') showToast("success", data?.message || "Password changed successfully.");
-      else alert(data?.message || "Password changed successfully.");
-      
       // Clear fields
       document.getElementById("old_password").value = '';
       document.getElementById("new_password").value = '';
-  } else {
-      if(typeof showToast === 'function') showToast("error", data?.message || "Failed to change password.");
-      else alert(data?.message || "Failed to change password.");
-  }
+  } 
 };
 </script>
 {% endblock %}

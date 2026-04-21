@@ -5,11 +5,12 @@ from rest_framework import status
 from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer, PasswordResetConfirmSerializer, ChangePasswordSerializer
 from django.contrib.auth import authenticate
 from .models import OTP, User
-from .utils import generate_otp, send_email_otp
+from .utils import generate_otp, send_email_otp, validate_password_strength
 from django.shortcuts import render
 from .tokens import get_tokens_for_user
 from .throttles import OTPThrottle
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.contrib.auth import update_session_auth_hash
 
 class RegisterView(APIView):
     authentication_classes = []
@@ -206,6 +207,10 @@ class PasswordResetConfirmView(APIView):
                 otp_obj.is_used = True
                 otp_obj.save()
 
+                error = validate_password_strength(new_password)
+                if error:
+                    return Response({"status": "error","message": error}, status=400)
+
                 user.set_password(new_password)
                 user.save()
 
@@ -223,18 +228,47 @@ class ChangePasswordView(APIView):
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
 
-        if serializer.is_valid():
-            user = request.user
+        if not serializer.is_valid():
+            return Response({
+                "status": "error",
+                "message": "Invalid data",
+                "error": serializer.errors
+            }, status=400)
 
-            if not user.check_password(serializer.validated_data["old_password"]):
-                return Response({"status": "error", "message": "Wrong password"}, status=400)
+        user = request.user
+        old_password = serializer.validated_data["old_password"]
+        new_password = serializer.validated_data["new_password"]
 
-            user.set_password(serializer.validated_data["new_password"])
-            user.save()
+        # Check old password
+        if not user.check_password(old_password):
+            return Response({
+                "status": "error",
+                "message": "Incorrect current password"
+            }, status=400)
 
-            return Response({"status": "success", "message": "Password changed"})
+        # Prevent same password reuse
+        if old_password == new_password:
+            return Response({
+                "status": "error",
+                "message": "New password must be different from old password"
+            }, status=400)
 
-        return Response({"status": "error", "message": "Invalid data", "error": serializer.errors}, status=400)
+        #  Password strength validation
+        error = validate_password_strength(new_password)
+        if error:
+            return Response({"status": "error", "message": error}, status=400)
+
+        # Save new password
+        user.set_password(new_password)
+        user.save()
+
+        # Keep user logged in (important)
+        update_session_auth_hash(request, user)
+
+        return Response({
+            "status": "success" ,
+            "message": "Password changed successfully"
+        })
 
 
 def consent_page(request): return render(request,"accounts/consent.html")
