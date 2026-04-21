@@ -62,6 +62,7 @@
     --color-blue-800: oklch(42.4% 0.199 265.638);
     --color-blue-900: oklch(37.9% 0.146 265.522);
     --color-indigo-50: oklch(96.2% 0.018 272.314);
+    --color-indigo-400: oklch(67.3% 0.182 276.935);
     --color-indigo-600: oklch(51.1% 0.262 276.966);
     --color-indigo-700: oklch(45.7% 0.24 277.023);
     --color-violet-600: oklch(54.1% 0.281 293.009);
@@ -554,6 +555,9 @@
   }
   .h-\[45rem\] {
     height: 45rem;
+  }
+  .h-\[500px\] {
+    height: 500px;
   }
   .h-full {
     height: 100%;
@@ -1560,6 +1564,9 @@
       color: color-mix(in oklab, var(--color-green-900) 90%, transparent);
     }
   }
+  .text-indigo-600 {
+    color: var(--color-indigo-600);
+  }
   .text-orange-50 {
     color: var(--color-orange-50);
   }
@@ -2506,6 +2513,11 @@
   .dark\:text-green-400 {
     &:where(.dark, .dark *) {
       color: var(--color-green-400);
+    }
+  }
+  .dark\:text-indigo-400 {
+    &:where(.dark, .dark *) {
+      color: var(--color-indigo-400);
     }
   }
   .dark\:text-red-400 {

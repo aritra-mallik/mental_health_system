@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Chatbot{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+        <button onclick="goDashboard()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+            ← Dashboard
+        </button>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="bg-white dark:bg-gray-800 border rounded-2xl shadow-md p-4 flex flex-col h-[500px]">
+
+        <!-- Messages -->
+        <div id="chatBox" class="flex-1 overflow-y-auto space-y-3 mb-4"></div>
+
+        <!-- Input -->
+        <div class="flex gap-2">
+            <input id="chatInput" type="text"
+                class="flex-1 border rounded-xl px-4 py-2"
+                placeholder="Type your message..." />
+
+            <button onclick="sendMessage()"
+                class="bg-blue-600 text-white px-4 rounded-xl">
+                Send
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let sessionId = null;
+
+async function initChat(){
+    const {data} = await apiRequest("/api/core/chat/session/", "POST");
+    sessionId = data.session_id;
+}
+
+async function sendMessage(){
+    const input = document.getElementById("chatInput");
+    const msg = input.value.trim();
+    if(!msg) return;
+
+    appendMessage("user", msg);
+    input.value = "";
+
+    const {data} = await apiRequest("/api/core/chat/message/", "POST", {
+        session_id: sessionId,
+        message: msg
+    });
+
+    appendMessage("bot", data.reply);
+}
+
+function appendMessage(role, text){
+    const box = document.getElementById("chatBox");
+    const div = document.createElement("div");
+
+    div.className = role === "user"
+        ? "text-right"
+        : "text-left";
+
+    div.innerHTML = `
+        <div class="${role === "user" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-700"} inline-block px-4 py-2 rounded-xl">
+            ${text}
+        </div>
+    `;
+
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function goDashboard(){
+    window.location.href = "/api/core/dashboard-page/";
+}
+
+initChat();
+document.getElementById("chatInput").addEventListener("keydown", function(e){
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+
+        const msg = this.value.trim();
+        if (msg) {
+            sendMessage();
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -273,7 +273,9 @@ function renderResult(){
             
             <div class="flex flex-col gap-3 max-w-sm mx-auto pt-6">
                 <button onclick="renderReport()" class="${BTN_PRIMARY}">View Full Report</button>
-                
+                <button onclick="goChatbot()" class="${BTN_SECONDARY}">
+                    Chat with Chatbot
+                </button>
                 ${state.type === "phq9" && !state.results.gad7 
                     ? `<button onclick="startNext('gad7')" class="${BTN_SECONDARY} border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400">Continue with GAD-7</button>` 
                     : ''}
@@ -335,7 +337,14 @@ function renderReport(){
                     </ul>
                 </div>
             </div>
-
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-3">
+                    AI Insight
+                </h3>
+                <p id="aiInsight" class="text-gray-700 dark:text-gray-300 text-sm">
+                    Generating insight...
+                </p>
+            </div>
             <div class="pt-6 border-t border-gray-100 dark:border-gray-700">
                 <button onclick="goDashboard()" class="${BTN_SECONDARY} w-full sm:w-auto">
                     Back to Dashboard
@@ -345,6 +354,7 @@ function renderReport(){
     `;
 
     renderChart(phq, gad);
+    initAIInsight();
 }
 
 function renderChart(phq, gad){
@@ -465,7 +475,49 @@ function nextStep(){
 function goDashboard(){
     window.location.href = "/api/core/dashboard-page/";
 }
+function goChatbot(){
+    window.location.href = "/api/core/chatbot-page/";
+}
+async function initAIInsight(){
+    try {
+        // 1. Create session
+        const sessionRes = await apiRequest(
+            "/api/core/chat/session/",
+            "POST"
+        );
 
+        const sessionId = sessionRes.data.session_id;
+
+        // 2. Build context message using scores
+        const phq = state.results.phq9;
+        const gad = state.results.gad7;
+
+        const message = `
+User completed assessment.
+PHQ: ${phq ? phq.risk_level : "N/A"}
+GAD: ${gad ? gad.risk_level : "N/A"}
+
+Give a short mental health insight.
+        `;
+
+        // 3. Call chatbot
+        const {data} = await apiRequest(
+            "/api/core/chat/message/",
+            "POST",
+            {
+                session_id: sessionId,
+                message: message
+            }
+        );
+
+        // 4. Inject into UI
+        document.getElementById("aiInsight").innerText = data.reply;
+
+    } catch (err){
+        document.getElementById("aiInsight").innerText =
+            "Unable to generate insight right now.";
+    }
+}
 // Initial Render
 render();
 </script>

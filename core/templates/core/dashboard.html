@@ -35,10 +35,19 @@
                 </p>
             </div>
 
-            <button onclick="loadAssessment()"
-                class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 whitespace-nowrap">
-                Start Check-in
-            </button>
+            <div class="flex gap-3">
+                <button onclick="goChatbot()"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 whitespace-nowrap">
+                    Chatbot
+                </button>
+
+                <button onclick="loadAssessment()"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 whitespace-nowrap">
+                    Start Check-in
+                </button>
+
+
+            </div>
         </header>
 
 
@@ -335,6 +344,9 @@ function toggleMobileSidebar() {
         sidebar.classList.add("-translate-x-full");
         overlay.classList.add("hidden");
     }
+}
+function goChatbot(){
+    window.location.href = "/api/core/chatbot-page/";
 }
 </script>
 {% endblock %}

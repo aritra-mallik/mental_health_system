@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 # -----------------------------
 # Load PHQ dataset
 # -----------------------------
-df = pd.read_csv("data/phq_mental_health_dataset.csv")
+df = pd.read_csv("AI_MH/data/phq_mental_health_dataset.csv")
 
 
 # -----------------------------
@@ -45,7 +45,7 @@ model.fit(X_train, y_train)
 # -----------------------------
 # Save Model (PHQ-specific)
 # -----------------------------
-joblib.dump(model, "ml/phq_model.pkl")
+joblib.dump(model, "AI_MH/ml/phq_model.pkl")
 
 print("Model saved as phq_model.pkl")
 
@@ -66,7 +66,7 @@ print(classification_report(y_test, y_pred))
 # -----------------------------
 # Load GAD dataset
 # -----------------------------
-df = pd.read_csv("data/gad_mental_health_dataset.csv")
+df = pd.read_csv("AI_MH/data/gad_mental_health_dataset.csv")
 
 
 # -----------------------------
@@ -102,7 +102,7 @@ model.fit(X_train, y_train)
 # -----------------------------
 # Save Model
 # -----------------------------
-joblib.dump(model, "ml/gad_model.pkl")
+joblib.dump(model, "AI_MH/ml/gad_model.pkl")
 
 print("Model saved as gad_model.pkl")
 
