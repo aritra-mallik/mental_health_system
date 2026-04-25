@@ -132,7 +132,7 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
 
     let loaderTimeout;
 
-    loaderTimeout = setTimeout(showLoader, 100);
+    loaderTimeout = setTimeout(showLoader, 150);
 
     const options = {
         method,

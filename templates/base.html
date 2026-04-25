@@ -14,13 +14,63 @@
   </script>
   <!-- Tailwind -->
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <style>
+    @keyframes float-drift {
+      0% { transform: translate(0, 0); }
+      33% { transform: translate(4%, 6%); }
+      66% { transform: translate(-3%, 3%); }
+      100% { transform: translate(0, 0); }
+    }
+    .gpu-blob {
+      position: absolute;
+      border-radius: 50%;
+      animation: float-drift 15s infinite alternate ease-in-out;
+      will-change: transform;
+    }
+    /* Lightweight SVG pattern for stars and constellation lines */
+    .bg-constellation {
+      background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='1.5' fill='%23ffffff' opacity='0.7'/%3E%3Ccircle cx='50' cy='80' r='1' fill='%23ffffff' opacity='0.5'/%3E%3Ccircle cx='95' cy='40' r='2' fill='%23ffffff' opacity='0.8'/%3E%3Ccircle cx='10' cy='90' r='1' fill='%23ffffff' opacity='0.3'/%3E%3Cpath d='M15 15L95 40L50 80' stroke='%23ffffff' stroke-width='0.5' opacity='0.25' fill='none'/%3E%3C/svg%3E");
+      background-size: 150px 150px;
+      background-repeat: repeat;
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   {% block extra_head %}{% endblock %}
 </head>
   <body id="app-body"
       data-auth="true"
-      class="bg-gray-50 text-gray-900 min-h-screen transition-colors duration-300">
+      class="relative bg-[#fafdfa] dark:bg-[#080c16] text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-500 overflow-x-hidden">
+
+  <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+
+    <div class="absolute inset-0 transition-opacity duration-500 opacity-100 dark:opacity-0">
+      <div class="gpu-blob w-[80vw] max-w-[600px] h-[80vw] max-h-[600px] top-[-10%] left-[-10%] 
+                  bg-[radial-gradient(circle,rgba(250,204,21,0.35)_0%,transparent_70%)]">
+      </div>
+      <div class="gpu-blob w-[70vw] max-w-[500px] h-[70vw] max-h-[500px] top-[15%] right-[-10%] 
+                  bg-[radial-gradient(circle,rgba(74,222,128,0.35)_0%,transparent_70%)]" 
+           style="animation-delay: -5s;">
+      </div>
+      <div class="gpu-blob w-[90vw] max-w-[700px] h-[90vw] max-h-[700px] bottom-[-20%] left-[10%] 
+                  bg-[radial-gradient(circle,rgba(45,212,191,0.35)_0%,transparent_70%)]" 
+           style="animation-delay: -10s;">
+      </div>
+    </div>
+
+    <div class="absolute inset-0 transition-opacity duration-500 opacity-0 dark:opacity-100">
+      <div class="absolute inset-0 bg-constellation opacity-60"></div>
+      
+      <div class="gpu-blob w-[80vw] max-w-[600px] h-[80vw] max-h-[600px] top-[-15%] left-[-10%] 
+                  bg-[radial-gradient(circle,rgba(37,99,235,0.35)_0%,transparent_70%)]">
+      </div>
+      <div class="gpu-blob w-[75vw] max-w-[550px] h-[75vw] max-h-[550px] bottom-[10%] right-[-10%] 
+                  bg-[radial-gradient(circle,rgba(147,51,234,0.35)_0%,transparent_70%)]" 
+           style="animation-delay: -7s;">
+      </div>
+    </div>
+
+  </div>
 
   {% include "includes/navbar.html" %}
 
