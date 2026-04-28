@@ -3,6 +3,7 @@ from django.db import models
 #from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import gettext_lazy as _
 from datetime import date
+import base64, os
 
 
 class UserManager(BaseUserManager):
@@ -59,7 +60,8 @@ class User(AbstractUser):
     consent_encryption = models.BooleanField(default=False)
     consent_terms = models.BooleanField(default=False)
 
-    # 🔥 ADD THIS LINE HERE
+    journal_salt = models.CharField(max_length=255, blank=True, null=True)
+
     is_onboarded = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
@@ -72,6 +74,11 @@ class User(AbstractUser):
         return today.year - self.date_of_birth.year - (
             (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
         )
+
+    def save(self, *args, **kwargs):
+        if not self.journal_salt:
+            self.journal_salt = base64.b64encode(os.urandom(16)).decode()
+        super().save(*args, **kwargs)
 
     
 class OTP(models.Model):

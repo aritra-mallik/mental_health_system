@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "accounts",
     "core",
     "user_control",
+    "articles",
 ]
 
 MIDDLEWARE = [

@@ -1,13 +1,13 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 User = settings.AUTH_USER_MODEL
 
 
 class MoodEntry(models.Model):
     MOOD_CHOICES = [
+        ("excellent", "Excellent"),
         ("happy", "Happy"),
         ("sad", "Sad"),
         ("anxious", "Anxious"),
@@ -17,7 +17,7 @@ class MoodEntry(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     mood = models.CharField(max_length=20, choices=MOOD_CHOICES)
-    note = models.TextField(blank=True, null=True)  # optional
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -27,26 +27,50 @@ class MoodEntry(models.Model):
 class JournalEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    # 🔒 ZERO-KNOWLEDGE STORAGE
+    # ZERO-KNOWLEDGE STORAGE
     encrypted_content = models.TextField()
 
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+# class Assessment(models.Model):
+#     TYPE_CHOICES = [
+#         ("phq9", "PHQ-9"),
+#         ("gad7", "GAD-7"),
+#     ]
+
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     assessment_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+
+#     score = models.IntegerField()
+#     risk_level = models.CharField(max_length=20)
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     #answers = models.JSONField()
+
 class Assessment(models.Model):
     TYPE_CHOICES = [
-        ("phq9", "PHQ-9"),
-        ("gad7", "GAD-7"),
+        ("who5", "WHO-5"),
+        ("pss", "PSS"),
+        ("dass21", "DASS-21"),
+        ("isi", "ISI"),
+        ("burnout", "Burnout"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    assessment_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
 
-    score = models.IntegerField()
-    risk_level = models.CharField(max_length=20)
+    assessment_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+
+    score = models.FloatField()
+    risk_level = models.CharField(max_length=30)
+
+    # Optional: store breakdown (important for DASS-21)
+    meta = models.JSONField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    #answers = models.JSONField()
+
+    class Meta:
+        ordering = ["-created_at"]
 
 class ActivityLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -55,9 +79,8 @@ class ActivityLog(models.Model):
     metadata = models.JSONField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
-
-
+    
+    
 # =========================
 # Chat Session
 # =========================

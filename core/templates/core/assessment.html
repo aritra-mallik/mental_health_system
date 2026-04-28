@@ -1,210 +1,301 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block title %}Assessment{% endblock %}
+{% block title %}Mental Health Assessment{% endblock %}
 
 {% block content %}
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+    .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.95);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.5);
+        border-radius: 20px;
+    }
+</style>
 
-<div class="max-w-3xl mx-auto">
-    <div id="app" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 min-h-[85vh] flex items-center">
+    <div id="app" class="w-full glass-panel border border-gray-200/60 dark:border-slate-700/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden transition-all duration-500 relative min-h-[500px] flex flex-col">
         </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 const app = document.getElementById("app");
 
-/* ---------- QUESTIONS ---------- */
+/* =========================
+   QUESTION BANKS & DATA
+========================= */
 const QUESTIONS = {
-    phq9: [
-        "Little interest or pleasure in doing things?",
-        "Feeling down, depressed, or hopeless?",
-        "Trouble sleeping?",
-        "Feeling tired or low energy?",
-        "Poor appetite or overeating?",
-        "Feeling bad about yourself?",
-        "Trouble concentrating?",
-        "Moving/speaking slowly or restlessness?",
-        "Thoughts of self-harm?"
+    who5: [
+        "I have felt cheerful and in good spirits",
+        "I have felt calm and relaxed",
+        "I have felt active and vigorous",
+        "I woke up feeling fresh and rested",
+        "My daily life has been filled with things that interest me"
     ],
-    gad7: [
-        "Feeling nervous or anxious?",
-        "Not being able to stop worrying?",
-        "Worrying too much?",
-        "Trouble relaxing?",
-        "Restlessness?",
-        "Easily annoyed?",
-        "Feeling afraid?"
+    pss: [
+        "Upset because of something unexpected?",
+        "Unable to control important things?",
+        "Felt nervous and stressed?",
+        "Felt confident handling problems?",
+        "Things going your way?",
+        "Could not cope with tasks?",
+        "Controlled irritations?",
+        "Felt on top of things?",
+        "Angered by things outside control?",
+        "Difficulties piling up?"
+    ],
+    dass21: [
+        "Hard to wind down", "Dryness of mouth", "No positive feeling",
+        "Breathing difficulty", "Hard to initiate tasks", "Over-reacting",
+        "Trembling", "Using nervous energy", "Fear of panic",
+        "Nothing to look forward to", "Agitated", "Hard to relax",
+        "Down-hearted", "Intolerant", "Close to panic",
+        "No enthusiasm", "Low self-worth", "Touchy",
+        "Heart awareness", "Unexplained fear", "Life meaningless"
+    ],
+    isi: [
+        "Difficulty falling asleep",
+        "Difficulty staying asleep",
+        "Waking too early",
+        "Satisfaction with sleep",
+        "Sleep noticeable to others",
+        "Distress about sleep",
+        "Interference with daily functioning"
+    ],
+    burnout: [
+        "Emotionally drained",
+        "Used up at end of day",
+        "Fatigued in morning",
+        "Burned out",
+        "Frustrated",
+        "Working too hard",
+        "Emotionally exhausted",
+        "At the end of rope",
+        "Detached",
+        "Less motivated"
     ]
 };
 
-const OPTIONS = [
-    {label: "Not at all", value: 0},
-    {label: "Several days", value: 1},
-    {label: "More than half the days", value: 2},
-    {label: "Nearly every day", value: 3}
-];
+const OPTIONS_MAP = {
+    who5: [
+        {label:"At no time", value:0}, {label:"Some of the time", value:1},
+        {label:"Less than half", value:2}, {label:"More than half", value:3},
+        {label:"Most of the time", value:4}, {label:"All the time", value:5}
+    ],
+    pss: [
+        {label:"Never", value:0}, {label:"Almost never", value:1},
+        {label:"Sometimes", value:2}, {label:"Fairly often", value:3},
+        {label:"Very often", value:4}
+    ],
+    dass21: [
+        {label:"Not at all", value:0}, {label:"Some degree", value:1},
+        {label:"Considerable", value:2}, {label:"Very much", value:3}
+    ],
+    isi: [
+        {label:"None", value:0}, {label:"Mild", value:1},
+        {label:"Moderate", value:2}, {label:"Severe", value:3},
+        {label:"Very severe", value:4}
+    ],
+    burnout: [
+        {label:"Never", value:0}, {label:"Rarely", value:1},
+        {label:"Sometimes", value:2}, {label:"Often", value:3},
+        {label:"Always", value:4}
+    ]
+};
 
-/* ---------- STATE ---------- */
+const TITLES = {
+    who5: "Well-Being Index (WHO-5)",
+    pss: "Perceived Stress Scale",
+    dass21: "DASS-21 Check",
+    isi: "Insomnia Severity Index",
+    burnout: "Burnout Assessment"
+};
+
+const INSTRUCTIONS = {
+    who5: "Reflect on how you have been feeling over the last 2 weeks.",
+    pss: "Consider your thoughts and feelings over the last month.",
+    dass21: "Focus on your experiences over the past week.",
+    isi: "Think about your sleep patterns over the last 2 weeks.",
+    burnout: "Reflect on your work and life balance over the last month."
+};
+
+/* =========================
+   STATE
+========================= */
 let state = {
     step: 0,
     type: null,
     index: 0,
     answers: [],
-    results: {
-        phq9: null,
-        gad7: null
-    }
+    results: {}
 };
 
-/* ---------- DESIGN SYSTEM CLASSES ---------- */
-const BTN_PRIMARY = 
-    "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95";
+/* =========================
+   DESIGN CLASSES
+========================= */
+const BTN_PRIMARY = "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all active:scale-95 flex justify-center items-center gap-2";
+const BTN_SECONDARY = "bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 flex justify-center items-center gap-2";
+const OPTION_CARD = "w-full p-5 mb-3 border-2 border-slate-100 dark:border-slate-700/50 rounded-2xl text-left transition-all bg-white dark:bg-slate-800/50 hover:border-indigo-200 dark:hover:border-indigo-500/50 text-slate-700 dark:text-slate-200 font-medium cursor-pointer group";
+const OPTION_SELECTED = "border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300 scale-[1.01] shadow-md";
 
-const BTN_SECONDARY = 
-    "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-95 shadow-sm text-gray-900 dark:text-gray-100";
+/* =========================
+   ROUTER
+========================= */
+function nextStep() {
+    state.step++;
+    render();
+}
 
-const OPTION =
-    "w-full p-4 mb-3 border border-gray-200 dark:border-gray-700 rounded-xl text-left transition-all bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium cursor-pointer";
-
-const OPTION_SELECTED =
-    "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 scale-[1.02] shadow-sm";
-
-/* ---------- ROUTER ---------- */
-function render(){
+function render() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    switch(state.step){
-        case 0: return renderWelcome();
-        case 1: return renderSelect();
-        case 2: return renderIntro();
-        case 3: return renderQuestion();
-        case 4: return renderReview();
-        case 5: return renderResult();
-    }
+    app.innerHTML = ''; 
+    setTimeout(() => {
+        switch(state.step) {
+            case 0: return renderWelcome();
+            case 1: return renderSelect();
+            case 2: return renderIntro();
+            case 3: return renderQuestion(true); // Pass true to animate on first load
+            case 4: return renderReview();
+            case 5: return renderResult();
+            case 6: return renderReport();
+        }
+    }, 10);
+}
+/* =========================
+   UI COMPONENTS
+========================= */
+function renderWelcome() {
+    app.innerHTML = `
+        <div class="flex-grow flex flex-col items-center justify-center p-10 md:p-16 text-center animate-fade-in">
+            <div class="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center mb-8 shadow-inner transform -rotate-3 border border-indigo-100 dark:border-indigo-800/50">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">Mental Health Check</h1>
+            <p class="text-slate-500 dark:text-slate-400 mb-10 max-w-sm mx-auto text-lg leading-relaxed">Take a mindful moment to reflect on your current well-being and track your progress.</p>
+            <button onclick="nextStep()" class="${BTN_PRIMARY} w-full sm:w-auto hover:shadow-indigo-500/50 hover:-translate-y-1">
+                <span>Begin Assessment</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </div>`;
 }
 
-/* ---------- STEP 0 ---------- */
-function renderWelcome(){
+function renderSelect() {
     app.innerHTML = `
-        <div class="p-8 md:p-12 text-center space-y-6">
-            <div class="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-            <h1 class="text-3xl font-bold tracking-tight text-black dark:text-white">Mental Health Check</h1>
-            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Take a few minutes to check in with yourself. This brief assessment helps track your mood and anxiety levels.</p>
-            <div class="pt-4">
-                <button onclick="nextStep()" class="${BTN_PRIMARY} w-full sm:w-auto sm:px-12">Start Assessment</button>
-            </div>
-        </div>
-    `;
-}
-
-/* ---------- STEP 1 ---------- */
-function renderSelect(){
-    app.innerHTML = `
-        <div class="p-6 md:p-8 space-y-6">
-            <header class="text-center mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
-                <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Choose Assessment</h2>
-                <p class="text-gray-500 dark:text-gray-400 mt-2">Select the questionnaire you'd like to complete.</p>
+        <div class="p-8 md:p-12 flex-grow flex flex-col animate-fade-in">
+            <header class="text-center mb-10">
+                <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Choose an Area</h2>
+                <p class="text-slate-500 dark:text-slate-400 mt-2">Select the assessment that best aligns with your current focus.</p>
             </header>
             
-            <div class="grid gap-4 max-w-md mx-auto">
-                <button onclick="selectType('phq9')" class="${OPTION} hover:border-blue-500 group flex items-center justify-between">
-                    <span class="font-semibold text-lg">PHQ-9</span>
-                    <span class="text-sm text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Depression Check &rarr;</span>
-                </button>
-
-                <button onclick="selectType('gad7')" class="${OPTION} hover:border-blue-500 group flex items-center justify-between">
-                    <span class="font-semibold text-lg">GAD-7</span>
-                    <span class="text-sm text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Anxiety Check &rarr;</span>
-                </button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto w-full">
+                ${Object.keys(QUESTIONS).map(t => `
+                    <button onclick="selectType('${t}')" class="group relative p-6 border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-2xl text-left transition-all hover:border-indigo-600 dark:hover:border-indigo-400 hover:shadow-lg overflow-hidden flex flex-col justify-between h-full min-h-[120px]">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent dark:from-indigo-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <span class="block font-bold text-lg text-slate-800 dark:text-slate-100 mb-1">${TITLES[t]}</span>
+                            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Start Check-in &rarr;</span>
+                        </div>
+                    </button>
+                `).join("")}
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
-function selectType(type){
+function selectType(type) {
     state.type = type;
+    state.index = 0;
+    state.answers = [];
     nextStep();
 }
 
-/* ---------- STEP 2 ---------- */
-function renderIntro(){
+function renderIntro() {
     app.innerHTML = `
-        <div class="p-6 md:p-8 text-center space-y-6">
-            <h2 class="text-2xl font-bold tracking-tight uppercase text-black dark:text-white">${state.type}</h2>
-            
-            <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-5 rounded-xl max-w-md mx-auto text-sm border border-blue-100 dark:border-blue-800/50">
-                <p class="font-semibold mb-1">Instruction:</p>
-                <p>Over the last 2 weeks, how often have you been bothered by the following problems?</p>
+        <div class="flex-grow flex flex-col items-center justify-center p-10 md:p-16 text-center animate-fade-in">
+            <div class="inline-flex items-center justify-center px-5 py-2 mb-8 text-sm font-bold tracking-widest text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-full border border-indigo-100 dark:border-indigo-800/50 uppercase">
+                ${TITLES[state.type]}
             </div>
-
-            <div class="pt-4">
-                <button onclick="nextStep()" class="${BTN_PRIMARY} w-full sm:w-auto sm:px-12">Begin Questionnaire</button>
-            </div>
-        </div>
-    `;
+            <h2 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-6 leading-tight max-w-xl">${INSTRUCTIONS[state.type]}</h2>
+            <p class="text-slate-500 dark:text-slate-400 mb-12 max-w-md text-lg">Answer based on your genuine feelings. There are no right or wrong answers here.</p>
+            <button onclick="nextStep()" class="${BTN_PRIMARY} w-full sm:w-auto hover:shadow-indigo-500/50 hover:-translate-y-1">
+                I'm Ready to Begin
+            </button>
+        </div>`;
 }
 
-/* ---------- STEP 3 ---------- */
-function renderQuestion(){
+function renderQuestion(animate = true) {
     const totalQ = QUESTIONS[state.type].length;
-    const currentQ = state.index + 1;
-    const progress = Math.round((state.index / totalQ) * 100);
     const q = QUESTIONS[state.type][state.index];
+    const opts = OPTIONS_MAP[state.type];
+    const progress = (state.index / totalQ) * 100;
     const selected = state.answers[state.index];
 
+    // Conditionally apply the fade-in animation to prevent flicker
+    const animationClass = animate ? "animate-fade-in" : "";
+
     app.innerHTML = `
-        <div class="p-6 md:p-8 space-y-6">
-            
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Question ${currentQ} of ${totalQ}</span>
-                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">${progress}% Complete</span>
+        <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 absolute top-0 left-0">
+            <div class="h-full bg-indigo-600 transition-all duration-500 ease-out rounded-r-full" style="width: ${progress}%"></div>
+        </div>
+        
+        <div class="p-8 md:p-12 flex-grow flex flex-col ${animationClass} pt-12">
+            <div class="flex justify-between items-center mb-8">
+                <span class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Question ${state.index + 1} of ${totalQ}</span>
+                <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-800/50">${Math.round(progress)}% Complete</span>
             </div>
             
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-6 overflow-hidden">
-                <div class="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" style="width: ${progress}%"></div>
-            </div>
+            <h3 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-10 leading-snug">${q}</h3>
 
-            <h3 class="text-xl md:text-2xl font-semibold mb-6 text-gray-900 dark:text-white leading-relaxed">
-                ${q}
-            </h3>
-
-            <div class="space-y-3">
-                ${OPTIONS.map(o => `
-                    <button onclick="answer(${o.value})"
-                        class="${OPTION} ${selected === o.value ? OPTION_SELECTED : ''}">
-                        <div class="flex items-center gap-3">
-                            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selected === o.value ? 'border-blue-600' : 'border-gray-400 dark:border-gray-500'}">
-                                ${selected === o.value ? '<div class="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>' : ''}
+            <div class="space-y-1 mt-auto">
+                ${opts.map(o => `
+                    <button onclick="answer(${o.value})" class="${OPTION_CARD} ${selected === o.value ? OPTION_SELECTED : ''}">
+                        <div class="flex items-center justify-between">
+                            <span>${o.label}</span>
+                            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selected === o.value ? 'border-indigo-600' : 'border-slate-300 dark:border-slate-600 group-hover:border-indigo-400'}">
+                                <div class="w-3 h-3 rounded-full bg-indigo-600 transition-transform duration-200 ${selected === o.value ? 'scale-100' : 'scale-0'}"></div>
                             </div>
-                            ${o.label}
                         </div>
                     </button>
                 `).join("")}
             </div>
 
-            <div class="pt-6 border-t border-gray-100 dark:border-gray-700 mt-6 flex justify-between items-center">
-                <button onclick="prevQuestion()" class="text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium text-sm transition-colors ${state.index === 0 ? 'invisible' : ''}">
+            <div class="pt-8 mt-6 flex justify-between items-center border-t border-slate-100 dark:border-slate-800">
+                <button onclick="prevQuestion()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold text-sm transition-colors flex items-center gap-2 ${state.index === 0 ? 'invisible' : ''}">
                     &larr; Previous
                 </button>
-                
-                <button onclick="nextQuestion()" class="${BTN_PRIMARY} px-8">
-                    ${state.index === totalQ - 1 ? 'Review Answers' : 'Next'}
+                <button onclick="nextQuestion()" class="${BTN_PRIMARY} px-10">
+                    ${state.index === totalQ - 1 ? 'Review' : 'Next'}
                 </button>
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
-function answer(val){
+function answer(val) {
     state.answers[state.index] = val;
-    renderQuestion(); // Re-render to show selection instantly
+    renderQuestion(false); 
 }
 
 function prevQuestion() {
@@ -214,190 +305,310 @@ function prevQuestion() {
     }
 }
 
-function nextQuestion(){
-    if(state.answers[state.index] === undefined){
-        if(typeof showToast === 'function') showToast("error", "Please select an option to continue.");
-        else alert("Please select an option");
+function nextQuestion() {
+    if (state.answers[state.index] === undefined) {
+        alert("Please select an option to continue.");
         return;
     }
-
     state.index++;
-
-    if(state.index >= QUESTIONS[state.type].length){
+    if (state.index >= QUESTIONS[state.type].length) {
         state.step = 4;
     }
-
     render();
 }
 
-/* ---------- STEP 4 ---------- */
-function renderReview(){
+function renderReview() {
+    const opts = OPTIONS_MAP[state.type];
+
     app.innerHTML = `
-        <div class="p-6 md:p-8 space-y-6">
-            <header class="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4 text-center sm:text-left">
-                <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Review Your Answers</h2>
-                <p class="text-gray-500 dark:text-gray-400 mt-1">Please review your responses before submitting.</p>
+        <div class="p-8 md:p-12 flex-grow flex flex-col animate-fade-in max-h-full">
+            <header class="mb-8 border-b border-slate-100 dark:border-slate-800 pb-6 text-center sm:text-left">
+                <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Review Your Answers</h2>
+                <p class="text-slate-500 dark:text-slate-400 mt-2">Click any answer to jump back and change it.</p>
             </header>
 
-            <div class="space-y-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
-                ${state.answers.map((a,i)=>`
-                    <div class="p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl flex flex-col gap-1 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
-                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            <span class="text-blue-600 dark:text-blue-400 mr-1">Q${i+1}.</span> ${QUESTIONS[state.type][i]}
-                        </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 pl-6 border-l-2 border-gray-200 dark:border-gray-700 ml-1 mt-1">
-                            ${OPTIONS.find(opt => opt.value === a).label}
-                        </p>
-                    </div>
-                `).join("")}
+            <div class="flex-grow overflow-hidden flex flex-col mb-8">
+                <div class="overflow-y-auto pr-4 custom-scrollbar space-y-3" style="max-height: 50vh;">
+                    ${state.answers.map((a, i) => `
+                        <div onclick="state.step=3; state.index=${i}; render();" class="group p-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-indigo-400 hover:shadow-md cursor-pointer">
+                            
+                            <div class="flex-1">
+                                <div class="flex items-start sm:items-center gap-3">
+                                    <span class="shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-xs font-black border border-indigo-100 dark:border-indigo-800/50">${i+1}</span>
+                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-snug">
+                                        ${QUESTIONS[state.type][i]}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="sm:text-right shrink-0 ml-10 sm:ml-0">
+                                <span class="inline-flex items-center justify-center px-4 py-2 bg-indigo-50/80 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-xl font-bold text-sm border border-indigo-100 dark:border-indigo-800/50 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                    ${opts.find(opt => opt.value === a).label}
+                                </span>
+                            </div>
+                            
+                        </div>
+                    `).join("")}
+                </div>
             </div>
 
-            <div class="pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
-                <button onclick="state.step = 3; state.index = 0; render();" class="${BTN_SECONDARY} w-full sm:w-auto">Edit Answers</button>
-                <button onclick="submitAssessment()" class="${BTN_PRIMARY} w-full sm:w-auto">Submit Assessment</button>
+            <div class="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row gap-4 sm:justify-end">
+                <button onclick="state.step = 3; state.index = 0; render();" class="${BTN_SECONDARY} w-full sm:w-auto">Start Over</button>
+                <button onclick="submitAssessment()" id="submitBtn" class="${BTN_PRIMARY} w-full sm:w-auto hover:-translate-y-1">Submit Assessment</button>
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
-/* ---------- STEP 5 ---------- */
-function renderResult(){
+async function submitAssessment() {
+    const btn = document.getElementById('submitBtn');
+    if(btn) btn.innerHTML = '<span class="animate-pulse">Processing...</span>';
+
+    try {
+        const { res, data } = await apiRequest(
+            "/api/core/assessment/",
+            "POST",
+            {
+                type: state.type,
+                answers: state.answers
+            }
+        );
+
+        if (res && res.ok) {
+            state.results[state.type] = data.data;
+            state.step = 5;
+            render();
+        } else {
+            throw new Error("Submission Failed");
+        }
+    } catch (error) {
+        console.error("Submission failed", error);
+        alert("There was an error submitting your assessment. Please try again.");
+        if(btn) btn.innerHTML = 'Try Again';
+    }
+}
+
+function renderResult() {
     app.innerHTML = `
-        <div class="p-8 md:p-12 text-center space-y-6">
-            <div class="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <div class="flex-grow flex flex-col items-center justify-center p-10 md:p-16 text-center animate-fade-in">
+            <div class="w-24 h-24 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(16,185,129,0.2)] border border-emerald-100 dark:border-emerald-800/50">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
             </div>
             
-            <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Assessment Complete</h2>
-            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Your responses have been securely saved and analyzed.</p>
+            <h2 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-4">Assessment Complete</h2>
+            <p class="text-slate-500 dark:text-slate-400 mb-10 max-w-md mx-auto text-lg">Your responses have been securely saved and analyzed.</p>
             
-            <div class="flex flex-col gap-3 max-w-sm mx-auto pt-6">
-                <button onclick="renderReport()" class="${BTN_PRIMARY}">View Full Report</button>
-                <button onclick="goChatbot()" class="${BTN_SECONDARY}">
-                    Chat with Chatbot
-                </button>
-                ${state.type === "phq9" && !state.results.gad7 
-                    ? `<button onclick="startNext('gad7')" class="${BTN_SECONDARY} border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400">Continue with GAD-7</button>` 
-                    : ''}
-
-                ${state.type === "gad7" && !state.results.phq9 
-                    ? `<button onclick="startNext('phq9')" class="${BTN_SECONDARY} border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400">Continue with PHQ-9</button>` 
-                    : ''}    
-                
-                <button onclick="goDashboard()" class="${BTN_SECONDARY}">Return to Dashboard</button>
+            <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
+                <button onclick="state.step = 6; render();" class="${BTN_PRIMARY} hover:-translate-y-1">View Full Report</button>
+                <button onclick="window.location.href='/api/core/chatbot-page/'" class="${BTN_SECONDARY}">Discuss with Lumi</button>
+                <button onclick="window.location.href='/api/core/dashboard-page/'" class="mt-4 text-sm font-bold text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">Return to Dashboard</button>
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
-/* ---------- REPORT ---------- */
+/* =========================
+   REPORT & CHART
+========================= */
 let reportChart = null;
 
-function renderReport(){
-    const phq = state.results.phq9;
-    const gad = state.results.gad7;
+function renderReport() {
+    const resultData = state.results[state.type];
+    const isDass = state.type === 'dass21';
+    const recommendations = generateRecommendations(state.type, resultData.risk_level);
 
     app.innerHTML = `
-        <div class="p-6 md:p-8 space-y-8">
-            <header class="border-b border-gray-100 dark:border-gray-700 pb-4">
-                <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white">Mental Health Report</h2>
-                <p class="text-gray-500 dark:text-gray-400 mt-1">Analysis based on your recent assessment.</p>
+        <div class="p-8 md:p-12 flex-grow flex flex-col animate-fade-in">
+            <header class="border-b border-slate-100 dark:border-slate-800 pb-6 mb-8 text-center sm:text-left">
+                <div class="inline-flex items-center justify-center px-4 py-1 mb-4 text-xs font-bold tracking-widest text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-full uppercase">
+                    ${TITLES[state.type]} Result
+                </div>
+                <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Your Analysis</h2>
             </header>
 
-            <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-                <canvas id="chart" height="200"></canvas>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                ${phq ? `
-                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
-                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Depression (PHQ-9)</p>
-                    <p class="text-lg font-bold capitalize text-gray-900 dark:text-white">${phq.risk_level}</p>
-                </div>` : ""}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
+                    <div class="h-[250px] relative">
+                        <canvas id="resultChart"></canvas>
+                    </div>
+                </div>
                 
-                ${gad ? `
-                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
-                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Anxiety (GAD-7)</p>
-                    <p class="text-lg font-bold capitalize text-gray-900 dark:text-white">${gad.risk_level}</p>
-                </div>` : ""}
-            </div>
-
-            <div class="space-y-6">
-                <div>
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">Key Insights</h3>
-                    <ul class="space-y-2 text-gray-700 dark:text-gray-300 text-sm">
-                        ${generateInsights(phq, gad)}
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-green-600 dark:text-green-400 mb-3">Recommendations</h3>
-                    <ul class="space-y-2 text-gray-700 dark:text-gray-300 text-sm">
-                        ${generateRecommendations(phq, gad)}
-                    </ul>
+                <div class="flex flex-col gap-4">
+                    <div class="p-6 border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-3xl h-full flex flex-col justify-center items-center text-center">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Score</p>
+                        <p class="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">${resultData.score}</p>
+                    </div>
+                    <div class="p-6 border-2 border-slate-100 dark:border-slate-700 bg-indigo-600 rounded-3xl h-full flex flex-col justify-center items-center text-center shadow-lg shadow-indigo-500/30">
+                        <p class="text-xs font-bold text-indigo-200 uppercase tracking-widest mb-2">Severity Risk</p>
+                        <p class="text-2xl font-bold capitalize text-white">${resultData.risk_level.replace('_', ' ')}</p>
+                    </div>
                 </div>
             </div>
-            <div>
-                <h3 class="text-sm font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-3">
-                    AI Insight
+
+            <div class="bg-indigo-50/50 dark:bg-indigo-900/10 p-6 rounded-3xl border border-indigo-100/50 dark:border-indigo-800/30 mb-6">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-4">Assessment Insight</h3>
+                <p class="text-slate-700 dark:text-slate-300 font-medium leading-relaxed">${resultData.insight || generateFallbackInsight(resultData.risk_level)}</p>
+                <p class="text-xs text-slate-400 mt-4 italic">${resultData.disclaimer || "This is not a diagnosis. This is only a screening tool."}</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 mb-8 shadow-sm">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-800 dark:text-slate-200 mb-5 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Actionable Next Steps
                 </h3>
-                <p id="aiInsight" class="text-gray-700 dark:text-gray-300 text-sm">
-                    Generating insight...
-                </p>
+                <ul class="space-y-3">
+                    ${recommendations.map(rec => `
+                        <li class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <div class="mt-0.5 shrink-0 w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">${rec}</span>
+                        </li>
+                    `).join('')}
+                </ul>
             </div>
-            <div class="pt-6 border-t border-gray-100 dark:border-gray-700">
-                <button onclick="goDashboard()" class="${BTN_SECONDARY} w-full sm:w-auto">
-                    Back to Dashboard
-                </button>
-            </div>
-        </div>
-    `;
 
-    renderChart(phq, gad);
-    initAIInsight();
+            <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row gap-4 sm:justify-end">
+                <button onclick="window.location.href='/api/core/dashboard-page/'" class="${BTN_SECONDARY} w-full sm:w-auto">Dashboard</button>
+                <button onclick="location.reload()" class="${BTN_PRIMARY} w-full sm:w-auto hover:-translate-y-1">Take Another Test</button>
+            </div>
+        </div>`;
+
+    renderChart(resultData, isDass);
 }
 
-function renderChart(phq, gad){
-    const ctx = document.getElementById("chart");
+function generateRecommendations(type, risk) {
+    const isSevere = risk.includes('high') || risk.includes('severe') || risk.includes('extremely');
+    const isModerate = risk.includes('moderate') || risk.includes('subthreshold');
+    let category = isSevere ? 'severe' : (isModerate ? 'moderate' : 'good');
+
+    if (type === 'isi') { // Insomnia
+        if (category === 'severe') return [
+            "Please consult a healthcare provider or sleep specialist.",
+            "Implement a strict digital curfew 1 to 2 hours before bed.",
+            "Avoid caffeine and heavy meals entirely after midday.",
+            "Keep your bedroom strictly for sleep—dark, quiet, and cool.",
+            "If you can't sleep after 20 minutes, leave the bed and do a quiet activity."
+        ];
+        if (category === 'moderate') return [
+            "Try to maintain a consistent sleep schedule, even on weekends.",
+            "Limit daytime naps to 20 minutes or avoid them entirely.",
+            "Engage in relaxing activities before bed, like reading or listening to calm music.",
+            "Ensure your sleeping environment is comfortable and distraction-free.",
+            "Get plenty of natural sunlight during the early parts of the day."
+        ];
+        return [
+            "Keep maintaining your consistent sleep schedule.",
+            "Continue protecting your wind-down time before bed.",
+            "Stay physically active during the day to promote healthy sleep.",
+            "Keep your bedroom environment optimized for rest.",
+            "Stick to your current caffeine and screen-time boundaries."
+        ];
+    }
+
+    if (type === 'burnout') { // Burnout
+        if (category === 'severe') return [
+            "Strongly consider taking dedicated time off work to completely disconnect.",
+            "Speak with a professional counselor or therapist to process this exhaustion.",
+            "Have an honest conversation with your manager or team about your current workload.",
+            "Completely unplug from work communications after hours—no exceptions.",
+            "Focus entirely on basic restorative needs: sleeping, eating, and resting."
+        ];
+        if (category === 'moderate') return [
+            "Set clear, rigid boundaries between work hours and personal time.",
+            "Schedule short, mandatory breaks away from your desk during the workday.",
+            "Practice delegating tasks and saying 'no' to non-essential requests.",
+            "Engage in a hobby that is completely unrelated to your profession.",
+            "Ensure you are taking a full, uninterrupted lunch break every day."
+        ];
+        return [
+            "Continue enforcing healthy work-life boundaries.",
+            "Keep acknowledging and celebrating your daily accomplishments.",
+            "Maintain your regular breaks to prevent fatigue from building up.",
+            "Stay connected with supportive colleagues and friends outside of work tasks.",
+            "Keep investing time in your personal hobbies and passions."
+        ];
+    }
+
+    // Default Mental Health (DASS21, PSS, WHO5)
+    if (category === 'severe') return [
+        "Reach out to a mental health professional for personalized guidance.",
+        "Share how you are genuinely feeling with someone you deeply trust.",
+        "Focus only on the immediate next step, rather than the overwhelming big picture.",
+        "Practice a physical grounding technique (like the 5-4-3-2-1 method) when feeling panicked.",
+        "Be incredibly gentle and patient with yourself right now; recovery takes time."
+    ];
+    
+    if (category === 'moderate') return [
+        "Incorporate 10 to 15 minutes of mindfulness, meditation, or deep breathing daily.",
+        "Engage in light physical activity, such as a 20-minute daily walk.",
+        "Consider journaling your thoughts to declutter your mind before bed.",
+        "Ensure you are staying consistently hydrated and eating balanced meals.",
+        "Limit your exposure to social media and stressful news cycles."
+    ];
+    
+    return [
+        "Keep up your current effective coping strategies—they are working!",
+        "Take a moment to acknowledge your resilience and mental progress.",
+        "Continue making dedicated time for activities that bring you genuine joy.",
+        "Maintain your baseline physical health routines (sleep, diet, and exercise).",
+        "Consider practicing daily gratitude to sustain this positive momentum."
+    ];
+}
+
+function generateFallbackInsight(risk) {
+    if (risk.includes('low') || risk === 'minimal' || risk === 'normal') return "Your scores indicate minimal to no significant symptoms currently. Maintain your current routines.";
+    if (risk.includes('moderate') || risk.includes('subthreshold')) return "Elevated symptoms detected. Consider monitoring your routines and practicing self-care.";
+    return "High severity detected. We strongly recommend discussing these feelings with a professional or trusted confidant.";
+}
+
+function renderChart(data, isDass) {
+    const ctx = document.getElementById("resultChart");
     if(reportChart) reportChart.destroy();
 
-    // Check for dark mode to set text color properly
     const isDark = document.documentElement.classList.contains('dark');
-    const textColor = isDark ? '#9ca3af' : '#4b5563'; 
-    const gridColor = isDark ? '#374151' : '#e5e7eb';
+    const textColor = isDark ? '#94a3b8' : '#64748b'; 
+    const gridColor = isDark ? '#334155' : '#f1f5f9';
+
+    let labels = [TITLES[state.type]];
+    let values = [data.score];
+    let bgColors = ['rgba(79, 70, 229, 0.8)']; // Indigo
+
+    // Extract breakdown if it's the DASS-21
+    if (isDass && data.meta) {
+        labels = ['Depression', 'Anxiety', 'Stress'];
+        values = [data.meta.depression || 0, data.meta.anxiety || 0, data.meta.stress || 0];
+        bgColors = [
+            'rgba(59, 130, 246, 0.8)', // Blue
+            'rgba(16, 185, 129, 0.8)', // Emerald
+            'rgba(245, 158, 11, 0.8)'  // Amber
+        ];
+    }
 
     reportChart = new Chart(ctx, {
         type: "bar",
         data: {
-            labels: ["Depression Score", "Anxiety Score"],
+            labels: labels,
             datasets: [{
-                label: "Score",
-                data: [
-                    phq ? phq.score : 0,
-                    gad ? gad.score : 0
-                ],
-                backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)', // blue-500
-                    'rgba(16, 185, 129, 0.8)'  // emerald-500
-                ],
-                borderRadius: 6
+                data: values,
+                backgroundColor: bgColors,
+                borderRadius: 8,
+                borderSkipped: false,
+                barThickness: isDass ? 40 : 80
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
+            plugins: { legend: { display: false } },
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 27, // Max score for both PHQ9 and GAD7
-                    ticks: { color: textColor },
-                    grid: { color: gridColor }
+                    ticks: { color: textColor, font: { weight: '600' } },
+                    border: { display: false },
+                    grid: { color: gridColor, drawBorder: false }
                 },
                 x: {
-                    ticks: { color: textColor },
+                    ticks: { color: textColor, font: { weight: '600' } },
+                    border: { display: false },
                     grid: { display: false }
                 }
             }
@@ -405,121 +616,7 @@ function renderChart(phq, gad){
     });
 }
 
-/* ---------- INSIGHTS ---------- */
-function generateInsights(phq, gad){
-    let out = "";
-    const liClass = "flex items-start gap-2 before:content-['•'] before:text-blue-500";
-
-    if(phq && phq.risk_level !== "minimal"){
-        out += `<li class="${liClass}">Elevated depressive symptoms detected.</li>`;
-    }
-    if(gad && gad.risk_level !== "minimal"){
-        out += `<li class="${liClass}">Elevated anxiety levels detected.</li>`;
-    }
-    if(phq && gad){
-        out += `<li class="${liClass}">Possible overlap between mood and anxiety patterns.</li>`;
-    }
-    if (out === "") {
-        out += `<li class="${liClass}">Your scores indicate minimal to no significant symptoms currently.</li>`;
-    }
-    return out;
-}
-
-/* ---------- RECOMMENDATIONS ---------- */
-function generateRecommendations(phq, gad){
-    const liClass = "flex items-start gap-2 before:content-['✓'] before:text-green-500 before:font-bold";
-    return `
-        <li class="${liClass}">Maintain consistent sleep schedule to support mood regulation.</li>
-        <li class="${liClass}">Engage in light physical activity for at least 20 minutes daily.</li>
-        <li class="${liClass}">Practice breathing or grounding techniques when feeling overwhelmed.</li>
-        <li class="${liClass}">Consider speaking to a professional if symptoms persist or disrupt daily life.</li>
-    `;
-}
-
-/* ---------- API ---------- */
-async function submitAssessment(){
-    // Show a basic loader state on the button if possible, but keeping it simple for now
-    const { res, data } = await apiRequest(
-        "/api/core/assessment/",
-        "POST",
-        {
-            type: state.type,
-            answers: state.answers
-        }
-    );
-
-    if (res && res.ok) {
-        state.results[state.type] = data.data;
-        state.step = 5;
-        render();
-    } else {
-        if(typeof showToast === 'function') showToast("error", "Failed to submit assessment.");
-        else alert("Failed to submit assessment.");
-    }
-}
-
-/* ---------- NAV ---------- */
-function startNext(type){
-    state.type = type;
-    state.index = 0;
-    state.answers = [];
-    state.step = 2;
-    render();
-}
-
-function nextStep(){
-    state.step++;
-    render();
-}
-
-function goDashboard(){
-    window.location.href = "/api/core/dashboard-page/";
-}
-function goChatbot(){
-    window.location.href = "/api/core/chatbot-page/";
-}
-async function initAIInsight(){
-    try {
-        // 1. Create session
-        const sessionRes = await apiRequest(
-            "/api/core/chat/session/",
-            "POST"
-        );
-
-        const sessionId = sessionRes.data.session_id;
-
-        // 2. Build context message using scores
-        const phq = state.results.phq9;
-        const gad = state.results.gad7;
-
-        const message = `
-User completed assessment.
-PHQ: ${phq ? phq.risk_level : "N/A"}
-GAD: ${gad ? gad.risk_level : "N/A"}
-
-Give a short mental health insight.
-        `;
-
-        // 3. Call chatbot
-        const {data} = await apiRequest(
-            "/api/core/chat/message/",
-            "POST",
-            {
-                session_id: sessionId,
-                message: message
-            }
-        );
-
-        // 4. Inject into UI
-        document.getElementById("aiInsight").innerText = data.reply;
-
-    } catch (err){
-        document.getElementById("aiInsight").innerText =
-            "Unable to generate insight right now.";
-    }
-}
-// Initial Render
+// Initialize
 render();
 </script>
-
 {% endblock %}

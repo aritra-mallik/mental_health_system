@@ -4,7 +4,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import MoodEntry, JournalEntry, Assessment
 from .serializers import MoodSerializer, JournalSerializer
-from .encryption import encrypt, decrypt
+#from .encryption import encrypt, decrypt
+from datetime import timedelta
+from django.utils import timezone
+from collections import defaultdict
 from .assessment_engine import AssessmentEngine
 from django.contrib.auth.decorators import login_required
 from .models import ChatSession, ChatMessage
@@ -16,74 +19,131 @@ from AI_MH.features.sentiment import get_sentiment
 
 MAX_MESSAGES = 8
 
+# class AssessmentView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         test_type = request.data.get("type")
+#         answers = request.data.get("answers")
+#         message = request.data.get("message", "")
+
+#         # --- VALIDATION ---
+#         if test_type not in ["phq9", "gad7"]:
+#             return Response({"error": "Invalid type"}, status=400)
+
+#         if not isinstance(answers, list):
+#             return Response({"error": "Answers must be a list"}, status=400)
+
+#         if test_type == "phq9" and len(answers) != 9:
+#             return Response({"error": "PHQ-9 requires 9 answers"}, status=400)
+
+#         if test_type == "gad7" and len(answers) != 7:
+#             return Response({"error": "GAD-7 requires 7 answers"}, status=400)
+
+#         # --- CORE ENGINE ---
+#         result = AssessmentEngine.evaluate(
+#             request,
+#             test_type,
+#             answers,
+#             message=message
+#         )
+
+#         # --- SAVE ASSESSMENT ---
+#         Assessment.objects.create(
+#             user=request.user,
+#             assessment_type=test_type,
+#             score=result["score"],
+#             risk_level=result["risk_level"]
+#         )
+
+#         # -------------------------
+#         # CHAT SESSION CREATION
+#         # -------------------------
+#         chat_session = None
+
+#         if message:  # only create session if user typed something
+#             chat_session = ChatSession.objects.create(user=request.user)
+
+#             # Save user message
+#             ChatMessage.objects.create(
+#                 session=chat_session,
+#                 role="user",
+#                 content=message
+#             )
+
+#             # Save bot response (from ML pipeline)
+#             ChatMessage.objects.create(
+#                 session=chat_session,
+#                 role="bot",
+#                 content=result["chat"]
+#             )
+
+#             # Trim to maintain sliding window
+#             trim_messages(chat_session)
+
+#         # --- RESPONSE ---
+#         return Response({
+#             "message": "Assessment completed",
+#             "data": result,
+#             "chat_session_id": chat_session.id if chat_session else None
+#         })
+
 class AssessmentView(APIView):
     permission_classes = [IsAuthenticated]
+
+    VALID_TESTS = ["who5", "pss", "dass21", "isi", "burnout"]
+
+    EXPECTED_LENGTH = {
+        "who5": 5,
+        "pss": 10,
+        "dass21": 21,
+        "isi": 7,
+        "burnout": 10,
+    }
 
     def post(self, request):
         test_type = request.data.get("type")
         answers = request.data.get("answers")
-        message = request.data.get("message", "")
 
-        # --- VALIDATION ---
-        if test_type not in ["phq9", "gad7"]:
-            return Response({"error": "Invalid type"}, status=400)
+        # -------------------------
+        # VALIDATION
+        # -------------------------
+        if test_type not in self.VALID_TESTS:
+            return Response({"error": "Invalid assessment type"}, status=400)
 
         if not isinstance(answers, list):
             return Response({"error": "Answers must be a list"}, status=400)
 
-        if test_type == "phq9" and len(answers) != 9:
-            return Response({"error": "PHQ-9 requires 9 answers"}, status=400)
+        if len(answers) != self.EXPECTED_LENGTH[test_type]:
+            return Response({"error": "Invalid number of answers"}, status=400)
+        
+        if not all(isinstance(a, int) for a in answers):
+            return Response({"error": "Answers must be integers"}, status=400)
 
-        if test_type == "gad7" and len(answers) != 7:
-            return Response({"error": "GAD-7 requires 7 answers"}, status=400)
+        # -------------------------
+        # ENGINE
+        # -------------------------
+        result = AssessmentEngine.evaluate(test_type, answers)
 
-        # --- CORE ENGINE ---
-        result = AssessmentEngine.evaluate(
-            request,
-            test_type,
-            answers,
-            message=message
-        )
-
-        # --- SAVE ASSESSMENT ---
+        # -------------------------
+        # SAVE
+        # -------------------------
         Assessment.objects.create(
             user=request.user,
             assessment_type=test_type,
             score=result["score"],
-            risk_level=result["risk_level"]
+            risk_level=result["risk_level"],
+            meta=result.get("meta", {})
         )
 
         # -------------------------
-        # CHAT SESSION CREATION
+        # RESPONSE
         # -------------------------
-        chat_session = None
-
-        if message:  # only create session if user typed something
-            chat_session = ChatSession.objects.create(user=request.user)
-
-            # Save user message
-            ChatMessage.objects.create(
-                session=chat_session,
-                role="user",
-                content=message
-            )
-
-            # Save bot response (from ML pipeline)
-            ChatMessage.objects.create(
-                session=chat_session,
-                role="bot",
-                content=result["chat"]
-            )
-
-            # Trim to maintain sliding window
-            trim_messages(chat_session)
-
-        # --- RESPONSE ---
         return Response({
             "message": "Assessment completed",
-            "data": result,
-            "chat_session_id": chat_session.id if chat_session else None
+            "data": result
         })
+
 
 class MoodView(APIView):
     permission_classes = [IsAuthenticated]
@@ -99,34 +159,50 @@ class MoodView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
-
 class JournalView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         entries = JournalEntry.objects.filter(user=request.user)
 
-        data = []
-        for e in entries:
-            data.append({
+        return Response([
+            {
                 "id": e.id,
-                "content": decrypt(e.encrypted_content),
+                "content": e.encrypted_content,
                 "created_at": e.created_at
-            })
-
-        return Response(data)
+            }
+            for e in entries
+        ])
 
     def post(self, request):
+        JournalEntry.objects.create(
+            user=request.user,
+            encrypted_content=request.data.get("content")
+        )
+        return Response({"message": "Saved"})
+
+    def put(self, request):
+        entry_id = request.data.get("id")
         content = request.data.get("content")
 
-        encrypted = encrypt(content)
+        try:
+            entry = JournalEntry.objects.get(id=entry_id, user=request.user)
+            entry.encrypted_content = content
+            entry.save()
+            return Response({"message": "Updated"})
+        except JournalEntry.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
 
-        entry = JournalEntry.objects.create(
-            user=request.user,
-            encrypted_content=encrypted
-        )
+    def delete(self, request):
+        entry_id = request.data.get("id")
 
-        return Response({"message": "Saved"})
+        try:
+            entry = JournalEntry.objects.get(id=entry_id, user=request.user)
+            entry.delete()
+            return Response({"message": "Deleted"})
+        except JournalEntry.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+        
     
 class ExportDataView(APIView):
     permission_classes = [IsAuthenticated]
@@ -140,19 +216,99 @@ class ExportDataView(APIView):
             "journals": journals,
         })
         
+class AssessmentRecommendationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    WEEK_PLAN = {
+        1: ["who5", "isi"],
+        2: ["pss", "dass21"],
+        3: ["who5", "isi"],
+        4: ["burnout"],
+    }
+
+    def get(self, request):
+        user = request.user
+
+        today = timezone.now()
+        week_of_month = (today.day - 1) // 7 + 1
+
+        recommended = self.WEEK_PLAN.get(week_of_month, ["who5"])
+
+        # --- filter already taken recently ---
+        recent_limit = {
+            "who5": 7,
+            "pss": 7,
+            "isi": 7,
+            "dass21": 14,
+            "burnout": 30,
+        }
+
+        final = []
+
+        for test in recommended:
+            days = recent_limit[test]
+
+            recent = Assessment.objects.filter(
+                user=user,
+                assessment_type=test,
+                created_at__gte=today - timedelta(days=days)
+            ).exists()
+
+            if not recent:
+                final.append(test)
+
+        return Response({
+            "recommended": final if final else ["who5"]
+        })
+        
+        
+class AssessmentSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        data = Assessment.objects.filter(user=user)
+
+        latest = {}
+        trends = defaultdict(list)
+
+        for a in data:
+            t = a.assessment_type
+
+            # latest
+            if t not in latest:
+                latest[t] = {
+                    "score": a.score,
+                    "risk": a.risk_level,
+                    "date": a.created_at
+                }
+
+            # trends
+            trends[t].append({
+                "score": a.score,
+                "date": a.created_at
+            })
+
+        return Response({
+            "latest": latest,
+            "trends": trends
+        })
+        
+        
 class AssessmentHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        data = Assessment.objects.filter(user=request.user).values(
-            "score", "created_at"
-        )
+        data = Assessment.objects.filter(user=request.user).order_by("created_at").values("score", "created_at", "assessment_type")
+
         return Response(list(data))
+    
+
 
   
 def app_dashboard(request): return render(request, "core/dashboard.html")
-
-
+def journal(request): return render(request, "core/journal.html")
 def app_assessment(request): return render(request, "core/assessment.html")
 
 def trim_messages(session, max_messages=MAX_MESSAGES):
@@ -279,3 +435,4 @@ class ChatSessionCloseView(APIView):
             return Response({"error": "Invalid session"}, status=404)
 def app_chatbot(request):
     return render(request, "core/chatbot.html")
+

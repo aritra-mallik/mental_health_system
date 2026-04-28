@@ -77,6 +77,19 @@ class DeleteAccountView(APIView):
             "message": "Account permanently deleted"
         })
         
+class JournalSaltView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if not user.journal_salt:
+            user.save()  # auto-fix missing salt
+
+        return Response({
+            "salt": user.journal_salt
+        })
+        
 def profile_page(request): return render(request, "user_control/profile.html")
 def settings_page(request): return render(request, "user_control/settings.html")
 def consent_page(request): return render(request, "user_control/consent.html")

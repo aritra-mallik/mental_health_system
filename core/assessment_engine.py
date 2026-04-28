@@ -1,108 +1,295 @@
 #core/assessment_engine.py
 
 from core.ml_bridge import run_assessment
-class AssessmentEngine:
+# class AssessmentEngine:
 
-    CONFIG = {
-        "phq9": {
-            "max_score": 27,
-            "ranges": [
-                (0, 4, "minimal"),
-                (5, 9, "mild"),
-                (10, 14, "moderate"),
-                (15, 19, "moderately_severe"),
-                (20, 27, "severe"),
-            ],
-        },
-        "gad7": {
-            "max_score": 21,
-            "ranges": [
-                (0, 4, "minimal"),
-                (5, 9, "mild"),
-                (10, 14, "moderate"),
-                (15, 21, "severe"),
-            ],
-        },
-    }
+#     CONFIG = {
+#         "phq9": {
+#             "max_score": 27,
+#             "ranges": [
+#                 (0, 4, "minimal"),
+#                 (5, 9, "mild"),
+#                 (10, 14, "moderate"),
+#                 (15, 19, "moderately_severe"),
+#                 (20, 27, "severe"),
+#             ],
+#         },
+#         "gad7": {
+#             "max_score": 21,
+#             "ranges": [
+#                 (0, 4, "minimal"),
+#                 (5, 9, "mild"),
+#                 (10, 14, "moderate"),
+#                 (15, 21, "severe"),
+#             ],
+#         },
+#     }
 
-    INTERPRETATION = {
-        "minimal": "No significant symptoms",
-        "mild": "Monitor and practice self-care",
-        "moderate": "Consider professional guidance",
-        "moderately_severe": "Strongly consider professional help",
-        "severe": "Seek professional support",
-    }
+#     INTERPRETATION = {
+#         "minimal": "No significant symptoms",
+#         "mild": "Monitor and practice self-care",
+#         "moderate": "Consider professional guidance",
+#         "moderately_severe": "Strongly consider professional help",
+#         "severe": "Seek professional support",
+#     }
 
-    DISCLAIMER = "This is not a diagnosis. This is only a screening tool."
+#     DISCLAIMER = "This is not a diagnosis. This is only a screening tool."
 
-    @classmethod
-    def calculate_score(cls, answers):
-        if not all(0 <= a <= 3 for a in answers):
-            raise ValueError("Answers must be between 0 and 3")
-        return sum(answers)
+#     @classmethod
+#     def calculate_score(cls, answers):
+#         if not all(0 <= a <= 3 for a in answers):
+#             raise ValueError("Answers must be between 0 and 3")
+#         return sum(answers)
 
-    @classmethod
-    def get_risk_level(cls, test_type, score):
-        config = cls.CONFIG.get(test_type)
+#     @classmethod
+#     def get_risk_level(cls, test_type, score):
+#         config = cls.CONFIG.get(test_type)
 
-        for low, high, label in config["ranges"]:
-            if low <= score <= high:
-                return label
+#         for low, high, label in config["ranges"]:
+#             if low <= score <= high:
+#                 return label
 
-        raise ValueError("Invalid score")
+#         raise ValueError("Invalid score")
 
       
 
 
+#     @classmethod
+#     def evaluate(cls, request, test_type, answers, message=""):
+#         score = cls.calculate_score(answers)
+
+#         # --- Store latest scores ---
+#         if test_type == "phq9":
+#             request.session["phq_score"] = score
+
+#         elif test_type == "gad7":
+#             request.session["gad_score"] = score
+
+#         # --- Get available scores ---
+#         phq_score = request.session.get("phq_score")
+#         gad_score = request.session.get("gad_score")
+
+#         # --- Always run ML with available data ---
+#         result = run_assessment(
+#             phq_score=phq_score,
+#             gad_score=gad_score,
+#             conversation = message   
+#         )
+
+#         # --- Decide which risk to show ---
+#         if phq_score is not None and gad_score is not None:
+#             final_risk = result["final_risk"]  # combined
+
+#         elif phq_score is not None:
+#             final_risk = result["phq_risk"]
+
+#         elif gad_score is not None:
+#             final_risk = result["gad_risk"]
+
+#         else:
+#             final_risk = "LOW"  # fallback
+
+#         # --- Map to existing labels ---
+#         RISK_MAP = {
+#             "LOW": "minimal",
+#             "MEDIUM": "moderate",
+#             "HIGH": "severe"
+#         }
+
+#         mapped_risk = RISK_MAP.get(final_risk, "minimal")
+
+#         return {
+#             "score": score,
+#             "risk_level": mapped_risk,
+#             "insight": cls.INTERPRETATION[mapped_risk],
+#             "disclaimer": cls.DISCLAIMER,
+#             "chat": result["chat_response"],
+#             "ml": result
+#         }
+
+class AssessmentEngine:
+
+    CONFIG = {
+
+        "who5": {
+            "max_score": 25,
+            "ranges": [
+                (0, 13, "low_wellbeing"),
+                (14, 25, "good_wellbeing"),
+            ],
+        },
+
+        "pss": {
+            "max_score": 40,
+            "ranges": [
+                (0, 13, "low"),
+                (14, 26, "moderate"),
+                (27, 40, "high"),
+            ],
+        },
+
+        "isi": {
+            "max_score": 28,
+            "ranges": [
+                (0, 7, "no_insomnia"),
+                (8, 14, "subthreshold"),
+                (15, 21, "moderate"),
+                (22, 28, "severe"),
+            ],
+        },
+
+        "burnout": {
+            "max_score": 50,
+            "ranges": [
+                (0, 18, "low"),
+                (19, 35, "moderate"),
+                (36, 50, "high"),
+            ],
+        }
+    }
+
+    SEVERITY_ORDER = {
+        "normal": 0,
+        "mild": 1,
+        "moderate": 2,
+        "severe": 3,
+        "extremely_severe": 4
+    }
+
+    INTERPRETATION = {
+        "low": "Low level",
+        "moderate": "Moderate level",
+        "high": "High level",
+        "severe": "Severe level",
+        "low_wellbeing": "Low wellbeing",
+        "good_wellbeing": "Good wellbeing",
+        "no_insomnia": "No significant sleep issues",
+        "subthreshold": "Mild sleep issues",
+    }
+
+    DISCLAIMER = "This is not a diagnosis. This is only a screening tool."
+
+    # =========================
+    # GENERIC SCORE
+    # =========================
     @classmethod
-    def evaluate(cls, request, test_type, answers, message=""):
-        score = cls.calculate_score(answers)
+    def calculate_score(cls, answers, test_type):
+        if test_type == "who5":
+            valid = all(isinstance(a, int) and 0 <= a <= 5 for a in answers)
+        else:
+            valid = all(isinstance(a, int) and 0 <= a <= 4 for a in answers)
 
-        # --- Store latest scores ---
-        if test_type == "phq9":
-            request.session["phq_score"] = score
+        if not valid:
+            raise ValueError("Invalid answer range")
 
-        elif test_type == "gad7":
-            request.session["gad_score"] = score
+        return sum(answers)
 
-        # --- Get available scores ---
-        phq_score = request.session.get("phq_score")
-        gad_score = request.session.get("gad_score")
+    # =========================
+    # PSS FIX
+    # =========================
+    @classmethod
+    def apply_pss_reverse_scoring(cls, answers):
+        reverse_idx = [3, 4, 6, 7]
 
-        # --- Always run ML with available data ---
-        result = run_assessment(
-            phq_score=phq_score,
-            gad_score=gad_score,
-            conversation = message   
+        return [
+            (4 - val) if i in reverse_idx else val
+            for i, val in enumerate(answers)
+        ]
+
+    # =========================
+    # RANGE MAPPING
+    # =========================
+    @classmethod
+    def get_risk_level(cls, config, score):
+        for low, high, label in config["ranges"]:
+            if low <= score <= high:
+                return label
+        return "unknown"
+
+    # =========================
+    # DASS-21 (FIXED)
+    # =========================
+    @classmethod
+    def evaluate_dass21(cls, answers):
+        if len(answers) != 21:
+            raise ValueError("DASS-21 requires 21 answers")
+
+        depression_idx = [0,3,6,9,12,15,18]
+        anxiety_idx = [1,4,7,10,13,16,19]
+        stress_idx = [2,5,8,11,14,17,20]
+
+        depression = sum(answers[i] for i in depression_idx) * 2
+        anxiety = sum(answers[i] for i in anxiety_idx) * 2
+        stress = sum(answers[i] for i in stress_idx) * 2
+
+        def level(score, ranges):
+            for low, high, label in ranges:
+                if low <= score <= high:
+                    return label
+            return "unknown"
+
+        depression_level = level(depression, [
+            (0,9,"normal"), (10,13,"mild"),
+            (14,20,"moderate"), (21,27,"severe"), (28,42,"extremely_severe")
+        ])
+
+        anxiety_level = level(anxiety, [
+            (0,7,"normal"), (8,9,"mild"),
+            (10,14,"moderate"), (15,19,"severe"), (20,42,"extremely_severe")
+        ])
+
+        stress_level = level(stress, [
+            (0,14,"normal"), (15,18,"mild"),
+            (19,25,"moderate"), (26,33,"severe"), (34,42,"extremely_severe")
+        ])
+
+        levels = [depression_level, anxiety_level, stress_level]
+
+        overall = max(
+            levels,
+            key=lambda x: cls.SEVERITY_ORDER.get(x, 0)
         )
 
-        # --- Decide which risk to show ---
-        if phq_score is not None and gad_score is not None:
-            final_risk = result["final_risk"]  # combined
-
-        elif phq_score is not None:
-            final_risk = result["phq_risk"]
-
-        elif gad_score is not None:
-            final_risk = result["gad_risk"]
-
-        else:
-            final_risk = "LOW"  # fallback
-
-        # --- Map to existing labels ---
-        RISK_MAP = {
-            "LOW": "minimal",
-            "MEDIUM": "moderate",
-            "HIGH": "severe"
+        return {
+            "score": depression + anxiety + stress,
+            "risk_level": overall,
+            "meta": {
+                "depression": depression,
+                "anxiety": anxiety,
+                "stress": stress,
+                "levels": {
+                    "depression": depression_level,
+                    "anxiety": anxiety_level,
+                    "stress": stress_level,
+                }
+            },
+            "insight": "Composite emotional state analysis",
+            "disclaimer": cls.DISCLAIMER
         }
 
-        mapped_risk = RISK_MAP.get(final_risk, "minimal")
+    # =========================
+    # MAIN
+    # =========================
+    @classmethod
+    def evaluate(cls, test_type, answers):
+
+        if test_type == "dass21":
+            return cls.evaluate_dass21(answers)
+
+        config = cls.CONFIG.get(test_type)
+        if not config:
+            raise ValueError("Invalid assessment type")
+
+        if test_type == "pss":
+            answers = cls.apply_pss_reverse_scoring(answers)
+
+        score = cls.calculate_score(answers, test_type)
+        risk = cls.get_risk_level(config, score)
 
         return {
             "score": score,
-            "risk_level": mapped_risk,
-            "insight": cls.INTERPRETATION[mapped_risk],
-            "disclaimer": cls.DISCLAIMER,
-            "chat": result["chat_response"],
-            "ml": result
+            "risk_level": risk,
+            "insight": cls.INTERPRETATION.get(risk, ""),
+            "meta": {},
+            "disclaimer": cls.DISCLAIMER
         }
