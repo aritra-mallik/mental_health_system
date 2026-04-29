@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto mt-12 px-4 pb-12 relative z-10">
+
+    <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 md:p-10 border border-white/40 dark:border-slate-700/50 relative overflow-hidden transition-all duration-500">
+        
+        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500"></div>
+
+        <div class="flex justify-between items-center mb-6">
+            <span id="moodBadge" class="text-xs font-bold px-3 py-1.5 rounded-full tracking-wider uppercase shadow-sm transition-all duration-500">
+            </span>
+            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full transition-colors duration-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span id="readTime"></span>
+            </span>
+        </div>
+
+        <h2 id="title" class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 mb-8 leading-[1.15] tracking-tighter drop-shadow-md pb-2">
+        </h2>
+
+        <div class="relative">
+            <span class="absolute -top-4 -left-4 text-6xl text-slate-200 dark:text-slate-700 opacity-50 font-serif z-[-1] transition-colors duration-500">"</span>
+            <p id="content" class="text-slate-700 dark:text-slate-300 leading-relaxed text-lg md:text-xl font-medium transition-colors duration-500"></p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 mt-10 pt-8 border-t border-slate-200 dark:border-slate-700/50 transition-colors duration-500">
+
+            <a href="/api/core/dashboard-page/" 
+               class="group flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-500 shadow-sm hover:shadow-md">
+                <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Feed
+            </a>
+
+            <button onclick="openWarningModal()" 
+                class="group relative inline-flex items-center justify-center px-8 py-3.5 text-lg font-bold text-white transition-all duration-300 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_6px_30px_rgba(168,85,247,0.6)] hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-slate-900">
+                
+                <span class="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-600 via-pink-500 to-blue-600 group-hover:scale-110 transition-transform duration-500 ease-out"></span>
+                
+                <span class="absolute inset-0 w-full h-full opacity-0 group-hover:opacity-30 bg-gradient-to-r from-transparent via-white to-transparent -skew-x-12 translate-x-[-150%] group-hover:animate-shine"></span>
+                
+                <span class="relative flex items-center gap-3">
+                    Read Full Article
+                    <svg class="w-5 h-5 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="warningModal" 
+     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 transition-opacity duration-300 opacity-0">
+
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center transform scale-95 transition-all duration-500 border border-slate-100 dark:border-slate-700" id="modalContent">
+        
+        <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+
+        <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-2 transition-colors duration-500">
+            Leaving Site
+        </h3>
+
+        <p class="text-slate-500 dark:text-slate-400 mb-4 text-sm font-medium transition-colors duration-500">
+            You are about to be redirected to an external source:
+        </p>
+
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700 mb-6 transition-colors duration-500">
+            <p id="domainText" class="text-indigo-600 dark:text-indigo-400 font-bold truncate"></p>
+        </div>
+
+        <div class="flex justify-center gap-3">
+            <button onclick="closeModal()" 
+                class="flex-1 px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl font-semibold transition-all duration-500">
+                Cancel
+            </button>
+            <button onclick="proceedRedirect()" 
+                class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition shadow-lg hover:shadow-red-500/30">
+                Continue
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+const index = {{ index }};
+let articleLink = "";
+
+async function loadArticle() {
+    try {
+        const res = await fetch(`/api/articles/${index}/`);
+        const data = await res.json();
+
+        // Title & Content
+        document.getElementById("title").innerText = data.title;
+        document.getElementById("content").innerText = data.full;
+
+        // Read Time
+        document.getElementById("readTime").innerText = data.read_time;
+
+        // Mood Badge
+        const moodEl = document.getElementById("moodBadge");
+        moodEl.innerText = data.mood;
+        moodEl.className = `text-xs font-bold px-3 py-1.5 rounded-full tracking-wider uppercase shadow-sm transition-all duration-500 ${getMoodColor(data.mood)}`;
+
+        // Link
+        articleLink = data.link;
+
+    } catch (error) {
+        console.error("Error loading article:", error);
+    }
+}
+
+// Fixed slate colors so they properly react to dark mode toggling
+function getMoodColor(mood) {
+    const colors = {
+        happy: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 ring-1 ring-green-500/20",
+        excellent: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400 ring-1 ring-purple-500/20",
+        neutral: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 ring-1 ring-slate-500/20",
+        sad: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 ring-1 ring-blue-500/20",
+        anxious: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 ring-1 ring-red-500/20",
+        angry: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400 ring-1 ring-orange-500/20"
+    };
+    return colors[mood] || "bg-slate-100 text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700";
+}
+
+// Modal Functions with animation handling
+function openWarningModal() {
+    const modal = document.getElementById("warningModal");
+    const modalContent = document.getElementById("modalContent");
+    
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    
+    // Trigger animations
+    setTimeout(() => {
+        modal.classList.remove("opacity-0");
+        modalContent.classList.remove("scale-95");
+    }, 10);
+
+    try {
+        const domain = new URL(articleLink).hostname;
+        document.getElementById("domainText").innerText = domain;
+    } catch {
+        document.getElementById("domainText").innerText = articleLink;
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById("warningModal");
+    const modalContent = document.getElementById("modalContent");
+    
+    modal.classList.add("opacity-0");
+    modalContent.classList.add("scale-95");
+    
+    // Wait for animation to finish before hiding
+    setTimeout(() => {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+    }, 300);
+}
+
+function proceedRedirect() {
+    if (articleLink && articleLink.startsWith("http")) {
+        window.open(articleLink, "_blank");
+        closeModal(); // Cleanly close it after opening
+    } else {
+        alert("Invalid article link.");
+    }
+}
+
+// Close modal on outside click
+window.onclick = function(event) {
+    const modal = document.getElementById("warningModal");
+    if (event.target === modal) {
+        closeModal();
+    }
+};
+
+loadArticle();
+</script>
+
+<style>
+/* Shine Animation for the Button */
+@keyframes shine {
+    100% { transform: translateX(150%); }
+}
+.animate-shine {
+    animation: shine 1.2s ease-in-out infinite;
+}
+</style>
+
+{% endblock %}

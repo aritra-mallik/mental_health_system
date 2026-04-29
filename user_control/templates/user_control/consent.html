@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Consent & Security{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6 max-w-5xl mx-auto">
+
+    <div class="flex-1 space-y-6">
+        <header>
+            <h1 class="text-3xl font-bold tracking-tight">Consent & Security</h1>
+            <p class="text-gray-500 dark:text-gray-400">These are the policies you agreed to during account setup.</p>
+        </header>
+
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
+            
+            <div class="p-6 space-y-4">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Agreements</h3>
+
+                <div class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
+                        <span class="text-sm text-black dark:text-white">I acknowledge and agree to the Privacy Policy, recognizing that my data is a private record of my personal development.</span>
+                        <span id="consent_data_policy" class="font-medium whitespace-nowrap"></span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
+                        <span class="text-sm text-black dark:text-white">I understand that AI assistance is for guidance only and does not constitute professional medical advice or treatment.</span>
+                        <span id="consent_ai_policy" class="font-medium whitespace-nowrap"></span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
+                        <span class="text-sm text-black dark:text-white">I consent to the use of encrypted storage to ensure the confidentiality of all communications.</span>
+                        <span id="consent_encryption" class="font-medium whitespace-nowrap"></span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
+                        <span class="text-sm text-black dark:text-white">I hereby accept the Terms of Service governing this support environment.</span>
+                        <span id="consent_terms" class="font-medium whitespace-nowrap"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row gap-4 items-center justify-between border-t border-gray-200 dark:border-gray-700">
+                
+                <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></span> 
+                    Consent is recorded and cannot be modified.
+                </div>
+
+                <button type="button" onclick="window.location.href='/api/core/dashboard-page/'" class="text-blue-600 w-full sm:w-auto bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-95 shadow-sm">
+                    Back to Dashboard
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(async function(){
+
+  const { res, data } = await apiRequest("/api/user/consent/");
+
+  if (!res || !res.ok || !data) return;
+
+  // Added dark mode color variants to the injected HTML
+  function renderStatus(val){
+    return val
+      ? '<span class="text-green-600 dark:text-green-400 flex items-center gap-1">✔ Accepted</span>'
+      : '<span class="text-red-500 dark:text-red-400 flex items-center gap-1">✖ Not Accepted</span>';
+  }
+
+  document.getElementById("consent_data_policy").innerHTML = renderStatus(data.consent_data_policy);
+  document.getElementById("consent_ai_policy").innerHTML = renderStatus(data.consent_ai_policy);
+  document.getElementById("consent_encryption").innerHTML = renderStatus(data.consent_encryption);
+  document.getElementById("consent_terms").innerHTML = renderStatus(data.consent_terms);
+
+})();
+</script>
+{% endblock %}
