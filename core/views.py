@@ -19,75 +19,6 @@ from AI_MH.features.sentiment import get_sentiment
 
 MAX_MESSAGES = 8
 
-# class AssessmentView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         test_type = request.data.get("type")
-#         answers = request.data.get("answers")
-#         message = request.data.get("message", "")
-
-#         # --- VALIDATION ---
-#         if test_type not in ["phq9", "gad7"]:
-#             return Response({"error": "Invalid type"}, status=400)
-
-#         if not isinstance(answers, list):
-#             return Response({"error": "Answers must be a list"}, status=400)
-
-#         if test_type == "phq9" and len(answers) != 9:
-#             return Response({"error": "PHQ-9 requires 9 answers"}, status=400)
-
-#         if test_type == "gad7" and len(answers) != 7:
-#             return Response({"error": "GAD-7 requires 7 answers"}, status=400)
-
-#         # --- CORE ENGINE ---
-#         result = AssessmentEngine.evaluate(
-#             request,
-#             test_type,
-#             answers,
-#             message=message
-#         )
-
-#         # --- SAVE ASSESSMENT ---
-#         Assessment.objects.create(
-#             user=request.user,
-#             assessment_type=test_type,
-#             score=result["score"],
-#             risk_level=result["risk_level"]
-#         )
-
-#         # -------------------------
-#         # CHAT SESSION CREATION
-#         # -------------------------
-#         chat_session = None
-
-#         if message:  # only create session if user typed something
-#             chat_session = ChatSession.objects.create(user=request.user)
-
-#             # Save user message
-#             ChatMessage.objects.create(
-#                 session=chat_session,
-#                 role="user",
-#                 content=message
-#             )
-
-#             # Save bot response (from ML pipeline)
-#             ChatMessage.objects.create(
-#                 session=chat_session,
-#                 role="bot",
-#                 content=result["chat"]
-#             )
-
-#             # Trim to maintain sliding window
-#             trim_messages(chat_session)
-
-#         # --- RESPONSE ---
-#         return Response({
-#             "message": "Assessment completed",
-#             "data": result,
-#             "chat_session_id": chat_session.id if chat_session else None
-#         })
-
 class AssessmentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -198,8 +129,20 @@ class JournalView(APIView):
 
         try:
             entry = JournalEntry.objects.get(id=entry_id, user=request.user)
+            
+            # FIX: Find and delete the MoodEntry created at roughly the exact same time (+/- 2 minutes)
+            time_lower = entry.created_at - timedelta(minutes=2)
+            time_upper = entry.created_at + timedelta(minutes=2)
+            
+            MoodEntry.objects.filter(
+                user=request.user,
+                created_at__range=(time_lower, time_upper)
+            ).delete()
+
+            # Delete the actual journal entry
             entry.delete()
-            return Response({"message": "Deleted"})
+            return Response({"message": "Deleted journal and associated mood"})
+            
         except JournalEntry.DoesNotExist:
             return Response({"error": "Not found"}, status=404)
         

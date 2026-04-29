@@ -662,6 +662,8 @@ function positionMenu(textarea, menu) {
 }
 
 async function saveEntry() {
+    const titleValue = document.getElementById("entryTitle").value.trim();
+    
     const blocks = [...document.querySelectorAll("#blocksContainer > div")]
         .map(div => {
             const textarea = div.querySelector("textarea");
@@ -674,10 +676,18 @@ async function saveEntry() {
             };
         });
 
+    // Check if there is any text written in any of the blocks
+    const hasContent = blocks.some(b => b.content.trim() !== "");
     const selectedMood = document.querySelector('input[name="mood"]:checked')?.value || "";
 
+    // 🔥 FIX: Prevent saving if title is empty and there is no text content
+    if (!titleValue && !hasContent) {
+        alert("Cannot save an empty journal entry. Please write something first.");
+        return;
+    }
+
     const payload = {
-        title: document.getElementById("entryTitle").value,
+        title: document.getElementById("entryTitle").value, // Preserve original casing/spacing for payload
         mood: selectedMood,
         blocks
     };

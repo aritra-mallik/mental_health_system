@@ -1,7 +1,16 @@
 from django.conf import settings
 import os
-from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import ArticleSerializer
 from django.shortcuts import render
+
+# HTML PAGE VIEW (for browser only)
+def article_page(request, index):
+    return render(request, "articles/article_detail.html", {
+        "index": index
+    })
 
 
 def load_articles():
@@ -17,45 +26,36 @@ def load_articles():
         if len(lines) < 5:
             continue
 
-        title = lines[0]
-        mood = lines[1].lower()
-        read_time = lines[2]
-        link = lines[3]
-        summary = " ".join(lines[4:])
-
-        short = summary[:80] + "..."
-
         articles.append({
-            "title": title,
-            "short": short,
-            "full": summary,
-            "link": link,
-            "mood": mood,
-            "read_time": read_time
+            "title": lines[0],
+            "mood": lines[1].lower(),
+            "read_time": lines[2],
+            "link": lines[3],
+            "full": " ".join(lines[4:]),
+            "short": " ".join(lines[4:])[:80] + "..."
         })
 
     return articles
 
 
-# 🔥 API for dashboard
-def articles_api(request):
-    user_mood = request.GET.get("mood")  # from frontend
-    articles = load_articles()
+# 🔥 MAIN API (USED BY WEB + MOBILE)
+@api_view(["GET"])
+def articles(request):
+    mood = request.GET.get("mood")
+    data = load_articles()
 
-    if user_mood:
-        articles = [a for a in articles if a["mood"] == user_mood]
+    if mood:
+        data = [a for a in data if a["mood"] == mood.lower()]
 
-    return JsonResponse(articles, safe=False)
+    return Response(data)
 
 
-# 📄 Detail page
+# 🔥 SINGLE ARTICLE API
+@api_view(["GET"])
 def article_detail(request, index):
-    articles = load_articles()
+    data = load_articles()
 
-    if index >= len(articles):
-        return render(request, "articles/article_detail.html", {
-            "article": None
-        })
+    if index >= len(data):
+        return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    article = articles[index]
-    return render(request, "articles/article_detail.html", {"article": article})
+    return Response(data[index])
