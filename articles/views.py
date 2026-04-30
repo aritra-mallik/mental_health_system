@@ -38,17 +38,22 @@ def load_articles():
     return articles
 
 
-# 🔥 MAIN API (USED BY WEB + MOBILE)
 @api_view(["GET"])
 def articles(request):
     mood = request.GET.get("mood")
     data = load_articles()
 
     if mood:
-        data = [a for a in data if a["mood"] == mood.lower()]
+        mood = mood.strip().lower()
+
+        filtered = [
+            a for a in data
+            if a["mood"].strip().lower() == mood
+        ]
+
+        return Response(filtered)  # 🔥 no fallback
 
     return Response(data)
-
 
 # 🔥 SINGLE ARTICLE API
 @api_view(["GET"])

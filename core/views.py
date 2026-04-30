@@ -17,7 +17,23 @@ from ChatBot.chatbot.prompt_builder import build_prompt
 
 
 MAX_MESSAGES = 8
+def normalize_risk(risk):
+    return {
+        # WHO5
+        "low_wellbeing": "moderate",
+        "good_wellbeing": "low",
 
+        # ISI
+        "no_insomnia": "low",
+        "subthreshold": "moderate",
+
+        # DASS21
+        "normal": "low",
+        "mild": "moderate",
+        "moderate": "moderate",
+        "severe": "high",
+        "extremely_severe": "high",
+    }.get(risk, risk)
 class AssessmentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -54,6 +70,20 @@ class AssessmentView(APIView):
         # ENGINE
         # -------------------------
         result = AssessmentEngine.evaluate(test_type, answers)
+        request.session["lumi_alert"] = result.get("alert")
+        risk_to_mood = {
+            "low": "neutral",
+            "moderate": "anxious",
+            "high": "sad"
+        }
+
+        normalized_risk = normalize_risk(result["risk_level"])
+
+        derived_mood = risk_to_mood.get(normalized_risk, "neutral")
+        MoodEntry.objects.create(
+            user=request.user,
+            mood=derived_mood
+        )
 
         # -------------------------
         # SAVE
@@ -86,6 +116,14 @@ class MoodView(APIView):
         serializer = MoodSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
+            mood = serializer.validated_data["mood"]
+
+            alert = AssessmentEngine.generate_alert(
+                source="mood",
+                mood=mood
+            )
+
+            request.session["lumi_alert"] = alert
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
@@ -249,7 +287,12 @@ class AssessmentHistoryView(APIView):
 
 
   
-def app_dashboard(request): return render(request, "core/dashboard.html")
+def app_dashboard(request):
+    alert = request.session.get("lumi_alert")
+
+    return render(request, "core/dashboard.html", {
+        "alert": alert
+    })
 def journal(request): return render(request, "core/journal.html")
 def app_assessment(request): return render(request, "core/assessment.html")
 
@@ -282,7 +325,12 @@ class ChatMessageView(APIView):
     def post(self, request):
         session_id = request.data.get("session_id")
         user_message = request.data.get("message")
+        alert = AssessmentEngine.generate_alert(
+            source="chat",
+            text=user_message
+        )
 
+        request.session["lumi_alert"] = alert
         if not session_id or not user_message:
             return Response({"error": "Missing data"}, status=400)
 
