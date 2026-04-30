@@ -1,15 +1,7 @@
 import re
-from functools import lru_cache
-from transformers import pipeline
-
-
-# -------------------------
-# NORMALIZATION
-# -------------------------
 
 PUNCT_RE = re.compile(r"[^\w\s']")
 SPACE_RE = re.compile(r"\s+")
-
 
 def normalize(text: str) -> str:
     text = text.lower()
@@ -18,103 +10,81 @@ def normalize(text: str) -> str:
     return text
 
 
-# -------------------------
-# RULE-BASED DETECTION
-# -------------------------
-
-HIGH_CONF_PATTERNS = [
-    re.compile(p) for p in [
-        r"\bkill\s+(myself|my\s*self)\b",
-        r"\bend\s+(my\s+)?life\b",
-        r"\bi\s+(just\s+)?(really\s+)?want\s+to\s+die\b",
-        r"\bi\s+feel\s+like\s+dying\b",
-        r"\bhow\s+to\s+(kill\s+myself|die|commit\s+suicide)\b",
-        r"\bways\s+to\s+(die|kill\s+myself)\b",
-        r"\b(i\s+)?don'?t\s+want\s+to\s+live(\s+anymore)?\b",
-    ]
+HIGH_INTENT = [
+    r"\bkill\s+(myself|my\s*self)\b",
+    r"\bend\s+(my\s+)?life\b",
+    r"\bi\s+(just\s+)?(really\s+)?want\s+to\s+die\b",
+    r"\bi\s+will\s+kill\s+myself\b",
+    r"\bi\s+am\s+going\s+to\s+kill\s+myself\b",
+    r"\bi\s+feel\s+like\s+dying\b",
 ]
 
-SOFT_SIGNALS = [
-    "tired of everything",
+METHOD_SEEKING = [
+    r"\bhow\s+to\s+(kill\s+myself|die|commit\s+suicide)\b",
+    r"\bways\s+to\s+(die|kill\s+myself)\b",
+]
+
+NEGATIONS = [
+    "not suicidal",
+    "i am not suicidal",
+    "i don't want to die",
+    "i do not want to die",
+    "i don't want to kill myself",
+]
+
+HOPELESSNESS = [
     "nothing matters anymore",
-    "i feel empty",
-    "i feel numb",
+    "no reason to live",
+    "i can't go on",
+    "i give up",
+    "what's the point of living",
+]
+
+SELF_NEGATION = [
     "i hate being alive",
-    "i am done with everything",
-    "i just want it to stop",
-    "no one would care if i was gone",
+    "i wish i was gone",
+    "better off dead",
+    "no one would care if i died",
     "everyone would be better without me",
 ]
 
+HIGH_INTENT_RE = [re.compile(p) for p in HIGH_INTENT]
+METHOD_RE = [re.compile(p) for p in METHOD_SEEKING]
 
-def rule_based_check(text: str) -> bool:
+
+def score_text(text: str) -> int:
     t = normalize(text)
 
-    for pattern in HIGH_CONF_PATTERNS:
-        if pattern.search(t):
-            return True
+    for neg in NEGATIONS:
+        if neg in t:
+            return 0
 
     score = 0
 
-    for phrase in SOFT_SIGNALS:
+    for p in HIGH_INTENT_RE:
+        if p.search(t):
+            return 100
+
+    for p in METHOD_RE:
+        if p.search(t):
+            score += 70
+
+    for phrase in HOPELESSNESS:
         if phrase in t:
-            score += 1
+            score += 20
+
+    for phrase in SELF_NEGATION:
+        if phrase in t:
+            score += 25
 
     if any(w in t for w in ["die", "dead", "suicide", "kill"]):
-        score += 1
+        score += 15
 
-    return score >= 2
+    return score
 
-
-# -------------------------
-# ML MODEL (CACHED)
-# -------------------------
-
-@lru_cache(maxsize=1)
-def get_classifier():
-    """
-    Loads once and reuses (critical for performance)
-    """
-    return pipeline(
-        "text-classification",
-        model="Akashpaul123/bert-suicide-detection",
-        device=-1  # CPU
-    )
-
-
-def ml_check(text: str, threshold: float = 0.7) -> bool:
-    try:
-        classifier = get_classifier()
-        result = classifier(text[:512])[0]  # truncate long input
-
-        # LABEL_1 = suicidal (model-specific)
-        return result["label"] == "LABEL_1" and result["score"] >= threshold
-
-    except Exception as e:
-        # Fail-safe: never crash your app
-        print("ML safety error:", e)
-        return False
-
-
-# -------------------------
-# FINAL HYBRID FUNCTION
-# -------------------------
 
 def check_critical(text: str) -> bool:
-    """
-    Main entry point.
-    Use this everywhere in your app.
-    """
-
-    if not text:
+    if not text or len(text.strip()) < 5:
         return False
 
-    # 1. Fast rule-based pass
-    if rule_based_check(text):
-        return True
-
-    # 2. ML fallback (semantic understanding)
-    if ml_check(text):
-        return True
-
-    return False
+    return score_text(text) >= 70

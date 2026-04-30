@@ -1,21 +1,37 @@
+import re
+
+def safe_text(x):
+    """Ensure text is always a non-null string."""
+    return x if isinstance(x, str) and x.strip() else ""
+
 def build_prompt(input_data, strategy, is_critical=False, region="IN"):
 
     # --- Conversation formatting ---
     if isinstance(input_data, str):
-        history = f"User: {input_data}\n"
-        last_user = input_data
+        cleaned = safe_text(input_data)
+        history = f"User: {cleaned}\n"
+        last_user = cleaned
+
     else:
         history = ""
         last_user = ""
 
+        # Build history safely
         for m in input_data:
-            role = "User" if m.role == "user" else "Assistant"
-            history += f"{role}: {m.content}\n"
+            role = "User" if getattr(m, "role", None) == "user" else "Assistant"
+            content = safe_text(getattr(m, "content", ""))
+            history += f"{role}: {content}\n"
 
+        # Extract last valid user message
         for m in reversed(input_data):
-            if m.role == "user":
-                last_user = m.content
-                break
+            if getattr(m, "role", None) == "user":
+                content = safe_text(getattr(m, "content", ""))
+                if content:
+                    last_user = content
+                    break
+
+        # Final fallback (prevents API crash)
+        last_user = last_user or " "
 
     # --- Strategy mapping ---
     strategy_map = {
@@ -32,22 +48,32 @@ def build_prompt(input_data, strategy, is_critical=False, region="IN"):
     if is_critical:
         if region == "IN":
             helplines = """
-India helplines (include at least one naturally in your response):
+If you're in India, you could reach out to:
 - Kiran Mental Health Helpline: 1800-599-0019
 - AASRA: +91-9820466726
 - iCALL: +91-9152987821
 """
         else:
-            helplines = """
-Provide relevant local crisis helplines for the user's country.
-"""
+            helplines = "Offer a relevant local crisis helpline."
 
         strategy_text = f"""
-User may be in crisis. Be calm, direct, and supportive.
+The user may be in immediate emotional distress.
 
-- Encourage reaching out to someone they trust nearby.
-- Suggest immediate real-world help.
-- Keep tone steady and non-alarmist.
+Respond like a calm, grounded person in the moment:
+- Acknowledge briefly, without dramatizing.
+- Gently suggest reaching out to someone nearby (friend, family, trusted person).
+- Encourage real-world support in a natural way (not as an instruction block).
+- If appropriate, include a helpline as an option — not as a script.
+
+Tone:
+- Steady, human, and direct.
+- No generic reassurance lines.
+- No heavy or clinical language.
+- No long lists.
+
+Example tone:
+"I'm really sorry you're dealing with this. If things feel intense right now, it might help to reach out to someone close to you or even call a helpline — they’re there to talk in moments like this."
+
 {helplines}
 """
 
@@ -63,6 +89,7 @@ Style guidelines:
 - Match the user’s tone (don’t be overly soft if they are casual).
 - Prefer natural phrasing over structured advice.
 - If appropriate, include a simple follow-up question.
+- In crisis situations, do not start with refusal-style phrasing.
 """
 
     # --- Final prompt ---
