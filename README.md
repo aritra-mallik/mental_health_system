@@ -7,3 +7,12 @@ The system provides mental health awareness, self-assessment, encrypted journali
 @import "tailwindcss" source(none);
 @source "./templates/**/*.html";
 @source "./apps/**/templates/**/*.html";
+
+
+**Django secret key generation**
+
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+**Django encryption key generation**
+
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"

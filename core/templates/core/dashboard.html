@@ -67,6 +67,18 @@
     {% include "includes/sidebar.html" %}
 
     <div class="flex-1 space-y-6">
+        {% if alert %}
+        <div class="px-2">
+            <div class="p-4 rounded-2xl font-semibold shadow-sm
+                {% if alert.level == 'red' %}bg-red-100 text-red-700
+                {% elif alert.level == 'orange' %}bg-orange-100 text-orange-700
+                {% elif alert.level == 'yellow' %}bg-yellow-100 text-yellow-700
+                {% else %}bg-green-100 text-green-700{% endif %}
+            ">
+                Lumi Alert: {{ alert.msg }}
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Dashboard Header -->
         <section class="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-700 dark:to-slate-900 border-[4px] border-white dark:border-slate-800/50 rounded-[3.5rem] p-8 md:p-12 mb-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex items-center justify-center">
@@ -272,8 +284,8 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                         </div>
                         <div>
-                            <h3 class="font-black text-lg text-slate-800 dark:text-white leading-tight">Lumi's Alerts</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Recent pattern analysis</p>
+                            <h3 class="font-black text-lg text-slate-800 dark:text-white leading-tight">Lumi's Alert</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Live status</p>
                         </div>
                     </div>
                     
@@ -423,24 +435,65 @@
 {% endblock %}
 {% block extra_js %}
 <script>
+const LIVE_ALERT = {{ live_alert|safe|default:"null" }};
 let articles = [];
 let articleIndex = 0;
 let feedInterval;
 
 async function loadArticles() {
     try {
-        const res = await fetch("/api/articles/");
+        const moodRes = await apiRequest("/api/core/mood/");
+        console.log("MOOD API RAW:", moodRes);
+        let mood = null;
+
+        if (moodRes?.data && Array.isArray(moodRes.data) && moodRes.data.length > 0) {
+            const sorted = [...moodRes.data].sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+            );
+
+            mood = sorted[0]?.mood || null;
+        }
+
+        // normalize
+        if (mood) {
+            mood = mood.toLowerCase().trim();
+
+            // 🔥 FORCE VALID VALUES ONLY
+            const allowed = ["neutral", "anxious", "sad"];
+            if (!allowed.includes(mood)) {
+                mood = "neutral";
+            }
+        }
+
+        let url = "/api/articles/";
+
+        if (mood) {
+            url = `/api/articles/?mood=${encodeURIComponent(mood)}`;
+        }
+        console.log("FINAL MOOD:", mood);
+        console.log("FETCH URL:", url);
+        const res = await fetch(url);
         articles = await res.json();
-        
+
+        // ✅ FIX: reset everything
+        articleIndex = 0;
+        clearInterval(feedInterval);
+
         if (articles.length > 0) {
             renderArticles();
-            resumeFeed(); // Start the timer
+            resumeFeed();
+        } else {
+            document.getElementById("article-container").innerHTML = `
+                <div class="col-span-2 text-center text-slate-400 font-semibold">
+                    No articles found for this mood.
+                </div>
+            `;
         }
-    } catch (error) {
-        console.error("Failed to load articles:", error);
+
+    } catch (err) {
+        console.error("Articles load failed", err);
     }
 }
-
 // Add this flag right below your `let feedInterval;` declaration
 let cardsInitialized = false;
 
@@ -570,8 +623,7 @@ function goToArticle(index) {
     window.location.href = `/api/articles/view/${index}/`;
 }
 
-// Initialize
-loadArticles();
+
 
 // Authentication check
 if (!localStorage.getItem("access")) {
@@ -602,16 +654,34 @@ async function loadDashboard(){
 
         updateSummaryCards(moodRes.data, assessRes.data, journalRes.data);
 
-        if (summaryRes.res?.ok) {
-            const insights = generateInsights(summaryRes.data);
-            const list = document.getElementById("insightsList");
-            
-            // Format insights with a dot indicator
-            list.innerHTML = insights.length
-                ? insights.map(i => `<li class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5"></span><span>${i}</span></li>`).join("")
-                : `<li class="text-slate-400 dark:text-slate-500 italic flex items-center justify-center py-2">No major issues detected</li>`;
-        }
+        const list = document.getElementById("insightsList");
 
+        // 🔥 PRIORITY: show live alert
+        if (LIVE_ALERT && LIVE_ALERT.msg) {
+            list.innerHTML = `
+                <li class="flex items-start gap-2 font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5"></span>
+                    <span>${LIVE_ALERT.msg}</span>
+                </li>
+            `;
+        }
+        else if (summaryRes.res?.ok) {
+            const insights = generateInsights(summaryRes.data);
+
+            list.innerHTML = insights.length
+                ? insights.map(i => `
+                    <li class="flex items-start gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5"></span>
+                        <span>${i}</span>
+                    </li>
+                `).join("")
+                : `
+                    <li class="flex items-start gap-2 text-green-600 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 mt-1.5"></span>
+                        <span>You're doing well. Keep it up.</span>
+                    </li>
+                `;
+        }
         if (recRes.res?.ok){
             const rec = recRes.data.recommended;
             const recBox = document.getElementById("recommendBox");
@@ -648,10 +718,29 @@ function updateSummaryCards(moodData, assessData, journalData) {
 
     // 1. Process Mood Data (Status only)
     if (moodData && moodData.length > 0) {
-        const sortedMoods = [...moodData].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const sortedMoods = [...moodData].sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+
         const latestMood = sortedMoods[0];
-        moodStatusEl.innerText = latestMood.mood;
-    } else {
+
+        // 🔥 Normalize here
+        const normalizeMood = (mood) => {
+            mood = (mood || "").toLowerCase().trim();
+
+            const map = {
+                happy: "neutral",
+                excellent: "neutral",
+                angry: "anxious"
+            };
+
+            return map[mood] || mood;
+        };
+
+        const cleanMood = normalizeMood(latestMood.mood);
+
+        moodStatusEl.innerText = cleanMood;
+    }else {
         moodStatusEl.innerText = "No data";
     }
 
@@ -816,8 +905,7 @@ function generateInsights(summary){
     return insights;
 }
 
-// Load data immediately
-loadDashboard();
+
 
 // Sidebar state management
 window.onload = function () {
@@ -903,7 +991,10 @@ async function setGreeting() {
 }
 
 // Ensure the greeting is set after the dashboard loads
-loadDashboard().then(() => setGreeting());
+loadDashboard().then(() => {
+    loadArticles();
+    setGreeting();
+});
 
 const lumiLines = [
     // --- Emotional Support ---
@@ -937,4 +1028,3 @@ function updateLumiMessage() {
 updateLumiMessage();
 </script>
 {% endblock %}
-

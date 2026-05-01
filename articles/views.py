@@ -45,7 +45,14 @@ def articles(request):
     data = load_articles()
 
     if mood:
-        data = [a for a in data if a["mood"] == mood.lower()]
+        mood = mood.strip().lower()
+
+        filtered = [
+            a for a in data
+            if a["mood"].strip().lower() == mood
+        ]
+
+        return Response(filtered)  
 
     return Response(data)
 

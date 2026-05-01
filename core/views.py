@@ -4,21 +4,35 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import MoodEntry, JournalEntry, Assessment
 from .serializers import MoodSerializer, JournalSerializer
-#from .encryption import encrypt, decrypt
 from datetime import timedelta
 from django.utils import timezone
 from collections import defaultdict
 from .assessment_engine import AssessmentEngine
 from django.contrib.auth.decorators import login_required
 from .models import ChatSession, ChatMessage
-from AI_MH.chatbot.llm_client import generate_response
-from AI_MH.chatbot.prompt_builder import build_prompt
-from AI_MH.ml.predict import predict_all
-from AI_MH.features.sentiment import get_sentiment
+from ChatBot.chatbot.llm_client import generate_response
+from ChatBot.chatbot.prompt_builder import build_prompt
+from .sentiment import analyze_text
 
 
 MAX_MESSAGES = 8
+def normalize_risk(risk):
+    return {
+        # WHO5
+        "low_wellbeing": "moderate",
+        "good_wellbeing": "low",
 
+        # ISI
+        "no_insomnia": "low",
+        "subthreshold": "moderate",
+
+        # DASS21
+        "normal": "low",
+        "mild": "moderate",
+        "moderate": "moderate",
+        "severe": "high",
+        "extremely_severe": "high",
+    }.get(risk, risk)
 class AssessmentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -55,6 +69,25 @@ class AssessmentView(APIView):
         # ENGINE
         # -------------------------
         result = AssessmentEngine.evaluate(test_type, answers)
+        new_alert = result.get("alert")
+
+        if new_alert is not None:
+            request.session["lumi_alert"] = new_alert
+
+        request.session.modified = True
+        risk_to_mood = {
+            "low": "neutral",
+            "moderate": "anxious",
+            "high": "sad"
+        }
+
+        normalized_risk = normalize_risk(result["risk_level"])
+
+        derived_mood = risk_to_mood.get(normalized_risk, "neutral")
+        MoodEntry.objects.create(
+            user=request.user,
+            mood=derived_mood
+        )
 
         # -------------------------
         # SAVE
@@ -87,6 +120,14 @@ class MoodView(APIView):
         serializer = MoodSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
+            mood = serializer.validated_data["mood"]
+
+            alert = AssessmentEngine.generate_alert(
+                source="mood",
+                mood=mood
+            )
+
+            request.session["lumi_alert"] = alert
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
@@ -105,11 +146,39 @@ class JournalView(APIView):
             for e in entries
         ])
 
+    
+
     def post(self, request):
-        JournalEntry.objects.create(
+        encrypted_content = request.data.get("content")
+        raw_text = request.data.get("raw_text")  # <-- NEW
+
+        entry = JournalEntry.objects.create(
             user=request.user,
-            encrypted_content=request.data.get("content")
+            encrypted_content=encrypted_content
         )
+
+        # --- sentiment ---
+        if raw_text:
+            result = analyze_text(raw_text)
+
+            mood = result["mood"]
+
+            # 1. Save derived mood
+            MoodEntry.objects.create(
+                user=request.user,
+                mood=mood
+            )
+
+            # 2. Generate alert from journal
+            alert = AssessmentEngine.generate_alert(
+                source="journal",
+                mood=mood
+            )
+
+            # 3. Override Lumi alert
+            request.session["lumi_alert"] = alert
+            request.session.modified = True
+
         return Response({"message": "Saved"})
 
     def put(self, request):
@@ -250,7 +319,13 @@ class AssessmentHistoryView(APIView):
 
 
   
-def app_dashboard(request): return render(request, "core/dashboard.html")
+def app_dashboard(request):
+    alert = request.session.get("lumi_alert")
+
+    return render(request, "core/dashboard.html", {
+        "alert": alert,
+         "live_alert": alert
+    })
 def journal(request): return render(request, "core/journal.html")
 def app_assessment(request): return render(request, "core/assessment.html")
 
@@ -283,7 +358,12 @@ class ChatMessageView(APIView):
     def post(self, request):
         session_id = request.data.get("session_id")
         user_message = request.data.get("message")
+        alert = AssessmentEngine.generate_alert(
+            source="chat",
+            text=user_message
+        )
 
+        request.session["lumi_alert"] = alert
         if not session_id or not user_message:
             return Response({"error": "Missing data"}, status=400)
 
@@ -305,36 +385,25 @@ class ChatMessageView(APIView):
             content=user_message
         )
 
-        # -------------------------
-        # 2. Trim (after user msg)
-        # -------------------------
-        trim_messages(session)
+
 
         # -------------------------
         # 3. Get context (max 8)
         # -------------------------
         messages = get_context_messages(session)
 
-        # -------------------------
-        # 4. Compute ML signals
-        # -------------------------
-        sentiment = get_sentiment(user_message)
+        from ChatBot.rules.safety import check_critical
 
-        phq_score = request.session.get("phq_score")
-        gad_score = request.session.get("gad_score")
+        # --- Safety detection ---
+        is_critical = check_critical(user_message)
 
-        result = predict_all(
-            sentiment,
-            phq_score,
-            gad_score
-        )
-
-        strategy = result["strategy"]
+        # --- Strategy (minimal) ---
+        strategy = "CRITICAL" if is_critical else "SUPPORT"
 
         # -------------------------
         # 5. Build prompt (IMPORTANT)
         # -------------------------
-        prompt = build_prompt(messages, strategy)
+        prompt = build_prompt(messages, strategy, is_critical=is_critical)
 
         # -------------------------
         # 6. Generate response
@@ -353,12 +422,12 @@ class ChatMessageView(APIView):
         # -------------------------
         # 8. Trim again
         # -------------------------
-        trim_messages(session)
+      
 
         return Response({
             "reply": bot_reply
         })
-        
+
 class ChatSessionCloseView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -376,6 +445,62 @@ class ChatSessionCloseView(APIView):
             return Response({"message": "Session closed"})
         except ChatSession.DoesNotExist:
             return Response({"error": "Invalid session"}, status=404)
+
+class ChatSessionDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        try:
+            session = ChatSession.objects.get(
+                id=session_id,
+                user=request.user
+            )
+        except ChatSession.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+
+        messages = session.messages.order_by("created_at")
+
+        return Response([
+            {
+                "role": m.role,
+                "content": m.content,
+                "created_at": m.created_at
+            }
+            for m in messages
+        ])
+
+class ChatSessionListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        sessions = ChatSession.objects.filter(user=request.user)\
+            .order_by("-created_at")
+
+        data = []
+        for s in sessions:
+            first_msg = s.messages.filter(role="user").first()
+
+            data.append({
+                "id": s.id,
+                "title": first_msg.content[:40] if first_msg else "New Chat",
+                "created_at": s.created_at
+            })
+
+        return Response(data)
+
+class ChatSessionDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, session_id):
+        try:
+            session = ChatSession.objects.get(
+                id=session_id,
+                user=request.user
+            )
+            session.delete()
+            return Response({"message": "Deleted"})
+        except ChatSession.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)    
+
 def app_chatbot(request):
     return render(request, "core/chatbot.html")
-

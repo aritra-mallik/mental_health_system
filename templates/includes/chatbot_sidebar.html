@@ -1,0 +1,95 @@
+<!-- MOBILE TOP BAR -->
+<div class="md:hidden flex items-center justify-between p-3 border-b dark:border-gray-800">
+    <button onclick="toggleMobileSidebar()" class="text-xl">☰</button>
+    <h2 class="font-semibold">Chats</h2>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="chatSidebar"
+    class="fixed md:relative z-50 
+           md:top-auto top-0 left-0 
+           h-screen md:h-full
+           w-72 
+           bg-white dark:bg-gray-900 
+           border-r border-gray-200 dark:border-gray-800 
+           transform -translate-x-full md:translate-x-0 
+           transition-transform duration-300 
+           flex flex-col">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between p-3 border-b dark:border-gray-800">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400">
+            Chats
+        </h2>
+
+        <!-- CLOSE BUTTON (MOBILE) -->
+        <button onclick="toggleMobileSidebar()" class="md:hidden text-lg">✕</button>
+    </div>
+
+    <!-- CHAT LIST -->
+    <div id="chatHistorySidebar"
+         class="flex-1 overflow-y-auto p-3 space-y-2">
+    </div>
+
+    <!-- NEW CHAT BUTTON -->
+    <div class="p-3 border-t dark:border-gray-800">
+        <button onclick="createNewChat()"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl text-sm">
+            + New Chat
+        </button>
+    </div>
+</aside>
+
+<!-- OVERLAY -->
+<div id="sidebarOverlay"
+     onclick="toggleMobileSidebar()"
+     class="fixed inset-0 bg-black/40 hidden z-40 md:hidden">
+</div>
+<script>
+function renderChatItem(chat) {
+    return `
+        <div 
+            data-session-id="${chat.id}"
+            class="group flex items-center justify-between gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
+            onclick="switchSession(${chat.id})">
+
+            <span class="truncate text-sm">${chat.title || "New Chat"}</span>
+
+            <button 
+                onclick="deleteChat(event, ${chat.id})"
+                class="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 text-xs ml-2">
+                ✕
+            </button>
+        </div>
+    `;
+}
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById("chatSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+
+    sidebar.classList.toggle("-translate-x-full");
+    overlay.classList.toggle("hidden");
+}
+async function deleteChat(event, chatId) {
+    event.stopPropagation();
+
+    if (!confirm("Delete this chat?")) return;
+
+    try {
+        await apiRequest(`/api/core/chat/session/${chatId}/delete/`, "DELETE");
+
+        // reload sidebar
+        loadChatHistory();
+
+        // clear chat if deleted one is active
+        if (sessionId === chatId) {
+            document.getElementById("chatBox").innerHTML = "";
+            sessionId = null;
+        }
+
+    } catch (e) {
+        console.error("Delete failed", e);
+    }
+}
+
+</script>
