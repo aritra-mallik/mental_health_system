@@ -214,3 +214,25 @@ class AssessmentEngine:
             if any(x in t for x in ["sad", "stress", "overwhelmed", "tired"]):
                 return {"level": "yellow", "msg": "Something feels off"}
             return {"level": "green", "msg": "Conversation stable"}
+        if source == "journal":
+            # sentiment-driven mood already computed upstream
+            if mood in ["sad", "angry"]:
+                return {
+                    "level": "orange",
+                    "msg": "You seem a bit distressed"
+                }
+            elif mood == "anxious":
+                return {
+                    "level": "yellow",
+                    "msg": "You seem a bit anxious"
+                }
+            elif mood in ["happy", "excellent"]:
+                return {
+                    "level": "green",
+                    "msg": "You seem to be doing great"
+                }
+            else:
+                return {
+                    "level": "green",
+                    "msg": "You're stable"
+                }

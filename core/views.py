@@ -161,10 +161,23 @@ class JournalView(APIView):
         if raw_text:
             result = analyze_text(raw_text)
 
+            mood = result["mood"]
+
+            # 1. Save derived mood
             MoodEntry.objects.create(
                 user=request.user,
-                mood=result["mood"]
+                mood=mood
             )
+
+            # 2. Generate alert from journal
+            alert = AssessmentEngine.generate_alert(
+                source="journal",
+                mood=mood
+            )
+
+            # 3. Override Lumi alert
+            request.session["lumi_alert"] = alert
+            request.session.modified = True
 
         return Response({"message": "Saved"})
 
@@ -310,7 +323,8 @@ def app_dashboard(request):
     alert = request.session.get("lumi_alert")
 
     return render(request, "core/dashboard.html", {
-        "alert": alert
+        "alert": alert,
+         "live_alert": alert
     })
 def journal(request): return render(request, "core/journal.html")
 def app_assessment(request): return render(request, "core/assessment.html")

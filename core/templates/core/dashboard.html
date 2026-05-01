@@ -284,8 +284,8 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                         </div>
                         <div>
-                            <h3 class="font-black text-lg text-slate-800 dark:text-white leading-tight">Lumi's Alerts</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Recent pattern analysis</p>
+                            <h3 class="font-black text-lg text-slate-800 dark:text-white leading-tight">Lumi's Alert</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Live status</p>
                         </div>
                     </div>
                     
@@ -435,6 +435,7 @@
 {% endblock %}
 {% block extra_js %}
 <script>
+const LIVE_ALERT = {{ live_alert|safe|default:"null" }};
 let articles = [];
 let articleIndex = 0;
 let feedInterval;
@@ -653,22 +654,34 @@ async function loadDashboard(){
 
         updateSummaryCards(moodRes.data, assessRes.data, journalRes.data);
 
-        if (summaryRes.res?.ok) {
-            const insights = generateInsights(summaryRes.data);
-            const list = document.getElementById("insightsList");
-            
-            // Format insights with a dot indicator
-            list.innerHTML = insights.length
-                ? insights.map(i => `<li class="flex items-start gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5"></span>
-                    <span>${i}</span>
-                </li>`).join("")
-                : `<li class="flex items-start gap-2 text-green-600 dark:text-green-400 font-semibold">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 mt-1.5"></span>
-                    <span>You're doing well. Keep it up.</span>
-                </li>`;
-        }
+        const list = document.getElementById("insightsList");
 
+        // 🔥 PRIORITY: show live alert
+        if (LIVE_ALERT && LIVE_ALERT.msg) {
+            list.innerHTML = `
+                <li class="flex items-start gap-2 font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5"></span>
+                    <span>${LIVE_ALERT.msg}</span>
+                </li>
+            `;
+        }
+        else if (summaryRes.res?.ok) {
+            const insights = generateInsights(summaryRes.data);
+
+            list.innerHTML = insights.length
+                ? insights.map(i => `
+                    <li class="flex items-start gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5"></span>
+                        <span>${i}</span>
+                    </li>
+                `).join("")
+                : `
+                    <li class="flex items-start gap-2 text-green-600 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 mt-1.5"></span>
+                        <span>You're doing well. Keep it up.</span>
+                    </li>
+                `;
+        }
         if (recRes.res?.ok){
             const rec = recRes.data.recommended;
             const recBox = document.getElementById("recommendBox");
