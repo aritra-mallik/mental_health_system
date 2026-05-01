@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import MoodEntry, JournalEntry, Assessment
 from .serializers import MoodSerializer, JournalSerializer
-#from .encryption import encrypt, decrypt
 from datetime import timedelta
 from django.utils import timezone
 from collections import defaultdict
@@ -13,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from .models import ChatSession, ChatMessage
 from ChatBot.chatbot.llm_client import generate_response
 from ChatBot.chatbot.prompt_builder import build_prompt
-
+from .sentiment import analyze_text
 
 
 MAX_MESSAGES = 8
@@ -147,11 +146,26 @@ class JournalView(APIView):
             for e in entries
         ])
 
+    
+
     def post(self, request):
-        JournalEntry.objects.create(
+        encrypted_content = request.data.get("content")
+        raw_text = request.data.get("raw_text")  # <-- NEW
+
+        entry = JournalEntry.objects.create(
             user=request.user,
-            encrypted_content=request.data.get("content")
+            encrypted_content=encrypted_content
         )
+
+        # --- sentiment ---
+        if raw_text:
+            result = analyze_text(raw_text)
+
+            MoodEntry.objects.create(
+                user=request.user,
+                mood=result["mood"]
+            )
+
         return Response({"message": "Saved"})
 
     def put(self, request):

@@ -120,51 +120,10 @@ textarea:focus {
             placeholder="Untitled Note" />
 
         <div class="flex items-center gap-4 mb-8">
-            <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-2xl w-fit border dark:border-gray-700 shadow-inner">
-                <span class="text-xs text-gray-400 font-bold px-2 uppercase tracking-wider">Mood</span>
-                
-                <div class="flex gap-1" id="moodPills">
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="mood" value="excellent" class="peer sr-only">
-                        <div class="px-3 py-1.5 rounded-lg text-sm transition-all peer-checked:bg-emerald-100 peer-checked:text-emerald-700 dark:peer-checked:bg-emerald-900/30 dark:peer-checked:text-emerald-400 hover:bg-gray-200 dark:hover:bg-gray-700 grayscale peer-checked:grayscale-0">
-                            🤩 Excellent
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="mood" value="happy" class="peer sr-only">
-                        <div class="px-3 py-1.5 rounded-lg text-sm transition-all peer-checked:bg-green-100 peer-checked:text-green-700 dark:peer-checked:bg-green-900/30 dark:peer-checked:text-green-400 hover:bg-gray-200 dark:hover:bg-gray-700 grayscale peer-checked:grayscale-0">
-                            😊 Happy
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="mood" value="sad" class="peer sr-only">
-                        <div class="px-3 py-1.5 rounded-lg text-sm transition-all peer-checked:bg-blue-100 peer-checked:text-blue-700 dark:peer-checked:bg-blue-900/30 dark:peer-checked:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700 grayscale peer-checked:grayscale-0">
-                            😔 Sad
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="mood" value="anxious" class="peer sr-only">
-                        <div class="px-3 py-1.5 rounded-lg text-sm transition-all peer-checked:bg-yellow-100 peer-checked:text-yellow-700 dark:peer-checked:bg-yellow-900/30 dark:peer-checked:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-700 grayscale peer-checked:grayscale-0">
-                            😟 Anxious
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="mood" value="angry" class="peer sr-only">
-                        <div class="px-3 py-1.5 rounded-lg text-sm transition-all peer-checked:bg-red-100 peer-checked:text-red-700 dark:peer-checked:bg-red-900/30 dark:peer-checked:text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700 grayscale peer-checked:grayscale-0">
-                            😡 Angry
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" name="mood" value="neutral" class="peer sr-only">
-                        <div class="px-3 py-1.5 rounded-lg text-sm transition-all peer-checked:bg-gray-200 peer-checked:text-gray-800 dark:peer-checked:bg-gray-600 dark:peer-checked:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 grayscale peer-checked:grayscale-0">
-                            😐 Neutral
-                        </div>
-                    </label>
-                </div>
-            </div>
-
             <span id="entryDate" class="text-xs text-gray-400 font-medium"></span>
         </div>
+
+            
 
         <div id="blocksContainer" class="flex-1 space-y-3 text-gray-800 dark:text-gray-200"></div>
 
@@ -363,8 +322,9 @@ async function renderList() {
 
         div.innerHTML = `
             <div class="flex justify-between items-start mb-1">
-                <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate flex-1">${formatInline(obj.title || "Untitled Note")}</p>
-                ${obj.mood ? `<span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full ml-2">${getMoodEmoji(obj.mood)}</span>` : ""}
+                <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate flex-1">
+                    ${formatInline(obj.title || "Untitled Note")}
+                </p>
             </div>
             <p class="text-xs text-gray-400">${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
         `;
@@ -377,10 +337,6 @@ async function renderList() {
     document.getElementById("streak").innerText = activeDays.size + " days active";
 }
 
-function getMoodEmoji(moodStr) {
-    const map = { excellent: "😍", happy: "😊", sad: "😔", anxious: "😟", angry: "😡", neutral: "😐" };
-    return map[moodStr] || moodStr;
-}
 
 function openEntry(e, obj) {
     currentId = e.id;
@@ -388,14 +344,7 @@ function openEntry(e, obj) {
     // basic fields
     document.getElementById("entryTitle").value = obj.title || "";
     
-    // Set Mood Radio Buttons
-    const moodRadio = document.querySelector(`input[name="mood"][value="${obj.mood}"]`);
-    if (moodRadio) {
-        moodRadio.checked = true;
-    } else {
-        const checked = document.querySelector('input[name="mood"]:checked');
-        if(checked) checked.checked = false;
-    }
+
 
     document.getElementById("entryDate").innerText =
         new Date(e.created_at).toLocaleString([], {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit'});
@@ -422,9 +371,7 @@ function newEntry() {
     currentId = null;
     document.getElementById("entryTitle").value = "";
     
-    // Clear mood selection
-    const checked = document.querySelector('input[name="mood"]:checked');
-    if(checked) checked.checked = false;
+   
     
     document.getElementById("blocksContainer").innerHTML = "";
     document.getElementById("entryDate").innerText = "New Entry";
@@ -678,7 +625,7 @@ async function saveEntry() {
 
     // Check if there is any text written in any of the blocks
     const hasContent = blocks.some(b => b.content.trim() !== "");
-    const selectedMood = document.querySelector('input[name="mood"]:checked')?.value || "";
+    ;
 
     // 🔥 FIX: Prevent saving if title is empty and there is no text content
     if (!titleValue && !hasContent) {
@@ -688,24 +635,30 @@ async function saveEntry() {
 
     const payload = {
         title: document.getElementById("entryTitle").value, // Preserve original casing/spacing for payload
-        mood: selectedMood,
+        
         blocks
     };
 
     const encrypted = await encrypt(JSON.stringify(payload));
 
     if (currentId) {
-        await apiRequest("/api/core/journal/", "PUT", { id: currentId, content: encrypted });
+        await apiRequest("/api/core/journal/", "PUT", {
+            id: currentId,
+            content: encrypted,
+            raw_text: [
+                titleValue,
+                ...blocks.map(b => b.content)
+            ].join(" ")
+        });
     } else {
-        await apiRequest("/api/core/journal/", "POST", { content: encrypted });
-        
-        if (selectedMood) {
-            try {
-                await apiRequest("/api/core/mood/", "POST", { mood: selectedMood });
-            } catch (err) {
-                console.error("Failed to sync mood to dashboard:", err);
-            }
-        }
+        await apiRequest("/api/core/journal/", "POST", {
+            content: encrypted,
+            raw_text: [
+                titleValue,
+                ...blocks.map(b => b.content)
+            ].join(" ")
+        });
+    
     }
 
     loadEntries();
