@@ -70,7 +70,12 @@ class AssessmentView(APIView):
         # ENGINE
         # -------------------------
         result = AssessmentEngine.evaluate(test_type, answers)
-        request.session["lumi_alert"] = result.get("alert")
+        new_alert = result.get("alert")
+
+        if new_alert is not None:
+            request.session["lumi_alert"] = new_alert
+
+        request.session.modified = True
         risk_to_mood = {
             "low": "neutral",
             "moderate": "anxious",

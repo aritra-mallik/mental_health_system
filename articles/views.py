@@ -51,7 +51,7 @@ def articles(request):
             if a["mood"].strip().lower() == mood
         ]
 
-        return Response(filtered)  # 🔥 no fallback
+        return Response(filtered)  
 
     return Response(data)
 
