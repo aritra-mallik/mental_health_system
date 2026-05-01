@@ -55,7 +55,7 @@ def articles(request):
 
     return Response(data)
 
-# 🔥 SINGLE ARTICLE API
+
 @api_view(["GET"])
 def article_detail(request, index):
     data = load_articles()

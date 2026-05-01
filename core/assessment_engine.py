@@ -216,17 +216,27 @@ class AssessmentEngine:
             return {"level": "green", "msg": "Conversation stable"}
         if source == "journal":
             # sentiment-driven mood already computed upstream
-            if mood in ["sad", "angry"]:
+            if mood in ["sad"]:
                 return {
                     "level": "orange",
                     "msg": "You seem a bit distressed"
+                }
+            elif mood in ["angry"]:
+                return {
+                    "level": "orange",
+                    "msg": "You seem to be frustrated at this moment"
                 }
             elif mood == "anxious":
                 return {
                     "level": "yellow",
                     "msg": "You seem a bit anxious"
                 }
-            elif mood in ["happy", "excellent"]:
+            elif mood in ["happy"]:
+                return {
+                    "level": "green",
+                    "msg": "You seem to be doing good"
+                }
+            elif mood in ["excellent"]:
                 return {
                     "level": "green",
                     "msg": "You seem to be doing great"
