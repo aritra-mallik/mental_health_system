@@ -38,7 +38,6 @@ def load_articles():
     return articles
 
 
-# 🔥 MAIN API (USED BY WEB + MOBILE)
 @api_view(["GET"])
 def articles(request):
     mood = request.GET.get("mood")
@@ -57,7 +56,6 @@ def articles(request):
     return Response(data)
 
 
-# 🔥 SINGLE ARTICLE API
 @api_view(["GET"])
 def article_detail(request, index):
     data = load_articles()

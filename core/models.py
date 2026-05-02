@@ -33,20 +33,7 @@ class JournalEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-# class Assessment(models.Model):
-#     TYPE_CHOICES = [
-#         ("phq9", "PHQ-9"),
-#         ("gad7", "GAD-7"),
-#     ]
 
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     assessment_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-
-#     score = models.IntegerField()
-#     risk_level = models.CharField(max_length=20)
-
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     #answers = models.JSONField()
 
 class Assessment(models.Model):
     TYPE_CHOICES = [
