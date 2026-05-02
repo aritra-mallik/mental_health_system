@@ -435,10 +435,10 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-const LIVE_ALERT = {{ live_alert|safe|default:"null" }};
+const LIVE_ALERT = {{ live_alert|default:"null"|safe }};
 let articles = [];
 let articleIndex = 0;
-let feedInterval;
+let feedInterval = null;
 
 async function loadArticles() {
     try {
@@ -592,13 +592,11 @@ function prevArticles() {
     resetFeed();
 }
 
-// 🔥 TIMING FUNCTIONS
 function pauseFeed() {
-    clearInterval(feedInterval);
+    if (feedInterval) clearInterval(feedInterval);
 }
-
 function resumeFeed() {
-    clearInterval(feedInterval); 
+    if (feedInterval) clearInterval(feedInterval);
     feedInterval = setInterval(autoCycle, 10000);
 }
 
