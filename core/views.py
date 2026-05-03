@@ -72,7 +72,7 @@ class AssessmentView(APIView):
         new_alert = result.get("alert")
 
         if new_alert is not None:
-            request.session["lumi_alert"] = new_alert
+            request.session["Smera_alert"] = new_alert
 
         request.session.modified = True
         risk_to_mood = {
@@ -127,7 +127,7 @@ class MoodView(APIView):
                 mood=mood
             )
 
-            request.session["lumi_alert"] = alert
+            request.session["Smera_alert"] = alert
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
@@ -175,8 +175,8 @@ class JournalView(APIView):
                 mood=mood
             )
 
-            # 3. Override Lumi alert
-            request.session["lumi_alert"] = alert
+            # 3. Override Smera alert
+            request.session["Smera_alert"] = alert
             request.session.modified = True
 
         return Response({"message": "Saved"})
@@ -231,46 +231,50 @@ class ExportDataView(APIView):
 class AssessmentRecommendationView(APIView):
     permission_classes = [IsAuthenticated]
 
-    WEEK_PLAN = {
-        1: ["who5", "isi"],
-        2: ["pss", "dass21"],
-        3: ["who5", "isi"],
-        4: ["burnout"],
+    TEST_FREQUENCY = {
+        "who5": 7,
+        "pss": 7,
+        "isi": 7,
+        "dass21": 14,
+        "burnout": 30,
     }
+
+    ALL_TESTS = ["who5", "pss", "dass21", "isi", "burnout"]
 
     def get(self, request):
         user = request.user
-
         today = timezone.now()
-        week_of_month = (today.day - 1) // 7 + 1
 
-        recommended = self.WEEK_PLAN.get(week_of_month, ["who5"])
+        history = Assessment.objects.filter(user=user)
 
-        # --- filter already taken recently ---
-        recent_limit = {
-            "who5": 7,
-            "pss": 7,
-            "isi": 7,
-            "dass21": 14,
-            "burnout": 30,
-        }
+        #  FIRST TIME USER
+        if not history.exists():
+            return Response({
+                "type": "first_time",
+                "recommended": self.ALL_TESTS
+            })
 
-        final = []
+        #  SMART REMINDER LOGIC
+        recommendations = []
 
-        for test in recommended:
-            days = recent_limit[test]
-
-            recent = Assessment.objects.filter(
+        for test, days in self.TEST_FREQUENCY.items():
+            last = Assessment.objects.filter(
                 user=user,
-                assessment_type=test,
-                created_at__gte=today - timedelta(days=days)
-            ).exists()
+                assessment_type=test
+            ).order_by("-created_at").first()
 
-            if not recent:
-                final.append(test)
+            if not last:
+                recommendations.append(test)
+                continue
+
+            gap = (today - last.created_at).days
+
+            if gap >= days:
+                recommendations.append(test)
 
         return Response({
-            "recommended": final if final else ["who5"]
+            "type": "reminder",
+            "recommended": recommendations
         })
         
         
@@ -317,15 +321,18 @@ class AssessmentHistoryView(APIView):
         return Response(list(data))
     
 
+class LiveAlertView(APIView):
+    permission_classes = [IsAuthenticated]
 
-  
-def app_dashboard(request):
-    alert = request.session.get("lumi_alert")
+    def get(self, request):
+        alert = request.session.get("Smera_alert")
 
-    return render(request, "core/dashboard.html", {
-        "alert": alert,
-         "live_alert": alert
-    })
+        return Response({
+            "alert": alert if alert else None
+        })
+        
+        
+def app_dashboard(request): return render(request, "core/dashboard.html")
 def journal(request): return render(request, "core/journal.html")
 def app_assessment(request): return render(request, "core/assessment.html")
 
@@ -363,7 +370,7 @@ class ChatMessageView(APIView):
             text=user_message
         )
 
-        request.session["lumi_alert"] = alert
+        request.session["Smera_alert"] = alert
         if not session_id or not user_message:
             return Response({"error": "Missing data"}, status=400)
 
@@ -445,7 +452,6 @@ class ChatSessionCloseView(APIView):
             return Response({"message": "Session closed"})
         except ChatSession.DoesNotExist:
             return Response({"error": "Invalid session"}, status=404)
-
 class ChatSessionDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -468,26 +474,36 @@ class ChatSessionDetailView(APIView):
             }
             for m in messages
         ])
-
 class ChatSessionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        sessions = ChatSession.objects.filter(user=request.user)\
-            .order_by("-created_at")
+        sessions = ChatSession.objects.filter(user=request.user).order_by("-is_pinned", "-created_at")
 
         data = []
         for s in sessions:
             first_msg = s.messages.filter(role="user").first()
-
             data.append({
                 "id": s.id,
                 "title": first_msg.content[:40] if first_msg else "New Chat",
-                "created_at": s.created_at
+                "created_at": s.created_at,
+                "is_pinned": s.is_pinned
             })
-
         return Response(data)
 
+class ChatSessionPinView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, session_id):
+        try:
+            session = ChatSession.objects.get(id=session_id, user=request.user)
+            session.is_pinned = not session.is_pinned
+            session.save()
+            return Response({"message": "Pin toggled", "is_pinned": session.is_pinned})
+        except ChatSession.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+        
+        
 class ChatSessionDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -501,6 +517,6 @@ class ChatSessionDeleteView(APIView):
             return Response({"message": "Deleted"})
         except ChatSession.DoesNotExist:
             return Response({"error": "Not found"}, status=404)    
-
 def app_chatbot(request):
     return render(request, "core/chatbot.html")
+

@@ -210,7 +210,7 @@ class AssessmentEngine:
         if source == "chat":
             t = text.lower()
             if any(x in t for x in ["hopeless", "can't go on", "worthless"]):
-                return {"level": "red", "msg": "Lumi sensed distress"}
+                return {"level": "red", "msg": "Smera sensed distress"}
             if any(x in t for x in ["sad", "stress", "overwhelmed", "tired"]):
                 return {"level": "yellow", "msg": "Something feels off"}
             return {"level": "green", "msg": "Conversation stable"}
@@ -226,7 +226,7 @@ class AssessmentEngine:
                     "level": "orange",
                     "msg": "You seem to be frustrated at this moment"
                 }
-            elif mood == ["anxious"]:
+            elif mood in ["anxious"]:
                 return {
                     "level": "yellow",
                     "msg": "You seem a bit anxious"

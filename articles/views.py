@@ -23,16 +23,18 @@ def load_articles():
     for block in blocks:
         lines = block.strip().split("\n")
 
-        if len(lines) < 5:
+        if len(lines) < 7:
             continue
 
         articles.append({
             "title": lines[0],
             "mood": lines[1].lower(),
             "read_time": lines[2],
-            "link": lines[3],
-            "full": " ".join(lines[4:]),
-            "short": " ".join(lines[4:])[:80] + "..."
+            "author": lines[3],
+            "date": lines[4],
+            "link": lines[5],
+            "full": " ".join(lines[6:]),
+            "short": " ".join(lines[6:])[:80] + "..."
         })
 
     return articles

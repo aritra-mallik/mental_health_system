@@ -7,3 +7,5 @@ class ArticleSerializer(serializers.Serializer):
     link = serializers.CharField()
     mood = serializers.CharField()
     read_time = serializers.CharField()
+    author = serializers.CharField()
+    date = serializers.CharField()
