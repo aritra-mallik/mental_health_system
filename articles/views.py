@@ -20,13 +20,14 @@ def load_articles():
     with open(file_path, 'r', encoding='utf-8') as f:
         blocks = f.read().strip().split("\n\n")
 
-    for block in blocks:
+    for i, block in enumerate(blocks):   
         lines = block.strip().split("\n")
 
         if len(lines) < 7:
             continue
 
         articles.append({
+            "id": i,   
             "title": lines[0],
             "mood": lines[1].lower(),
             "read_time": lines[2],

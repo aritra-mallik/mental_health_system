@@ -76,7 +76,7 @@
     <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm hidden z-40 md:hidden transition-opacity"></div>
 
     <!-- COLLAPSIBLE SIDEBAR -->
-    <aside id="chatSidebar" class="absolute md:relative z-50 top-0 left-0 h-full w-72 bg-gray-50 dark:bg-[#0b0f19] border-r border-gray-200 dark:border-gray-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+    <aside id="chatSidebar" class="absolute z-50 top-0 left-0 h-full w-72 bg-gray-50 dark:bg-[#0b0f19] border-r border-gray-200 dark:border-gray-800 transform -translate-x-full transition-all duration-300 ease-in-out flex flex-col overflow-hidden whitespace-nowrap">
         
         <!-- Sidebar Header & New Chat -->
         <div class="p-4 border-b border-gray-200 dark:border-gray-800">
@@ -204,10 +204,61 @@ let sessionId = null;
 function toggleSidebar() {
     const sidebar = document.getElementById("chatSidebar");
     const overlay = document.getElementById("sidebarOverlay");
+    const isMobile = window.innerWidth < 768;
     
-    sidebar.classList.toggle("-translate-x-full");
-    overlay.classList.toggle("hidden");
+    if (isMobile) {
+        // Mobile behavior: Slide in/out and toggle overlay
+        sidebar.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
+        
+        // Ensure width is set for mobile when open
+        if (!sidebar.classList.contains("-translate-x-full")) {
+            sidebar.classList.remove("w-0", "border-none");
+            sidebar.classList.add("w-72");
+        }
+    } else {
+        // Desktop behavior: Collapse width to 0
+        sidebar.classList.remove("-translate-x-full"); // Ensure it's not translated off-screen on desktop
+        
+        if (sidebar.classList.contains("w-72")) {
+            sidebar.classList.remove("w-72");
+            sidebar.classList.add("w-0", "border-none");
+        } else {
+            sidebar.classList.remove("w-0", "border-none");
+            sidebar.classList.add("w-72");
+        }
+    }
 }
+
+// Initial setup to ensure sidebar is visible on desktop load
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.innerWidth >= 768) {
+        const sidebar = document.getElementById("chatSidebar");
+        sidebar.classList.remove("-translate-x-full");
+        sidebar.classList.add("md:relative"); // Add relative positioning for desktop
+    }
+});
+
+// Handle resize events to reset sidebar state across breakpoints
+window.addEventListener('resize', () => {
+    const sidebar = document.getElementById("chatSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    const isMobile = window.innerWidth < 768;
+
+    if (!isMobile) {
+        overlay.classList.add("hidden");
+        sidebar.classList.remove("-translate-x-full");
+        sidebar.classList.add("md:relative");
+    } else {
+        sidebar.classList.remove("md:relative");
+        if (sidebar.classList.contains("w-0")) {
+            // If it was collapsed on desktop, hide it on mobile
+             sidebar.classList.add("-translate-x-full");
+             sidebar.classList.remove("w-0", "border-none");
+             sidebar.classList.add("w-72");
+        }
+    }
+});
 
 /* Auto-resize textarea */
 const tx = document.getElementById("chatInput");

@@ -658,7 +658,7 @@ function renderArticles() {
         let actualIndex = (articleIndex + i) % articles.length;
         let art = articles[actualIndex];
 
-        document.getElementById(`art-card-${i}`).setAttribute("onclick", `goToArticle(${actualIndex})`);
+        document.getElementById(`art-card-${i}`).setAttribute("onclick", `goToArticle(${art.id})`);
         
         let moodEl = document.getElementById(`art-mood-${i}`);
         moodEl.innerText = art.mood;
