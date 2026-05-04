@@ -332,33 +332,32 @@ function appendMessage(role, text) {
     const box = document.getElementById("chatBox");
     const div = document.createElement("div");
     
-    // Adjusted row padding for the new bubble design
     div.className = "w-full msg-animate flex justify-center py-4 px-4";
 
-    // Smera's Avatar (with dark mode support)
     const SmeraIcon = `
         <div class="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center shrink-0 mt-1 overflow-hidden shadow-sm">
-            <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="100%" height="100%" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" class="fill-gray-100"/>
                 <circle cx="35" cy="45" r="4" class="fill-blue-600"/>
                 <circle cx="65" cy="45" r="4" class="fill-blue-600"/>
-                <path d="M40 65C40 65 45 70 50 70C55 70 60 65 60 65" class="stroke-blue-600 dark:stroke-blue-400" stroke-width="3" stroke-linecap="round"/>
+                <path d="M40 65C40 65 45 70 50 70C55 70 60 65 60 65"
+                      class="stroke-blue-600 dark:stroke-blue-400"
+                      stroke-width="3" stroke-linecap="round"/>
             </svg>
         </div>
     `;
 
-    // Format text to handle basic line breaks
     const formattedText = text.replace(/\n/g, '<br>');
+
+    // 🔥 NEW: AI detection logic
+    const lowerText = text.toLowerCase();
+    const keywords = ["stress", "anxiety", "depressed", "sad", "panic"];
+    const shouldSuggest = keywords.some(word => lowerText.includes(word));
 
     if (role === "user") {
         div.innerHTML = `
             <div class="max-w-4xl w-full flex justify-end">
-                <!-- 3D Ocean Blue User Bubble -->
-                <div class="bg-blue-500 dark:bg-blue-600 border border-blue-400 dark:border-blue-500 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[80%] text-[15px] leading-relaxed shadow-[0_4px_0_#1d4ed8] dark:shadow-[0_4px_0_#1e3a8a] relative overflow-hidden group transform transition-transform hover:-translate-y-0.5">
-                    
-                    <!-- Subtle top highlight for the 3D bevel effect -->
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-white opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                    
+                <div class="bg-blue-500 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[80%] shadow-md">
                     ${formattedText}
                 </div>
             </div>
@@ -367,13 +366,28 @@ function appendMessage(role, text) {
         div.innerHTML = `
             <div class="max-w-4xl w-full flex gap-4 md:gap-6">
                 ${SmeraIcon}
-                <!-- 3D Warm Cream/Deep Amber Bot Bubble -->
-                <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700/50 text-yellow-950 dark:text-yellow-50 font-medium px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[80%] text-[15px] leading-relaxed shadow-[0_4px_0_#ca8a04] dark:shadow-[0_4px_0_#713f12] relative overflow-hidden group transform transition-transform hover:-translate-y-0.5 mt-1">
-                    
-                    <!-- Subtle top highlight -->
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-white opacity-40 dark:opacity-10 group-hover:opacity-50 dark:group-hover:opacity-20 transition-opacity"></div>
-                    
+
+                <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700/50 text-yellow-950 dark:text-yellow-50 px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[80%] shadow-md">
+
                     ${formattedText}
+
+                    ${
+                        shouldSuggest
+                        ? `
+                        <div class="mt-4 p-3 bg-white/60 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <p class="text-sm mb-2">
+                                It might help to talk to a professional.
+                            </p>
+
+                            <button onclick="goConsultation()"
+    class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700">
+    Book a Consultation
+</button>
+                        </div>
+                        `
+                        : ""
+                    }
+
                 </div>
             </div>
         `;
@@ -508,8 +522,14 @@ async function deleteChat(event, chatId) {
     }
 }
 
+function goConsultation(issue="general"){
+    window.location.href = `/consultation/?issue=${issue}`;
+}
+
 // Init
 loadChatHistory();
 showDefaultGreeting();
+
+
 </script>
 {% endblock %}

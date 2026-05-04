@@ -75,7 +75,7 @@ async function loadCounselors() {
         `).join("")}
     `;
 
-    const res = await fetch("/api/consultation/counselors/");
+   const res = await fetch("/consultation/api/counselors/");
     const data = await res.json();
 
     allCounselors = data;
