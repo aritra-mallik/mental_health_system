@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto p-6">
+
+```
+<!-- Header -->
+<div class="mb-6">
+    <h1 class="text-3xl font-bold">Consultation</h1>
+    <p class="text-gray-500">Choose a counselor and book your session</p>
+</div>
+
+<!-- Counselor List -->
+<div id="counselorList" class="grid md:grid-cols-2 gap-6"></div>
+```
+
+</div>
+
+<script>
+
+/* =========================
+   LOAD COUNSELORS FROM API
+========================= */
+async function loadCounselors() {
+
+    try {
+        const res = await fetch("/api/consultation/counselors/");
+        const data = await res.json();
+
+        renderCounselors(data);
+
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
+
+/* =========================
+   RENDER COUNSELORS
+========================= */
+function renderCounselors(data) {
+
+    const container = document.getElementById("counselorList");
+    container.innerHTML = "";
+
+    if (!data.length) {
+        container.innerHTML = "<p>No counselors available</p>";
+        return;
+    }
+
+    data.forEach(c => {
+
+        container.innerHTML += `
+        <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
+
+            <h2 class="text-xl font-bold">${c.name}</h2>
+            <p class="text-sm text-gray-500">${c.designation}</p>
+
+            <p class="mt-2 text-sm">${c.bio || ""}</p>
+
+            <p class="mt-2"><b>Experience:</b> ${c.experience_years} yrs</p>
+            <p><b>Patients:</b> ${c.patients_treated}</p>
+
+            <p class="mt-2 text-green-600 font-bold">
+                ₹${c.consultation_fee}
+            </p>
+
+            <button onclick="goToDetail(${c.id})"
+                class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+                View Profile & Book
+            </button>
+
+        </div>
+        `;
+    });
+}
+
+/* =========================
+   NAVIGATE TO DETAIL PAGE
+========================= */
+function goToDetail(id){
+    window.location.href = `/consultation/${id}/`;
+}
+
+/* =========================
+   INIT
+========================= */
+loadCounselors();
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg text-center w-full max-w-md">
+
+        <!-- Success Icon -->
+        <div class="text-green-600 text-5xl mb-4">
+            ✔
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-2xl font-bold text-green-600">
+            Booking Confirmed
+        </h1>
+
+        <p class="text-gray-500 mt-2">
+            Your appointment has been successfully booked
+        </p>
+
+        <!-- Details -->
+        <div id="details" class="mt-6 text-left bg-gray-50 p-4 rounded-lg text-sm space-y-2"></div>
+
+        <!-- Button -->
+        <button onclick="goHome()"
+            class="mt-6 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-500 transition">
+            Back to Home
+        </button>
+
+        <!-- Redirect Info -->
+        <p class="text-gray-400 text-xs mt-3">
+            Redirecting in 5 seconds...
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+
+const id = window.location.pathname.split("/")[3];
+
+async function loadDetails(){
+
+    const res = await fetch(`/api/consultation/booking/${id}/`);
+    const data = await res.json();
+
+    document.getElementById("details").innerHTML = `
+        <p><b>Counselor:</b> ${data.counselor}</p>
+        <p><b>Date:</b> ${data.date}</p>
+        <p><b>Time:</b> ${data.time}</p>
+        <p class="text-green-600"><b>Status:</b> ${data.status}</p>
+    `;
+}
+
+/* Manual redirect */
+function goHome(){
+    window.location.href = "/consultation/";
+}
+
+/* Auto redirect after 5 sec */
+setTimeout(() => {
+    window.location.href = "/consultation/";
+}, 5000);
+
+loadDetails();
+
+</script>
+
+{% endblock %}
