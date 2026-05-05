@@ -39,7 +39,7 @@
 
 <script>
 
-const id = window.location.pathname.split("/")[3];
+const id = window.location.pathname.split("/").filter(Boolean).pop();
 
 async function loadDetails(){
 
@@ -56,12 +56,12 @@ async function loadDetails(){
 
 /* Manual redirect */
 function goHome(){
-    window.location.href = "/";
+    window.location.href = "/api/consultation/";
 }
 
 /* Auto redirect after 5 sec */
 setTimeout(() => {
-    window.location.href = "/";
+    window.location.href = "/api/consultation/";
 }, 5000);
 
 loadDetails();

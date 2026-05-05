@@ -208,29 +208,37 @@ async function bookSlot(){
 
     const token = localStorage.getItem("access");
 
+    if(!token){
+        showMsg("You are not logged in");
+        return;
+    }
+
+    const res = await fetch("/api/consultation/create-booking/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            counselor: selectedCounselor,
+            slot: selectedSlot
+        })
+    });
+
+    let data;
     try {
-        const res = await fetch("/api/consultation/create-booking/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({
-                counselor: selectedCounselor,
-                slot: selectedSlot
-            })
-        });
+        data = await res.json();
+    } catch {
+        showMsg("Invalid server response");
+        return;
+    }
 
-        const data = await res.json();
-
-        if(res.ok){
-            window.location.href = `/consultation/success/${data.id}/`;
-        } else {
-            showMsg(data.error || "Booking failed");
-        }
-
-    } catch (err) {
-        showMsg("Server error");
+    if(res.ok){
+        console.log("Booking success → redirecting", data);
+        window.location.href = `/api/consultation/success/${data.id}/`;
+    } else {
+        console.error("Booking failed:", res.status, data);
+        showMsg(data.error || `Error ${res.status}`);
     }
 
     btn.disabled = false;
