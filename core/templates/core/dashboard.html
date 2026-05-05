@@ -356,7 +356,6 @@
 
             </div>
 
-
             <!-- Assessment Chart Card -->
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 flex flex-col">
@@ -380,6 +379,28 @@
 
             </div>
 
+        </div>
+
+        <!-- Detailed Event Timeline Card -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition duration-300 flex flex-col mt-6 relative overflow-hidden group">
+            
+            <div class="absolute -top-24 -left-24 w-64 h-64 bg-pink-400/10 dark:bg-pink-500/10 rounded-full blur-3xl pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
+
+            <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                <div>
+                    <h3 class="text-lg font-black tracking-tight text-slate-800 dark:text-white">
+                        Raw Mood Events
+                    </h3>
+                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">Every check-in plotted over time</p>
+                </div>
+                <span class="text-[11px] font-bold tracking-widest text-pink-600 dark:text-pink-400 uppercase bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/50 px-3 py-1.5 rounded-xl shadow-sm">
+                    Timeline
+                </span>
+            </div>
+
+            <div class="flex-1 relative min-h-[220px]">
+                <canvas id="eventMoodChart"></canvas>
+            </div>
         </div>
 
         <!-- Feed Section -->
@@ -765,6 +786,7 @@ async function loadDashboard(){
     if (moodRes.res?.ok && assessRes.res?.ok) {
         renderMoodChart(moodRes.data);
         renderAssessmentChart(assessRes.data);
+        renderEventMoodChart(moodRes.data);
 
         updateSummaryCards(moodRes.data, assessRes.data, journalRes.data);
 
@@ -952,46 +974,226 @@ let assessmentChartInstance = null;
 function getChartThemeColors() {
     const isDark = document.documentElement.classList.contains('dark');
     return {
-        text: isDark ? '#9ca3af' : '#4b5563', // gray-400 : gray-600
-        grid: isDark ? '#374151' : '#e5e7eb'  // gray-700 : gray-200
+        text: isDark ? '#9ca3af' : '#4b5563',     // gray-400 : gray-600
+        grid: isDark ? '#374151' : '#e5e7eb',      // gray-700 : gray-200
+        pointBg: isDark ? '#1f2937' : '#ffffff'    // gray-800 : white (matches the card background)
     };
 }
 
-function renderMoodChart(data){
-    const ctx = document.getElementById("moodChart");
+function createGradient(ctx, colorStart, colorEnd) {
+    // The y-values (0 to 300) define a vertical gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+    return gradient;
+}
+
+let eventMoodChartInstance = null;
+
+function renderEventMoodChart(data) {
+    const canvas = document.getElementById("eventMoodChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     const theme = getChartThemeColors();
 
-    if (moodChartInstance) {
-        moodChartInstance.destroy();
+    if (eventMoodChartInstance) {
+        eventMoodChartInstance.destroy();
     }
 
-    // NEW: Sort data chronologically (oldest to newest) for left-to-right graphing
-    const chartData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    // Sort chronologically
+    const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-    moodChartInstance = new Chart(ctx, {
+    // Dynamic colors for each specific mood
+    const palette = {
+        0: { bg: 'rgba(239, 68, 68, 0.4)', border: '#ef4444' },   // Angry (Red)
+        1: { bg: 'rgba(249, 115, 22, 0.4)', border: '#f97316' },  // Anxious (Orange)
+        2: { bg: 'rgba(59, 130, 246, 0.4)', border: '#3b82f6' },  // Sad (Blue)
+        3: { bg: 'rgba(148, 163, 184, 0.4)', border: '#94a3b8' }, // Neutral (Slate)
+        4: { bg: 'rgba(16, 185, 129, 0.4)', border: '#10b981' },  // Happy (Emerald)
+        5: { bg: 'rgba(168, 85, 247, 0.4)', border: '#a855f7' }   // Excellent (Purple)
+    };
+
+    const labels = [];
+    const scores = [];
+    const pointBgs = [];
+    const pointBorders = [];
+
+    sortedData.forEach(d => {
+        const dt = new Date(d.created_at);
+        // Include both Date and exact Time for the label
+        const formattedTime = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const formattedDate = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        const score = mapMood(d.mood);
+        
+        labels.push(`${formattedDate} @ ${formattedTime}`);
+        scores.push(score);
+        pointBgs.push(palette[score].bg);
+        pointBorders.push(palette[score].border);
+    });
+
+    eventMoodChartInstance = new Chart(ctx, {
         type: "line",
         data: {
-            labels: chartData.map(d => {
-                // Format date string to be more readable
-                const date = new Date(d.created_at);
-                return `${date.getMonth()+1}/${date.getDate()}`;
-            }),
+            labels: labels,
             datasets: [{
-                label: "Mood Score",
-                data: chartData.map(d => mapMood(d.mood)),
-                borderColor: '#3b82f6', // blue-500
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#3b82f6',
+                label: "Logged Mood",
+                data: scores,
+                showLine: false, // <--- This turns it into a scatter bubble chart!
+                pointBackgroundColor: pointBgs,
+                pointBorderColor: pointBorders,
+                pointBorderWidth: 3,
+                pointRadius: 10,        // Large bubbles
+                pointHoverRadius: 16,   // Huge pop effect on hover
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false }
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleColor: '#94a3b8',
+                    titleFont: { size: 11, weight: 'normal' },
+                    bodyColor: '#ffffff',
+                    bodyFont: { weight: 'bold', size: 15 },
+                    padding: 14,
+                    cornerRadius: 16,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return `⏰ ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            const moodLabels = ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'];
+                            return ` Felt: ${moodLabels[context.raw]}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: -0.5, // Adds padding so top and bottom bubbles don't clip
+                    max: 5.5,
+                    ticks: { 
+                        color: theme.text,
+                        stepSize: 1,
+                        padding: 15,
+                        font: { size: 11, weight: '600' },
+                        callback: function(value) {
+                            return ['ANGRY', 'ANXIOUS', 'SAD', 'NEUTRAL', 'HAPPY', 'EXCELLENT'][value] || '';
+                        }
+                    },
+                    border: { display: false },
+                    grid: { 
+                        color: theme.grid,
+                        drawBorder: false,
+                        tickLength: 0
+                    }
+                },
+                x: {
+                    ticks: { 
+                        display: false // Hide X-axis labels to keep it looking clean and abstract
+                    },
+                    border: { display: false },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function renderMoodChart(data){
+    const canvas = document.getElementById("moodChart");
+    const ctx = canvas.getContext('2d');
+    const theme = getChartThemeColors();
+
+    if (moodChartInstance) {
+        moodChartInstance.destroy();
+    }
+
+    // Sort chronologically first
+    const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    // --- SMART AGGREGATION: Calculate the "Overall Mood" per day ---
+    const dailyMoods = {};
+    
+    sortedData.forEach(d => {
+        const dt = new Date(d.created_at);
+        // Format to a clean "May 4" style string
+        const dateLabel = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        if (!dailyMoods[dateLabel]) {
+            dailyMoods[dateLabel] = [];
+        }
+        // Store the numeric value of the mood for that day
+        dailyMoods[dateLabel].push(mapMood(d.mood));
+    });
+
+    const labels = Object.keys(dailyMoods); // Extracts the unique formatted dates
+    
+    // Calculate the average mood score for each day
+    const aggregatedData = labels.map(date => {
+        const scores = dailyMoods[date];
+        const sum = scores.reduce((total, current) => total + current, 0);
+        // Round to nearest whole number to snap to our specific mood emojis (0-5)
+        return Math.round(sum / scores.length); 
+    });
+
+    // Create the vibrant gradient
+    const gradientFill = createGradient(ctx, 'rgba(6, 182, 212, 0.5)', 'rgba(59, 130, 246, 0.0)'); 
+
+    moodChartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Daily Average Mood",
+                data: aggregatedData,
+                borderColor: '#06b6d4', 
+                backgroundColor: gradientFill,
+                borderWidth: 4, 
+                tension: 0.4, // Keeps the line organically smooth
+                fill: true,
+                pointBackgroundColor: theme.pointBg, 
+                pointBorderColor: '#06b6d4', 
+                pointBorderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#06b6d4',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)', 
+                    titleColor: '#94a3b8',
+                    titleFont: { size: 12, weight: 'normal' },
+                    bodyColor: '#ffffff',
+                    bodyFont: { weight: 'bold', size: 14 },
+                    padding: 14,
+                    cornerRadius: 16,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return `📅 ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            const moodLabels = ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'];
+                            return ` Overall: ${moodLabels[context.raw]}`;
+                        }
+                    }
+                }
             },
             scales: {
                 y: {
@@ -1000,15 +1202,30 @@ function renderMoodChart(data){
                     ticks: { 
                         color: theme.text,
                         stepSize: 1,
+                        padding: 10,
+                        font: { size: 11, weight: '600' },
                         callback: function(value) {
-                            return ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'][value] || '';
+                            return ['ANGRY', 'ANXIOUS', 'SAD', 'NEUTRAL', 'HAPPY', 'EXCELLENT'][value] || '';
                         }
                     },
-                    grid: { color: theme.grid }
+                    border: { display: false }, 
+                    grid: { 
+                        color: theme.grid,
+                        drawBorder: false,
+                        tickLength: 0 
+                    }
                 },
                 x: {
-                    ticks: { color: theme.text },
-                    grid: { display: false }
+                    ticks: { 
+                        color: theme.text,
+                        font: { size: 11, weight: 'bold' },
+                        padding: 10,
+                        maxTicksLimit: 6, // Prevents overcrowding on the X-axis
+                        maxRotation: 0,
+                        autoSkip: true
+                    },
+                    border: { display: false },
+                    grid: { display: false } 
                 }
             }
         }
@@ -1028,34 +1245,159 @@ function mapMood(m){
 }
 
 function renderAssessmentChart(data){
-    const ctx = document.getElementById("assessmentChart");
+    const canvas = document.getElementById("assessmentChart");
+    const ctx = canvas.getContext('2d');
+    const theme = getChartThemeColors();
 
     if (assessmentChartInstance) {
         assessmentChartInstance.destroy();
     }
 
+    // Sort oldest to newest chronologically
     const chartData = [...data].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at));
 
-    const labels = chartData.map(d => {
+    // --- SMART DATES: Format nicely (e.g., "May 4") instead of "5/4" ---
+    const labels = [...new Set(chartData.map(d => {
         const dt = new Date(d.created_at);
-        return `${dt.getMonth()+1}/${dt.getDate()}`;
-    });
+        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); 
+    }))];
+
+    // Defining distinct, high-contrast "neon" colors for each test
+    const lineConfig = {
+        who5:   { color: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.5)' },  // Purple
+        pss:    { color: '#f43f5e', shadow: 'rgba(244, 63, 94, 0.5)' },   // Rose/Red
+        dass21: { color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.5)' },  // Amber
+        isi:    { color: '#10b981', shadow: 'rgba(16, 185, 129, 0.5)' },  // Emerald
+        burnout:{ color: '#6b7280', shadow: 'rgba(107, 114, 128, 0.5)' }   // Pink
+    };
 
     const types = ["who5","pss","dass21","isi","burnout"];
 
-    const datasets = types.map(type => ({
-        label: type.toUpperCase(),
-        data: chartData.map(d => d.assessment_type === type ? d.score : null),
-        borderWidth: 2,
-        fill: false
-    }));
+    const datasets = types.map(type => {
+        const typeData = labels.map(labelDate => {
+             // Find the *latest* entry for this specific formatted date
+             const matchingData = [...chartData].reverse().find(d => {
+                 const dt = new Date(d.created_at);
+                 const formattedDate = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                 return formattedDate === labelDate && d.assessment_type === type;
+             });
+             return matchingData ? matchingData.score : null;
+        });
+
+        // Check if this dataset actually has any data points to avoid drawing empty lines
+        const hasData = typeData.some(val => val !== null);
+        if (!hasData) return null;
+
+        return {
+            label: type.toUpperCase(),
+            data: typeData,
+            borderColor: lineConfig[type].color,
+            borderWidth: 3,
+            tension: 0.4, // Smooth curves
+            fill: false,
+            spanGaps: true, // Connects the line even if a day is skipped
+            pointBackgroundColor: theme.pointBg,
+            pointBorderColor: lineConfig[type].color,
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            pointHoverBackgroundColor: lineConfig[type].color,
+            pointHoverBorderColor: '#fff',
+        };
+    }).filter(dataset => dataset !== null); // Remove empty datasets
+
+    // --- Adding CSS Drop Shadows to Canvas Lines ---
+    const glowPlugin = {
+        id: 'glowPlugin',
+        beforeDatasetDraw: (chart, args, options) => {
+            const ctx = chart.ctx;
+            ctx.save();
+            ctx.shadowColor = args.meta.dataset.borderColor; 
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 4;
+        },
+        afterDatasetDraw: (chart, args, options) => {
+            chart.ctx.restore();
+        }
+    };
 
     assessmentChartInstance = new Chart(ctx, {
         type: "line",
         data: { labels, datasets },
+        plugins: [glowPlugin], 
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        color: theme.text,
+                        usePointStyle: true, 
+                        boxWidth: 8,
+                        padding: 20,
+                        font: { weight: 'bold', size: 11 }
+                    }
+                },
+                // --- SMART TOOLTIPS ---
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)', // Sleeker dark background
+                    titleColor: '#94a3b8', // Subtle grey for the date
+                    titleFont: { size: 12, weight: 'normal' },
+                    bodyColor: '#ffffff', // Bright white for the score
+                    bodyFont: { size: 14, weight: 'bold' },
+                    bodySpacing: 8,
+                    padding: 14,
+                    cornerRadius: 16,
+                    usePointStyle: true,
+                    boxPadding: 6,
+                    callbacks: {
+                        title: function(context) {
+                            // Adds a calendar icon and the nicely formatted date
+                            return `📅 ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            // Cleans up the score presentation
+                            return ` ${context.dataset.label}: ${context.raw} Points`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { 
+                        color: theme.text,
+                        font: { size: 11, weight: '600' },
+                        padding: 10
+                    },
+                    border: { display: false },
+                    grid: { 
+                        color: theme.grid,
+                        drawBorder: false,
+                        tickLength: 0
+                    }
+                },
+                x: {
+                    // --- SMART AXIS CULLING ---
+                    ticks: { 
+                        color: theme.text,
+                        font: { size: 11, weight: 'bold' },
+                        padding: 10,
+                        maxTicksLimit: 6, // FORCES the chart to only show a maximum of 6 dates
+                        maxRotation: 0,   // Stops the dates from tilting diagonally
+                        autoSkip: true    // Automatically hides dates in between
+                    },
+                    border: { display: false },
+                    grid: { display: false }
+                }
+            }
         }
     });
 }
