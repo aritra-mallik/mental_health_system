@@ -12,8 +12,11 @@ npm init -y
 npm install tailwindcss @tailwindcss/cli
 
 **add this during the deployment in the input**
+
 @import "tailwindcss" source(none);
+
 @source "./templates/**/*.html";
+
 @source "./apps/**/templates/**/*.html";
 
 
