@@ -1,0 +1,556 @@
+{% extends "public_base.html" %}
+{% load static %}
+
+{% block title %}SupportSync — Your Digital Support System{% endblock %}
+
+{% block extra_head %}
+{% include "accounts/intro_header.html" %}
+<style>
+    @keyframes spin-slow {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.2); }
+        50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    /* Ethereal Luxury Orbs - Gold, Amethyst, and Rose */
+    .ethereal-orb-1 { background: radial-gradient(circle, rgba(251, 191, 36, 0.15), transparent 70%); animation: spin-slow 20s linear infinite;} /* Spun Gold */
+    .ethereal-orb-2 { background: radial-gradient(circle, rgba(168, 85, 247, 0.12), transparent 70%); animation: spin-slow 25s linear infinite reverse;} /* Amethyst */
+    .ethereal-orb-3 { background: radial-gradient(circle, rgba(244, 63, 94, 0.12), transparent 70%); animation: spin-slow 18s linear infinite;} /* Deep Rose */
+
+    /* Extravagant Glass Panel */
+    .glass-panel {
+        background: linear-gradient(135deg, rgba(24, 24, 27, 0.7), rgba(9, 9, 11, 0.8)); /* Zinc 900 to 950 */
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    .glass-panel-hover:hover {
+        border-color: rgba(251, 191, 36, 0.3);
+        box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 15px 50px rgba(251, 191, 36, 0.1);
+    }
+
+    /* Deep Obsidian background */
+    #app-body {
+        background-color: #09090b !important; /* Zinc-950 */
+        color: #e4e4e7 !important; /* Zinc-200 */
+        overflow-x: hidden;
+    }
+    
+    /* Custom Scrollbar for a premium feel */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- BACKGROUND ORBS -->
+<div class="fixed inset-0 z-0 pointer-events-none mix-blend-screen opacity-100">
+    <div class="absolute top-[-15%] left-[-10%] w-[60vw] h-[60vw] ethereal-orb-1 rounded-full blur-[100px]"></div>
+    <div class="absolute bottom-[-15%] right-[-15%] w-[70vw] h-[70vw] ethereal-orb-2 rounded-full blur-[100px]"></div>
+    <div class="absolute top-[30%] left-[20%] w-[50vw] h-[50vw] ethereal-orb-3 rounded-full blur-[100px]"></div>
+</div>
+
+<!-- HERO -->
+<section class="relative z-10 text-center py-16 mt-8">
+    <div class="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-black tracking-[0.2em] uppercase mb-8 shadow-[0_0_20px_rgba(251,191,36,0.15)] animate-fade-in">
+        <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-300 to-orange-500 animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.8)]"></span> Safe · Private · Always Available
+    </div>
+    
+    <h1 class="text-6xl md:text-8xl font-black mb-8 text-white tracking-tighter leading-tight animate-fade-in" style="animation-delay: 0.1s;">
+        Your Mind Deserves <br>
+        <span class="bg-gradient-to-r from-amber-200 via-yellow-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(251,191,36,0.2)]">Genuine Support</span>
+    </h1>
+    
+    <p class="text-zinc-400 max-w-2xl mx-auto mb-10 text-lg md:text-xl leading-relaxed font-light animate-fade-in" style="animation-delay: 0.2s;">
+        Talk freely. Feel heard. An extravagant, highly-secured space designed to support your emotional wellness — on your terms, at any hour.
+    </p>
+    
+    <!-- PRIMARY CTAs -->
+    <div class="flex flex-wrap justify-center gap-5 animate-fade-in" style="animation-delay: 0.3s;">
+        <a href="/api/accounts/register-page/" class="bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 px-10 py-4 rounded-full font-black uppercase tracking-wider hover:scale-105 transition duration-300 shadow-[0_0_30px_rgba(245,158,11,0.4)] flex items-center">
+            Begin Journey
+        </a>
+        <a href="/api/accounts/login-page/" class="glass-panel px-10 py-4 rounded-full font-bold text-zinc-200 hover:bg-white/5 hover:border-amber-400/50 hover:text-amber-300 transition duration-300 flex items-center">
+            Log In
+        </a>
+    </div>
+
+    <!-- ANCHOR LINKS TO ASSESSMENTS -->
+    <div class="flex flex-wrap justify-center gap-8 mt-8 animate-fade-in" style="animation-delay: 0.4s;">
+        <button onclick="document.getElementById('assessment-section').scrollIntoView({behavior:'smooth'})" class="text-xs font-black text-zinc-500 hover:text-amber-400 uppercase tracking-widest transition-colors duration-300 flex items-center gap-2">
+            <span>Take WHO-5 Check-In</span> <span class="text-lg">↓</span>
+        </button>
+        <button onclick="document.getElementById('mood-section').scrollIntoView({behavior:'smooth'})" class="text-xs font-black text-zinc-500 hover:text-amber-400 uppercase tracking-widest transition-colors duration-300 flex items-center gap-2">
+            <span>Log Your Mood</span> <span class="text-lg">↓</span>
+        </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex flex-wrap justify-center gap-8 mt-16 animate-fade-in" style="animation-delay: 0.5s;">
+        <div class="glass-panel px-8 py-5 rounded-2xl flex flex-col items-center animate-float" style="animation-delay: 0s;">
+            <span class="text-3xl font-black bg-gradient-to-r from-amber-200 to-orange-400 bg-clip-text text-transparent">24 / 7</span>
+            <span class="text-xs text-zinc-500 tracking-[0.2em] uppercase mt-2 font-black">Always On</span>
+        </div>
+        <div class="glass-panel px-8 py-5 rounded-2xl flex flex-col items-center animate-float" style="animation-delay: 1s;">
+            <span class="text-3xl font-black bg-gradient-to-r from-amber-200 to-orange-400 bg-clip-text text-transparent">Zero-Knowledge</span>
+            <span class="text-xs text-zinc-500 tracking-[0.2em] uppercase mt-2 font-black">Journal Privacy</span>
+        </div>
+        <div class="glass-panel px-8 py-5 rounded-2xl flex flex-col items-center animate-float" style="animation-delay: 2s;">
+            <span class="text-3xl font-black bg-gradient-to-r from-amber-200 to-orange-400 bg-clip-text text-transparent">WHO-5</span>
+            <span class="text-xs text-zinc-500 tracking-[0.2em] uppercase mt-2 font-black">Validated Scale</span>
+        </div>
+    </div>
+</section>
+
+<!-- MOOD CHECK-IN -->
+<section id="mood-section" class="container mx-auto px-6 py-16 relative z-10">
+    <div class="glass-panel p-10 rounded-[2.5rem] text-center max-w-4xl mx-auto transition-all duration-500 relative overflow-hidden">
+        <!-- Subtle internal glow -->
+        <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent pointer-events-none"></div>
+        
+        <h2 class="text-4xl font-black mb-10 text-white relative z-10">How's Your Energy <span class="bg-gradient-to-r from-amber-300 to-rose-400 bg-clip-text text-transparent">Right Now?</span></h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl mx-auto relative z-10">
+            <button class="glass-panel py-6 rounded-2xl glass-panel-hover transition-all duration-300 flex flex-col items-center gap-3 group" 
+                    onclick="setMood('Happy','You\'re glowing! Keep that energy and share it — joy is contagious.')">
+                <span class="text-5xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]">😊</span>
+                <span class="text-xs font-black text-zinc-400 group-hover:text-amber-300 uppercase tracking-widest transition-colors">Happy</span>
+            </button>
+            <button class="glass-panel py-6 rounded-2xl glass-panel-hover transition-all duration-300 flex flex-col items-center gap-3 group" 
+                    onclick="setMood('Calm','Stillness is a superpower. Enjoy this peaceful moment.')">
+                <span class="text-5xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]">😌</span>
+                <span class="text-xs font-black text-zinc-400 group-hover:text-violet-300 uppercase tracking-widest transition-colors">Calm</span>
+            </button>
+            <button class="glass-panel py-6 rounded-2xl glass-panel-hover transition-all duration-300 flex flex-col items-center gap-3 group" 
+                    onclick="setMood('Sad','It\'s okay to feel this. You\'re not alone — reach out when ready.')">
+                <span class="text-5xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">😢</span>
+                <span class="text-xs font-black text-zinc-400 group-hover:text-blue-300 uppercase tracking-widest transition-colors">Sad</span>
+            </button>
+            <button class="glass-panel py-6 rounded-2xl glass-panel-hover transition-all duration-300 flex flex-col items-center gap-3 group" 
+                    onclick="setMood('Anxious','Take one slow breath. Ground yourself — this feeling will pass.')">
+                <span class="text-5xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-[0_0_15px_rgba(250,204,21,0.3)]">😰</span>
+                <span class="text-xs font-black text-zinc-400 group-hover:text-yellow-300 uppercase tracking-widest transition-colors">Anxious</span>
+            </button>
+            <button class="glass-panel py-6 rounded-2xl glass-panel-hover transition-all duration-300 flex flex-col items-center gap-3 group" 
+                    onclick="setMood('Angry','Your feelings are valid. Give yourself space before reacting.')">
+                <span class="text-5xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]">😤</span>
+                <span class="text-xs font-black text-zinc-400 group-hover:text-rose-300 uppercase tracking-widest transition-colors">Angry</span>
+            </button>
+            <button class="glass-panel py-6 rounded-2xl glass-panel-hover transition-all duration-300 flex flex-col items-center gap-3 group" 
+                    onclick="setMood('Overwhelmed','One thing at a time. You don\'t have to carry everything at once.')">
+                <span class="text-5xl group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-300 drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]">😫</span>
+                <span class="text-xs font-black text-zinc-400 group-hover:text-orange-300 uppercase tracking-widest transition-colors">Overwhelmed</span>
+            </button>
+        </div>
+        <div id="mood-response" class="mt-10 hidden bg-zinc-950/80 p-8 rounded-2xl border border-amber-500/30 text-zinc-200 shadow-[0_0_30px_rgba(251,191,36,0.1)] relative z-10"></div>
+    </div>
+</section>
+
+<!-- WHO-5 INTERACTIVE ASSESSMENT -->
+<section class="py-16 text-center relative z-10" id="assessment-section">
+    <div class="inline-flex items-center px-5 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-xs font-black tracking-[0.2em] uppercase mb-6 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+        WHO-5 Well-Being Index
+    </div>
+    <h2 class="text-5xl font-black mb-4 text-white">Take a Quick <span class="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">Well-Being Check</span></h2>
+    <p class="text-zinc-400 mb-10 text-lg font-light">5 simple questions · Scientifically validated · Results in under 2 minutes</p>
+    
+    <div class="glass-panel p-10 max-w-4xl mx-auto rounded-[2.5rem] min-h-[450px] flex flex-col justify-center border-t border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)] relative overflow-hidden">
+        
+        <!-- Intro State -->
+        <div id="assessment-intro" class="relative z-10">
+            <p class="mb-8 text-zinc-300 text-xl font-light">Over the last 2 weeks, how often have you felt the following?</p>
+            <button onclick="startAssessment()" class="bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white px-10 py-4 rounded-full font-black tracking-wider uppercase hover:scale-105 transition duration-300 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+                Start Assessment
+            </button>
+        </div>
+
+        <!-- Interactive Form State -->
+        <div id="who5-form" class="hidden text-left w-full max-w-2xl mx-auto relative z-10">
+            <div id="questions-container" class="mb-6">
+                <!-- Single Question Injected Here -->
+            </div>
+            
+            <div class="flex justify-between items-center mt-8 pt-6 border-t border-zinc-700/50">
+                <button type="button" id="btn-prev" onclick="prevQuestion()" class="text-zinc-400 hover:text-white font-bold transition px-4 py-2 hidden uppercase tracking-wider text-sm">
+                    ← Back
+                </button>
+                <div class="flex-1"></div> <!-- Spacer -->
+                <button type="button" id="btn-next" onclick="nextQuestion()" class="bg-zinc-900 border border-zinc-800 text-zinc-600 px-10 py-3 rounded-full font-black uppercase tracking-wider transition opacity-50 cursor-not-allowed" disabled>
+                    Next →
+                </button>
+                <button type="button" id="btn-submit" onclick="calculateWHO5()" class="bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 px-10 py-3 rounded-full font-black hover:scale-105 transition shadow-[0_0_20px_rgba(251,191,36,0.4)] hidden uppercase tracking-wider">
+                    Calculate Score
+                </button>
+            </div>
+        </div>
+
+        <!-- Result State -->
+        <div id="assessment-result" class="hidden text-center animate-fade-in relative z-10">
+            <div class="inline-block w-full max-w-xl mx-auto">
+                <div id="score-circle" class="text-7xl font-black mb-4 drop-shadow-[0_0_20px_rgba(251,191,36,0.3)]">--%</div>
+                <h3 id="score-band" class="text-2xl font-black uppercase tracking-[0.2em] mb-4"></h3>
+                <p id="score-meaning" class="text-zinc-300 mb-8 text-lg leading-relaxed font-light"></p>
+                <div class="p-6 bg-zinc-950/80 rounded-2xl border border-zinc-800 mb-8 text-left shadow-inner">
+                    <p class="text-sm text-zinc-400 leading-relaxed font-light">
+                        <span class="text-amber-500 font-bold">⚠ Note:</span> This is a screening tool only and does not constitute a clinical diagnosis. If you are struggling, please reach out to a qualified mental health professional.
+                    </p>
+                </div>
+                <button onclick="resetAssessment()" class="text-sm font-black text-zinc-400 hover:text-white tracking-widest uppercase transition border-b border-zinc-600 hover:border-white pb-1">↩ Retake Assessment</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WHY CHOOSE -->
+<section class="py-16 text-center relative z-10">
+    <h2 class="text-5xl font-black mb-16 text-white">Why <span class="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">SupportSync</span>?</h2>
+    <div class="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto px-6">
+        <div class="glass-panel p-10 rounded-3xl glass-panel-hover transition duration-500 group">
+            <div class="text-5xl mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]">🔒</div>
+            <h3 class="text-xl font-black mb-3 text-white tracking-wide">Zero-Knowledge Storage</h3>
+            <p class="text-zinc-400 text-base leading-relaxed font-light">Your data is secured locally using client-side encryption. We cannot read your journals.</p>
+        </div>
+        <div class="glass-panel p-10 rounded-3xl glass-panel-hover transition duration-500 group">
+            <div class="text-5xl mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]">🧠</div>
+            <h3 class="text-xl font-black mb-3 text-white tracking-wide">Emotion AI</h3>
+            <p class="text-zinc-400 text-base leading-relaxed font-light">Understands nuance in your tone and responds with empathy and context.</p>
+        </div>
+        <div class="glass-panel p-10 rounded-3xl glass-panel-hover transition duration-500 group">
+            <div class="text-5xl mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.4)]">⏱️</div>
+            <h3 class="text-xl font-black mb-3 text-white tracking-wide">24 / 7 Support</h3>
+            <p class="text-zinc-400 text-base leading-relaxed font-light">Available at 3 AM or 3 PM — whenever you need to talk.</p>
+        </div>
+        <div class="glass-panel p-10 rounded-3xl glass-panel-hover transition duration-500 group">
+            <div class="text-5xl mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]">📊</div>
+            <h3 class="text-xl font-black mb-3 text-white tracking-wide">Mood Tracking</h3>
+            <p class="text-zinc-400 text-base leading-relaxed font-light">Visualise your emotional patterns over time with intuitive charts.</p>
+        </div>
+        <div class="glass-panel p-10 rounded-3xl glass-panel-hover transition duration-500 group">
+            <div class="text-5xl mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]">✨</div>
+            <h3 class="text-xl font-black mb-3 text-white tracking-wide">Personalised Tips</h3>
+            <p class="text-zinc-400 text-base leading-relaxed font-light">Evidence-based suggestions tailored to your emotional state.</p>
+        </div>
+        <div class="glass-panel p-10 rounded-3xl glass-panel-hover transition duration-500 group">
+            <div class="text-5xl mb-6 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.4)]">💬</div>
+            <h3 class="text-xl font-black mb-3 text-white tracking-wide">Chat Anytime</h3>
+            <p class="text-zinc-400 text-base leading-relaxed font-light">Open-ended conversations with no judgement, no time limits.</p>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="py-16 text-center relative z-10">
+    <h2 class="text-5xl font-black mb-16 text-white">How It Works</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto px-6">
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent"></div>
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-zinc-950 flex items-center justify-center font-black text-2xl mb-6 shadow-[0_0_20px_rgba(251,191,36,0.4)] relative z-10">1</div>
+            <h3 class="font-black text-white mb-2 text-lg relative z-10 tracking-wide">Share Your Mood</h3>
+            <p class="text-sm text-zinc-400 font-light relative z-10">Pick how you feel or start chatting.</p>
+        </div>
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-violet-500/5 to-transparent"></div>
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-600 text-white flex items-center justify-center font-black text-2xl mb-6 shadow-[0_0_20px_rgba(168,85,247,0.4)] relative z-10">2</div>
+            <h3 class="font-black text-white mb-2 text-lg relative z-10 tracking-wide">AI Listens</h3>
+            <p class="text-sm text-zinc-400 font-light relative z-10">Our empathetic AI processes your input.</p>
+        </div>
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 text-white flex items-center justify-center font-black text-2xl mb-6 shadow-[0_0_20px_rgba(59,130,246,0.4)] relative z-10">3</div>
+            <h3 class="font-black text-white mb-2 text-lg relative z-10 tracking-wide">Get Guidance</h3>
+            <p class="text-sm text-zinc-400 font-light relative z-10">Receive tailored support instantly.</p>
+        </div>
+        <div class="glass-panel p-8 rounded-3xl flex flex-col items-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-rose-500/5 to-transparent"></div>
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-rose-400 to-pink-600 text-white flex items-center justify-center font-black text-2xl mb-6 shadow-[0_0_20px_rgba(244,63,94,0.4)] relative z-10">4</div>
+            <h3 class="font-black text-white mb-2 text-lg relative z-10 tracking-wide">Track Progress</h3>
+            <p class="text-sm text-zinc-400 font-light relative z-10">Monitor your well-being over time.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-16 relative z-10">
+    <h2 class="text-5xl text-center mb-16 font-black text-white">Frequently Asked <span class="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">Questions</span></h2>
+    <div class="max-w-4xl mx-auto space-y-5 px-6">
+        <div class="glass-panel p-8 rounded-2xl cursor-pointer hover:border-amber-500/30 transition duration-300" onclick="toggleFAQ(this)">
+            <h3 class="font-bold text-xl flex justify-between items-center text-zinc-200 tracking-wide">
+                Is this therapy?
+                <span class="text-amber-400 text-3xl font-light">+</span>
+            </h3>
+            <p class="hidden text-zinc-400 mt-5 text-base leading-relaxed font-light">No. SupportSync is a digital support and awareness platform. It is not a replacement for professional clinical care, therapy, or medical advice. Think of it as a compassionate first step.</p>
+        </div>
+        <div class="glass-panel p-8 rounded-2xl cursor-pointer hover:border-amber-500/30 transition duration-300" onclick="toggleFAQ(this)">
+            <h3 class="font-bold text-xl flex justify-between items-center text-zinc-200 tracking-wide">
+                Is my data safe?
+                <span class="text-amber-400 text-3xl font-light">+</span>
+            </h3>
+            <p class="hidden text-zinc-400 mt-5 text-base leading-relaxed font-light">Absolutely. We utilize zero-knowledge architecture. All conversations and journals are encrypted locally on your device using AES-256-GCM before syncing.</p>
+        </div>
+        <div class="glass-panel p-8 rounded-2xl cursor-pointer hover:border-amber-500/30 transition duration-300" onclick="toggleFAQ(this)">
+            <h3 class="font-bold text-xl flex justify-between items-center text-zinc-200 tracking-wide">
+                What is the WHO-5 assessment?
+                <span class="text-amber-400 text-3xl font-light">+</span>
+            </h3>
+            <p class="hidden text-zinc-400 mt-5 text-base leading-relaxed font-light">The WHO-5 Well-Being Index is a scientifically validated, 5-item questionnaire developed by the World Health Organization to screen for depression and gauge overall emotional well-being. Scores range from 0 to 100 — higher is better.</p>
+        </div>
+        <div class="glass-panel p-8 rounded-2xl cursor-pointer hover:border-amber-500/30 transition duration-300" onclick="toggleFAQ(this)">
+            <h3 class="font-bold text-xl flex justify-between items-center text-zinc-200 tracking-wide">
+                Is it free to use?
+                <span class="text-amber-400 text-3xl font-light">+</span>
+            </h3>
+            <p class="hidden text-zinc-400 mt-5 text-base leading-relaxed font-light">Yes — core features including the mood check-in and WHO-5 assessment are completely free.</p>
+        </div>
+        <div class="glass-panel p-8 rounded-2xl cursor-pointer hover:border-amber-500/30 transition duration-300" onclick="toggleFAQ(this)">
+            <h3 class="font-bold text-xl flex justify-between items-center text-zinc-200 tracking-wide">
+                Can I use it anonymously?
+                <span class="text-amber-400 text-3xl font-light">+</span>
+            </h3>
+            <p class="hidden text-zinc-400 mt-5 text-base leading-relaxed font-light">Yes. You can explore most features without creating an account. Sign up only if you'd like to save your mood history over time.</p>
+        </div>
+    </div>
+</section>
+
+<!-- DISCLAIMER -->
+<section class="relative z-10 bg-gradient-to-b from-transparent to-rose-950/40 backdrop-blur-xl py-16 mt-16 border-t border-rose-900/30 shadow-[0_-20px_50px_rgba(225,29,72,0.05)]">
+    <div class="container mx-auto px-6 text-center max-w-4xl">
+        <div class="text-5xl mb-6 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]">⚠️</div>
+        <h3 class="text-2xl font-black text-rose-400 mb-6 tracking-[0.2em] uppercase">Important Notice</h3>
+        <p class="text-lg leading-relaxed text-zinc-300 font-light">
+            SupportSync is a well-being awareness and guidance platform — not a substitute for professional clinical care, therapy, or medical advice. If you are in crisis, please contact a qualified mental health professional or a local emergency service immediately.
+        </p>
+    </div>
+</section>
+
+<footer class="bg-black text-zinc-600 text-center py-10 border-t border-white/5">
+    <p class="text-sm font-bold tracking-widest uppercase">© 2026 SupportSync · All rights reserved · Built with care for your well-being</p>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Mood Tracker Logic ---
+    function setMood(mood, msg){
+        const div = document.getElementById('mood-response');
+        div.classList.remove('hidden');
+        
+        div.style.animation = 'none';
+        div.offsetHeight; 
+        div.style.animation = null;
+        
+        div.innerHTML = `<span class="block text-3xl font-black text-white mb-3 tracking-wide">${mood}</span><span class="text-lg font-light text-zinc-300">${msg}</span>`;
+    }
+
+    // --- FAQ Logic ---
+    function toggleFAQ(el){
+        const p = el.querySelector('p');
+        const icon = el.querySelector('span');
+        p.classList.toggle('hidden');
+        icon.innerText = p.classList.contains('hidden') ? '+' : '−';
+    }
+
+    // --- Step-by-Step WHO-5 Logic ---
+    const who5Questions = [
+        "I have felt cheerful and in good spirits",
+        "I have felt calm and relaxed",
+        "I have felt active and vigorous",
+        "I woke up feeling fresh and rested",
+        "My daily life has been filled with things that interest me"
+    ];
+
+    const who5Options = [
+        { label: "All of the time", value: 5 },
+        { label: "Most of the time", value: 4 },
+        { label: "More than half of the time", value: 3 },
+        { label: "Less than half of the time", value: 2 },
+        { label: "Some of the time", value: 1 },
+        { label: "At no time", value: 0 }
+    ];
+
+    let currentQuestionIndex = 0;
+    let userAnswers = new Array(5).fill(null);
+
+    function renderCurrentQuestion(animate = false) {
+        const container = document.getElementById('questions-container');
+        const qText = who5Questions[currentQuestionIndex];
+        const selectedValue = userAnswers[currentQuestionIndex];
+        
+        // Progress Bar Calculation
+        const progressPercentage = ((currentQuestionIndex + 1) / 5) * 100;
+        
+        let optionsHTML = who5Options.map(opt => {
+            const isSelected = selectedValue === opt.value;
+            const activeClasses = isSelected 
+                ? 'bg-amber-500/10 border-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.2)] scale-[1.02]' 
+                : 'bg-zinc-900/50 border-zinc-700/50 hover:bg-zinc-800/80 hover:border-zinc-500';
+            const radioInner = isSelected ? '<div class="w-3 h-3 rounded-full bg-gradient-to-r from-amber-300 to-orange-500 shadow-[0_0_10px_rgba(251,191,36,0.8)]"></div>' : '';
+            const radioBorder = isSelected ? 'border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.3)]' : 'border-zinc-600 bg-zinc-950/80';
+            const textClass = isSelected ? 'text-white font-black' : 'text-zinc-300 font-medium';
+            
+            return `
+                <button type="button" onclick="selectAnswer(${opt.value})" 
+                    class="w-full text-left flex items-center space-x-5 p-5 rounded-2xl border transition-all duration-300 ${activeClasses}">
+                    <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${radioBorder}">
+                        ${radioInner}
+                    </div>
+                    <span class="${textClass} text-lg transition-colors duration-300">${opt.label}</span>
+                </button>
+            `;
+        }).join('');
+
+        const animationClass = animate ? 'animate-fade-in' : '';
+
+        container.innerHTML = `
+            <div class="${animationClass}" key="q${currentQuestionIndex}">
+                <div class="flex justify-between items-end mb-4">
+                    <p class="text-sm font-black text-amber-400 uppercase tracking-widest">Question ${currentQuestionIndex + 1} of 5</p>
+                    <p class="text-sm font-black text-zinc-400">${Math.round(progressPercentage)}%</p>
+                </div>
+                
+                <!-- Smooth Glowing Progress Bar -->
+                <div class="w-full bg-zinc-900 rounded-full h-2 mb-10 overflow-hidden shadow-inner border border-zinc-800">
+                    <div class="bg-gradient-to-r from-amber-300 via-orange-500 to-rose-500 h-2 rounded-full transition-all duration-500 ease-out shadow-[0_0_15px_rgba(251,191,36,0.8)]" style="width: ${progressPercentage}%"></div>
+                </div>
+
+                <h3 class="text-3xl font-black text-white mb-8 leading-tight tracking-wide">${qText}</h3>
+                <div class="flex flex-col gap-4">
+                    ${optionsHTML}
+                </div>
+            </div>
+        `;
+        
+        updateNavigationButtons();
+    }
+
+    function selectAnswer(value) {
+        userAnswers[currentQuestionIndex] = value;
+        renderCurrentQuestion(false); 
+    }
+
+    function updateNavigationButtons() {
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnSubmit = document.getElementById('btn-submit');
+        const hasAnsweredCurrent = userAnswers[currentQuestionIndex] !== null;
+
+        // Prev Button logic
+        if (currentQuestionIndex === 0) {
+            btnPrev.classList.add('hidden');
+        } else {
+            btnPrev.classList.remove('hidden');
+        }
+
+        // Next / Submit logic 
+        if (currentQuestionIndex === 4) {
+            btnNext.classList.add('hidden');
+            btnSubmit.classList.remove('hidden');
+            btnSubmit.disabled = !hasAnsweredCurrent;
+            btnSubmit.className = hasAnsweredCurrent 
+                ? "bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 px-10 py-3.5 rounded-full font-black uppercase tracking-widest hover:scale-105 transition shadow-[0_0_25px_rgba(251,191,36,0.4)]" 
+                : "bg-zinc-800 text-zinc-600 px-10 py-3.5 rounded-full font-black uppercase tracking-widest opacity-50 cursor-not-allowed transition border border-zinc-700";
+        } else {
+            btnSubmit.classList.add('hidden');
+            btnNext.classList.remove('hidden');
+            btnNext.disabled = !hasAnsweredCurrent;
+            btnNext.className = hasAnsweredCurrent 
+                ? "bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 px-10 py-3.5 rounded-full font-black uppercase tracking-widest hover:scale-105 transition shadow-[0_0_25px_rgba(251,191,36,0.4)]"
+                : "bg-zinc-900 border border-zinc-800 text-zinc-600 px-10 py-3.5 rounded-full font-black uppercase tracking-widest transition opacity-50 cursor-not-allowed";
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < 4 && userAnswers[currentQuestionIndex] !== null) {
+            currentQuestionIndex++;
+            renderCurrentQuestion(true);
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderCurrentQuestion(true);
+        }
+    }
+
+    function startAssessment() {
+        document.getElementById('assessment-intro').classList.add('hidden');
+        document.getElementById('who5-form').classList.remove('hidden');
+        currentQuestionIndex = 0;
+        userAnswers.fill(null);
+        renderCurrentQuestion(true);
+    }
+
+    function resetAssessment() {
+        document.getElementById('assessment-result').classList.add('hidden');
+        document.getElementById('assessment-intro').classList.remove('hidden');
+        currentQuestionIndex = 0;
+        userAnswers.fill(null);
+    }
+
+    function calculateWHO5() {
+        if (userAnswers.includes(null)) return;
+        
+        let totalScore = userAnswers.reduce((sum, val) => sum + val, 0);
+        const percentage = totalScore * 4;
+        
+        document.getElementById('who5-form').classList.add('hidden');
+        document.getElementById('assessment-result').classList.remove('hidden');
+        
+        const scoreCircle = document.getElementById('score-circle');
+        const scoreBand = document.getElementById('score-band');
+        const scoreMeaning = document.getElementById('score-meaning');
+        
+        scoreCircle.innerText = `${percentage}%`;
+        
+        if (percentage >= 67) {
+            scoreCircle.className = "text-8xl font-black text-amber-400 mb-6 drop-shadow-[0_0_25px_rgba(251,191,36,0.5)]";
+            scoreBand.innerText = "Good Well-Being";
+            scoreBand.className = "text-2xl font-black uppercase tracking-[0.2em] mb-6 text-amber-300";
+            scoreMeaning.innerText = "Your score suggests you're in a good place emotionally. Keep nurturing these habits and lean on your support network.";
+        } else if (percentage >= 50) {
+            scoreCircle.className = "text-8xl font-black text-yellow-400 mb-6 drop-shadow-[0_0_25px_rgba(250,204,21,0.5)]";
+            scoreBand.innerText = "Moderate Well-Being";
+            scoreBand.className = "text-2xl font-black uppercase tracking-[0.2em] mb-6 text-yellow-300";
+            scoreMeaning.innerText = "Your score is in the moderate range. There may be areas worth exploring — small steps like rest, connection, and mindfulness can help.";
+        } else if (percentage >= 29) {
+            scoreCircle.className = "text-8xl font-black text-orange-400 mb-6 drop-shadow-[0_0_25px_rgba(251,146,60,0.5)]";
+            scoreBand.innerText = "Low Well-Being";
+            scoreBand.className = "text-2xl font-black uppercase tracking-[0.2em] mb-6 text-orange-400";
+            scoreMeaning.innerText = "Your score suggests some emotional difficulties. We encourage you to speak with a professional or someone you trust for further support.";
+        } else {
+            scoreCircle.className = "text-8xl font-black text-rose-500 mb-6 drop-shadow-[0_0_25px_rgba(244,63,94,0.5)]";
+            scoreBand.innerText = "Very Low Well-Being";
+            scoreBand.className = "text-2xl font-black uppercase tracking-[0.2em] mb-6 text-rose-400";
+            scoreMeaning.innerText = "Your score indicates significant distress. Please reach out to a mental health professional or a helpline as soon as possible — you deserve support.";
+        }
+        
+        document.getElementById('assessment-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+</script>
+{% endblock %}

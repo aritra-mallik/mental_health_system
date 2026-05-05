@@ -1,0 +1,1580 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    /* Breathing Guide Animation (4s inhale/exhale cycle) */
+    @keyframes guide-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.2; }
+        50% { transform: scale(1.5); opacity: 0.5; }
+    }
+    .animate-guide-pulse {
+        animation: guide-pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes Smera-float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        33% { transform: translateY(-10px) rotate(-2deg); }
+        66% { transform: translateY(-5px) rotate(2deg); }
+    }
+    .Smera-float {
+        animation: Smera-float 6s ease-in-out infinite;
+    }
+
+    #dynamicGreeting span {
+        animation: color-shift 8s infinite;
+    }
+
+    @keyframes color-shift {
+        0%, 100% { color: #4f46e5; }
+        50% { color: #9333ea; }
+    }
+    /* Specialized float for the mini Smera icon */
+    @keyframes mini-float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-6px) rotate(3deg); }
+    }
+    .mini-Smera-float {
+        animation: mini-float 4s ease-in-out infinite;
+    }
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeSlideUp {
+        animation: fadeSlideUp 0.4s ease-out forwards;
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+    }
+    /* Gentle up and down floating motion */
+        
+    /* Occasional natural blink */
+    @keyframes smeraBlink {
+        0%, 94%, 98%, 100% { transform: scaleY(1); }
+        96% { transform: scaleY(0.1); }
+    }
+    /* Subtle glowing/pulsing effect on the blush */
+    @keyframes smeraBlush {
+        0%, 100% { fill-opacity: 0.6; transform: scale(1); }
+        50% { fill-opacity: 0.8; transform: scale(1.1); }
+    }
+    .smera-eye {
+        animation: smeraBlink 5s infinite;
+    }
+    /* Transform origins must match the exact cx/cy coordinates to scale properly */
+    .eye-left { transform-origin: 35px 45px; }
+    .eye-right { transform-origin: 65px 45px; }
+    .smera-cheek {
+        animation: smeraBlush 4s ease-in-out infinite;
+    }
+    .cheek-left { transform-origin: 30px 55px; }
+    .cheek-right { transform-origin: 70px 55px; }
+    @keyframes bell-alert {
+        0%, 50%, 100% { transform: rotate(0); }
+        5%, 15%, 25%, 35%, 45% { transform: rotate(10deg); }
+        10%, 20%, 30%, 40% { transform: rotate(-10deg); }
+    }
+    .animate-bell-active {
+        /* Rings for 1.5s, pauses for 1.5s, repeats */
+        animation: bell-alert 3s infinite;
+        transform-origin: 50% 15%;
+    }
+</style>
+<div class="flex flex-col md:flex-row gap-6 max-w-7xl mx-auto relative">
+
+    <!-- Mobile Sidebar Button -->
+    <button onclick="toggleMobileSidebar()"
+        class="md:hidden fixed bottom-6 right-6 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-full shadow-xl hover:scale-110 transition-all flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    {% include "includes/sidebar.html" %}
+
+    <div class="flex-1 space-y-6">
+        <!-- Dashboard Header -->
+        <section class="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-700 dark:to-slate-900 border-[4px] border-white dark:border-slate-800/50 rounded-[3.5rem] p-8 md:p-12 mb-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] flex items-center justify-center">
+    
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-200/30 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-200/30 rounded-full blur-3xl"></div>
+
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12 w-full">
+                
+                <div class="relative flex-shrink-0">
+                    <div class="absolute inset-0 bg-indigo-400/20 rounded-full animate-guide-pulse"></div>
+                    
+                    <div class="relative bg-white dark:bg-gray-700 p-6 rounded-full shadow-xl border-4 border-white dark:border-gray-600">
+                        <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="Smera-float">
+    
+                            <circle cx="50" cy="50" r="45" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="2"/>
+                            
+                            <circle cx="35" cy="45" r="4" fill="#4F46E5" class="smera-eye eye-left"/>
+                            <circle cx="65" cy="45" r="4" fill="#4F46E5" class="smera-eye eye-right"/>
+                            
+                            
+                            <path d="M40 65C40 65 45 70 50 70C55 70 60 65 60 65" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/>
+                            
+                            <circle cx="30" cy="55" r="5" fill="#FED7AA" class="smera-cheek cheek-left"/>
+                            <circle cx="70" cy="55" r="5" fill="#FED7AA" class="smera-cheek cheek-right"/>
+                        </svg>
+                    </div>
+                    
+                    <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+                        Breathe
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center md:items-start text-center md:text-left max-w-2xl">
+                    <h1 id="dynamicGreeting" class="text-4xl md:text-5xl font-black text-gray-800 dark:text-white leading-tight">
+                        Greetings, <span class="text-indigo-600">Friend.</span>
+                    </h1>
+                    <p class="text-gray-500 dark:text-gray-400 mt-4 text-lg">
+                        I'm Smera. Whenever things feel heavy, or if you just need a friendly chat, I'm right here for you.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-4 mt-8 w-full">
+
+                        <button onclick="goConsultation()" 
+                            class="group relative bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all hover:-translate-y-1 active:translate-y-0 flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
+
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 10h.01M12 14h.01M16 10h.01M9 16h6M12 20c4.418 0 8-3.582 8-8S16.418 4 12 4 4 7.582 4 12s3.582 8 8 8z"/>
+                            </svg>
+
+                            <div class="text-left">
+                                <span class="block text-[17px] font-black">
+                                    Consultation
+                                </span>
+                                <span class="block text-xs opacity-80">
+                                    Book a session with experts
+                                </span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="goChatbot()" 
+                            class="group relative bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-[0_15px_30px_-5px_rgba(79,70,229,0.4)] transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden w-full sm:w-auto flex justify-center items-center">
+                            <span class="relative z-10 flex items-center gap-2">
+                                Chat with Smera
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-indigo-400 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </button>
+                        
+                        <button onclick="loadAssessment()" class="group/test relative bg-white dark:bg-slate-800 text-left px-6 py-3 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 active:translate-y-0 flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
+                            
+                            <div class="flex shrink-0 items-center justify-center w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-full group-hover/test:scale-110 group-hover/test:bg-indigo-100 dark:group-hover/test:bg-indigo-800/50 transition-all duration-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+
+                            <div>
+                                <span class="block text-[17px] font-black text-slate-800 dark:text-white group-hover/test:text-indigo-600 dark:group-hover/test:text-indigo-400 transition-colors">
+                                    Mindful Check-in
+                                </span>
+                                <span class="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                                    Take a moment to map your feelings
+                                </span>
+                            </div>
+
+                            <div class="absolute -bottom-12 sm:bottom-auto sm:-top-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-900 text-white text-[11px] font-bold tracking-wider rounded-xl opacity-0 group-hover/test:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap shadow-2xl border border-slate-700 -translate-y-2 sm:translate-y-2 group-hover/test:translate-y-0 z-20">
+                                Self-Guided Assessments
+                            </div>
+                        </button>
+
+                    </div>
+
+                    <div class="mt-7 flex flex-col xl:flex-row items-center gap-3 animate-fade-in opacity-90 w-full justify-center md:justify-start">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5 shrink-0">
+                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Routine Guide:
+                        </span>
+                        <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                            <span class="px-2.5 py-1 bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-[11px] font-semibold rounded-lg backdrop-blur-sm shadow-sm">
+                                WHO-5, PSS & ISI: <strong class="text-indigo-600 dark:text-indigo-400 ml-0.5">Weekly</strong>
+                            </span>
+                            <span class="px-2.5 py-1 bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-[11px] font-semibold rounded-lg backdrop-blur-sm shadow-sm">
+                                DASS-21: <strong class="text-indigo-600 dark:text-indigo-400 ml-0.5">Bi-weekly</strong>
+                            </span>
+                            <span class="px-2.5 py-1 bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-[11px] font-semibold rounded-lg backdrop-blur-sm shadow-sm">
+                                Burnout: <strong class="text-indigo-600 dark:text-indigo-400 ml-0.5">Monthly</strong>
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Extra Info Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <div class="relative overflow-hidden bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1 group">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500 rounded-full opacity-5 group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-4 border border-indigo-100 dark:border-indigo-800/50 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+                <div>
+                    <p id="card-last-checkin" class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">--</p>
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mt-1">Last Assessment Date</h4>
+                </div>
+            </div>
+
+            <div class="relative overflow-hidden bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1 group">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500 rounded-full opacity-5 group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-4 border border-blue-100 dark:border-blue-800/50 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p id="card-mood-status" class="text-3xl font-black text-slate-900 dark:text-white tracking-tight capitalize">--</p>
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mt-1">Mood Status</h4>
+                </div>
+            </div>
+
+            <div class="relative overflow-hidden bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 hover:-translate-y-1 group">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500 rounded-full opacity-5 group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-4 border border-emerald-100 dark:border-emerald-800/50 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                </div>
+                <div>
+                    <p id="card-assessments" class="text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">--</p>
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mt-1">Latest Test</h4>
+                </div>
+            </div>
+
+            <div onclick="goJournal()" class="cursor-pointer relative overflow-hidden bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-1 group">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-500 rounded-full opacity-5 group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+                <div class="w-12 h-12 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mb-4 border border-purple-100 dark:border-purple-800/50 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <div>
+                    <p id="card-journal-entries" class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">--</p>
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mt-1">Vault Entries</h4>
+                </div>
+                
+                <div class="absolute bottom-6 right-6 text-purple-300 dark:text-purple-700 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Journal Card -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-8 mb-8">
+            
+            <div onclick="goJournal()" class="lg:col-span-3 relative w-full cursor-pointer group transition-all duration-500 hover:-translate-y-2">
+                <div class="absolute inset-0 bg-white dark:bg-slate-900 rounded-r-3xl rounded-l-sm shadow-[0_20px_40px_-15px_rgba(79,70,229,0.15)] dark:shadow-[0_20px_40px_-15px_rgba(79,70,229,0.5)] group-hover:shadow-[0_25px_50px_-12px_rgba(79,70,229,0.25)] dark:group-hover:shadow-[0_25px_50px_-12px_rgba(79,70,229,0.7)] transition-shadow duration-500"></div>
+                
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-200 via-white to-purple-50 dark:from-indigo-900 dark:via-slate-800 dark:to-purple-900 rounded-r-3xl rounded-l-sm opacity-95 overflow-hidden border border-indigo-100 dark:border-white/10 border-l-0 transition-colors duration-500">
+                    <div class="absolute -right-10 -bottom-10 opacity-30 dark:opacity-10 group-hover:opacity-40 dark:group-hover:opacity-20 transition-opacity duration-700 group-hover:scale-110 transform">
+                        <svg class="w-64 h-64 text-indigo-200 dark:text-indigo-300" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.25 8.25v-3a3.25 3.25 0 10-6.5 0v3h6.5z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-indigo-200/50 to-indigo-50/10 dark:from-black/70 dark:to-black/30 rounded-l-sm border-r border-indigo-100 dark:border-white/5 shadow-[inset_-2px_0_10px_rgba(79,70,229,0.05)] dark:shadow-[inset_-2px_0_10px_rgba(0,0,0,0.6)] flex flex-col justify-evenly items-center z-10 transition-colors duration-500">
+                    <div class="w-full h-[2px] bg-indigo-300/40 dark:bg-white/10 shadow-[0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.8)]"></div>
+                    <div class="w-full h-[2px] bg-indigo-300/40 dark:bg-white/10 shadow-[0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.8)]"></div>
+                    <div class="w-full h-[2px] bg-indigo-300/40 dark:bg-white/10 shadow-[0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.8)]"></div>
+                    <div class="w-full h-[2px] bg-indigo-300/40 dark:bg-white/10 shadow-[0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.8)]"></div>
+                </div>
+
+                <div class="absolute right-12 -top-1 w-7 h-20 bg-gradient-to-b from-amber-400 to-amber-600 shadow-[0_5px_10px_rgba(0,0,0,0.15)] dark:shadow-[0_5px_10px_rgba(0,0,0,0.4)] origin-top transform transition-all duration-500 group-hover:scale-y-125 z-20" style="clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);"></div>
+
+                <div class="relative z-20 pl-16 pr-8 py-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 h-full">
+                    <div class="flex-1">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-white/5 border border-green-200 dark:border-white/10 rounded-full mb-3 backdrop-blur-md shadow-sm transition-colors duration-500">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            <span class="text-[10px] uppercase tracking-widest text-green-700 dark:text-indigo-100 font-bold transition-colors">Zero-Knowledge E2EE</span>
+                        </div>
+                        <h3 class="text-3xl font-black text-slate-800 dark:text-white tracking-wide mb-2 transition-colors duration-500" style="font-family: Georgia, serif;">Private Diary</h3>
+                        <p class="text-slate-500 dark:text-indigo-100/70 text-sm leading-relaxed max-w-xs font-medium transition-colors duration-500">
+                            A secure sanctuary for your mind. Document your journey and release your thoughts freely. No one else has the key.
+                        </p>
+                    </div>
+                    <div class="sm:shrink-0 mt-2 sm:mt-0">
+                        <div class="flex items-center justify-center w-12 h-12 bg-indigo-50 dark:bg-white/10 text-indigo-600 dark:text-white rounded-full transition-all duration-300 border border-indigo-100 dark:border-white/20 shadow-sm dark:shadow-lg group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-400 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] dark:group-hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] group-hover:rotate-12 group-hover:scale-110">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 relative w-full bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-amber-400/10 dark:bg-amber-400/5 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 shadow-sm">
+                            <svg class="w-5 h-5 text-orange-500 animate-bell-active" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-lg text-slate-800 dark:text-white leading-tight">Smera's Alert</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Live status</p>
+                        </div>
+                    </div>
+                    
+                    <div id="smeraAlertBox" class="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 mb-4 border border-slate-100 dark:border-slate-700/50 shadow-inner transition-colors duration-300">
+                        <ul id="insightsList" class="space-y-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            </ul>
+                    </div>
+                </div>
+
+                <div class="relative z-10 mt-auto pt-4 border-t border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest shrink-0">Up Next:</p>
+                    <div id="recommendBox" class="flex flex-wrap gap-2 justify-end w-full">
+                        </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Mood Chart Card -->
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 flex flex-col">
+
+                <div class="flex items-center justify-between mb-4">
+                    <h3
+                        class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                        Mood Trends
+                    </h3>
+
+                    <span
+                        class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full dark:bg-gray-700 dark:text-blue-300">
+                        Feelings
+                    </span>
+                </div>
+
+                <div class="flex-1 relative min-h-[260px]">
+                    <canvas id="moodChart"></canvas>
+                </div>
+
+            </div>
+
+            <!-- Assessment Chart Card -->
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 flex flex-col">
+
+                <div class="flex items-center justify-between mb-4">
+                    <h3
+                        class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                        Assessment Scores
+                    </h3>
+
+                    <span
+                        class="text-xs bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full dark:bg-gray-700 dark:text-emerald-300">
+                        History
+                    </span>
+                </div>
+
+                <div class="flex-1 relative min-h-[260px]">
+                    <canvas id="assessmentChart"></canvas>
+                </div>
+                
+
+            </div>
+
+        </div>
+
+        <!-- Detailed Event Timeline Card -->
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition duration-300 flex flex-col mt-6 relative overflow-hidden group">
+            
+            <div class="absolute -top-24 -left-24 w-64 h-64 bg-pink-400/10 dark:bg-pink-500/10 rounded-full blur-3xl pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
+
+            <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                <div>
+                    <h3 class="text-lg font-black tracking-tight text-slate-800 dark:text-white">
+                        Raw Mood Events
+                    </h3>
+                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">Every check-in plotted over time</p>
+                </div>
+                <span class="text-[11px] font-bold tracking-widest text-pink-600 dark:text-pink-400 uppercase bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/50 px-3 py-1.5 rounded-xl shadow-sm">
+                    Timeline
+                </span>
+            </div>
+
+            <div class="flex-1 relative min-h-[220px]">
+                <canvas id="eventMoodChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Feed Section -->
+        <div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] group/section">
+
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-purple-400/10 dark:bg-purple-500/10 rounded-full blur-3xl pointer-events-none transition-transform duration-1000 group-hover/section:scale-110"></div>
+
+            <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-inner border border-purple-100 dark:border-purple-800/50">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black tracking-tight text-slate-800 dark:text-white">
+                            Curated Readings
+                        </h3>
+                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">Insights tailored for your journey</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
+                    <button onclick="prevArticles()" class="p-2.5 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all shadow-sm" aria-label="Previous">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    
+                    <div class="flex items-center gap-2 px-4 border-l border-r border-slate-200 dark:border-slate-700/50">
+                        <span class="flex h-2.5 w-2.5 relative">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-500"></span>
+                        </span>
+                        <span class="text-[11px] font-bold tracking-widest uppercase text-purple-600 dark:text-purple-400">
+                            Auto-Feed
+                        </span>
+                    </div>
+
+                    <button onclick="nextArticles()" class="p-2.5 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all shadow-sm" aria-label="Next">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="article-container" class="grid grid-cols-1 md:grid-cols-2 gap-5 min-h-[180px]"></div>
+
+        </div>
+
+    </div>
+    
+</div>
+<div class="fixed bottom-28 right-6 md:bottom-10 md:right-10 z-[60] flex flex-col items-end group">
+    
+    <div class="mb-4 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 origin-bottom-right">
+        <div class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-3xl rounded-br-none shadow-2xl border border-indigo-100 dark:border-slate-700 max-w-[200px] text-sm font-medium leading-relaxed">
+           <span id="Smera-message">"Hey! I'm here if you want to talk. ✨"</span>
+        </div>
+    </div>
+
+    <button onclick="goChatbot()" 
+        class="relative p-1 bg-white dark:bg-slate-800 rounded-full shadow-[0_15px_40px_rgba(79,70,229,0.25)] hover:shadow-[0_20px_50px_rgba(79,70,229,0.4)] transition-all duration-500 hover:scale-110 active:scale-95 group-hover:rotate-6">
+        
+        <span class="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-20"></span>
+        
+        <div class="relative bg-indigo-50 dark:bg-slate-900 rounded-full p-2 overflow-hidden border-2 border-indigo-100 dark:border-slate-700">
+            <!-- Animated Mini Smera -->
+            <svg width="65" height="65" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="mini-Smera-float">
+                <circle cx="50" cy="50" r="45" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="2"/>
+                
+                <circle cx="35" cy="45" r="4" fill="#4F46E5" class="smera-eye eye-left"/>
+                <circle cx="65" cy="45" r="4" fill="#4F46E5" class="smera-eye eye-right"/>
+                
+               
+                <path d="M40 65C40 65 45 70 50 70C55 70 60 65 60 65" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/>
+            
+                <circle cx="30" cy="55" r="5" fill="#FED7AA" class="smera-cheek cheek-left"/>
+                <circle cx="70" cy="55" r="5" fill="#FED7AA" class="smera-cheek cheek-right"/>
+            </svg>
+        </div>
+
+        <span class="absolute top-1 right-1 flex h-4 w-4">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-4 w-4 bg-indigo-600 border-2 border-white dark:border-slate-800"></span>
+        </span>
+    </button>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let LIVE_ALERT = null;
+let articles = [];
+let articleIndex = 0;
+let feedInterval = null;
+let cachedMoodData = null;
+
+async function loadLiveAlert() {
+    const { data } = await apiRequest("/api/core/live-alert/");
+    LIVE_ALERT = data.alert;
+    renderAlert(LIVE_ALERT);
+}
+
+function applyAlertStyling(level) {
+    const alertBox = document.getElementById("smeraAlertBox");
+    const insightsList = document.getElementById("insightsList");
+    
+    if (!alertBox || !insightsList) return;
+
+    // Reset classes
+    alertBox.className = "rounded-2xl p-4 mb-4 border shadow-inner transition-colors duration-300";
+    insightsList.className = "space-y-3 text-sm font-bold";
+
+    // Apply color themes based on severity
+    if (level === "red") {
+        alertBox.classList.add("bg-red-50", "dark:bg-red-900/20", "border-red-200", "dark:border-red-800/50");
+        insightsList.classList.add("text-red-700", "dark:text-red-400");
+    } else if (level === "orange") {
+        alertBox.classList.add("bg-orange-50", "dark:bg-orange-900/20", "border-orange-200", "dark:border-orange-800/50");
+        insightsList.classList.add("text-orange-700", "dark:text-orange-400");
+    } else if (level === "yellow") {
+        alertBox.classList.add("bg-yellow-50", "dark:bg-yellow-900/20", "border-yellow-200", "dark:border-yellow-800/50");
+        insightsList.classList.add("text-yellow-700", "dark:text-yellow-500");
+    } else {
+        // Green / Default
+        alertBox.classList.add("bg-emerald-50", "dark:bg-emerald-900/20", "border-emerald-200", "dark:border-emerald-800/50");
+        insightsList.classList.add("text-emerald-700", "dark:text-emerald-400");
+    }
+}
+
+function renderAlert(alert) {
+    const list = document.getElementById("insightsList");
+    if (!list) return;
+
+    if (!alert || !alert.msg) {
+        return; 
+    }
+
+    const validLevels = ["red","orange","yellow","green"];
+    const level = validLevels.includes(alert.level) ? alert.level : "green";
+    
+    applyAlertStyling(level);
+
+    const colorMap = {
+        red: "bg-red-500",
+        orange: "bg-orange-500",
+        yellow: "bg-yellow-500",
+        green: "bg-emerald-500"
+    };
+
+    list.innerHTML = `
+        <li class="flex items-start gap-3">
+            <span class="w-2 h-2 rounded-full ${colorMap[level]} shrink-0 mt-1.5 shadow-sm animate-pulse"></span>
+            <span>${alert.msg}</span>
+        </li>
+    `;
+}
+
+async function loadArticles() {
+    try {
+        let moodRes;
+
+        if (cachedMoodData) {
+            moodRes = { data: cachedMoodData };
+        } else {
+            moodRes = await apiRequest("/api/core/mood/");
+            if (moodRes?.data) {
+                cachedMoodData = moodRes.data;
+            }
+        }
+        console.log("MOOD API RAW:", moodRes);
+        let mood = null;
+
+        if (moodRes?.data && Array.isArray(moodRes.data) && moodRes.data.length > 0) {
+            const sorted = [...moodRes.data].sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+            );
+
+            mood = sorted[0]?.mood || null;
+        }
+
+        // normalize
+        if (mood) {
+            mood = mood.toLowerCase().trim();
+
+            // 🔥 FORCE VALID VALUES ONLY
+            const allowed = ["neutral", "anxious", "sad"];
+            if (!allowed.includes(mood)) {
+                mood = "neutral";
+            }
+        }
+
+        let url = "/api/articles/";
+
+        if (mood) {
+            url = `/api/articles/?mood=${encodeURIComponent(mood)}`;
+        }
+
+        console.log("FINAL MOOD:", mood);
+        console.log("FETCH URL:", url);
+        const res = await fetch(url);
+        articles = await res.json();
+
+        // ✅ FIX: reset everything
+        articleIndex = 0;
+        clearInterval(feedInterval);
+
+        if (Array.isArray(articles) && articles.length > 0) {
+            renderArticles();
+            resumeFeed();
+        } else {
+            document.getElementById("article-container").innerHTML = `
+                <div class="col-span-2 text-center text-slate-400 font-semibold">
+                    No articles found for this mood.
+                </div>
+            `;
+        }
+
+    } catch (err) {
+        console.error("Articles load failed", err);
+    }
+}
+// Add this flag right below your `let feedInterval;` declaration
+let cardsInitialized = false;
+
+function renderArticles() {
+    const container = document.getElementById("article-container");
+    if (!container || articles.length === 0) return;
+
+    // 1. Initialize the HTML structure ONLY ONCE to completely eliminate DOM thrashing
+    if (!cardsInitialized) {
+        container.innerHTML = `
+            <div id="art-card-0" class="group relative p-6 rounded-[1.5rem] border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 transition duration-300 cursor-pointer flex flex-col justify-between overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-center mb-5">
+                        <span id="art-mood-0" class="text-[10px] font-black px-3 py-1.5 rounded-lg tracking-wider uppercase border shadow-sm transition-colors duration-300"></span>
+                        <span class="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-100 dark:border-slate-700/50 transition-colors duration-300">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span id="art-time-0"></span>
+                        </span>
+                    </div>
+                    <h4 id="art-title-0" class="text-xl font-black text-slate-800 dark:text-white leading-tight mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300"></h4>
+                    <p id="art-short-0" class="text-sm font-medium text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed transition-colors duration-300"></p>
+                </div>
+                <div class="relative z-10 mt-6 pt-5 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs font-bold text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
+                    <span class="uppercase tracking-widest">Read Article</span>
+                    <div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 flex items-center justify-center group-hover:bg-purple-600 group-hover:border-purple-600 group-hover:text-white transition shadow-sm duration-300">
+                        <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div id="art-card-1" class="group relative p-6 rounded-[1.5rem] border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 transition duration-300 cursor-pointer flex flex-col justify-between overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-center mb-5">
+                        <span id="art-mood-1" class="text-[10px] font-black px-3 py-1.5 rounded-lg tracking-wider uppercase border shadow-sm transition-colors duration-300"></span>
+                        <span class="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-100 dark:border-slate-700/50 transition-colors duration-300">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span id="art-time-1"></span>
+                        </span>
+                    </div>
+                    <h4 id="art-title-1" class="text-xl font-black text-slate-800 dark:text-white leading-tight mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300"></h4>
+                    <p id="art-short-1" class="text-sm font-medium text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed transition-colors duration-300"></p>
+                </div>
+                <div class="relative z-10 mt-6 pt-5 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs font-bold text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
+                    <span class="uppercase tracking-widest">Read Article</span>
+                    <div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 flex items-center justify-center group-hover:bg-purple-600 group-hover:border-purple-600 group-hover:text-white transition shadow-sm duration-300">
+                        <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                </div>
+            </div>
+        `;
+        cardsInitialized = true;
+    }
+
+    // 2. Just update the data inside the existing DOM nodes
+    for (let i = 0; i < 2; i++) {
+        let actualIndex = (articleIndex + i) % articles.length;
+        let art = articles[actualIndex];
+
+        document.getElementById(`art-card-${i}`).setAttribute("onclick", `goToArticle(${art.id})`);
+        
+        let moodEl = document.getElementById(`art-mood-${i}`);
+        moodEl.innerText = art.mood;
+        // Dynamically swap the color classes without breaking transitions
+        moodEl.className = `text-[10px] font-black px-3 py-1.5 rounded-lg tracking-wider uppercase border shadow-sm transition-colors duration-300 ${getMoodColor(art.mood)}`;
+        
+        document.getElementById(`art-time-${i}`).innerText = art.read_time;
+        document.getElementById(`art-title-${i}`).innerText = art.title;
+        document.getElementById(`art-short-${i}`).innerText = art.short;
+        
+        // Re-trigger the smooth fade slide animation
+        const card = document.getElementById(`art-card-${i}`);
+        card.classList.remove("animate-fadeSlideUp");
+        void card.offsetWidth; // Force a browser reflow to restart animation
+        card.classList.add("animate-fadeSlideUp");
+    }
+}
+
+// 🔥 NAVIGATION FUNCTIONS
+function autoCycle() {
+    articleIndex = (articleIndex + 2) % articles.length;
+    renderArticles();
+}
+
+function nextArticles() {
+    articleIndex = (articleIndex + 2) % articles.length;
+    renderArticles();
+    resetFeed(); // Restart timer so it doesn't flip twice fast
+}
+
+function prevArticles() {
+    // Add articles.length before modulo to handle negative numbers in JS properly
+    articleIndex = (articleIndex - 2 + articles.length) % articles.length;
+    renderArticles();
+    resetFeed();
+}
+
+// 🔥 TIMING FUNCTIONS
+function pauseFeed() {
+    if (feedInterval !== null) {
+        clearInterval(feedInterval);
+        feedInterval = null;
+    }
+}
+
+function resumeFeed() {
+    pauseFeed();
+    feedInterval = setInterval(autoCycle, 10000);
+}
+
+function resetFeed() {
+    pauseFeed();
+    resumeFeed();
+}
+
+function getMoodColor(mood) {
+    const colors = {
+        happy: "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/50",
+        excellent: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/50",
+        neutral: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+        sad: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50",
+        anxious: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50",
+        angry: "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50"
+    };
+    return colors[mood] || "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:border-slate-700";
+}
+
+function goToArticle(index) {
+    window.location.href = `/api/articles/view/${index}/`;
+}
+
+// Authentication check
+if (!localStorage.getItem("access")) {
+    window.location.href = "/api/accounts/login-page/";
+}
+
+function loadAssessment(){
+    window.location.href = "/api/core/assessment-page/";
+}
+
+function goJournal(){
+    window.location.href = "/api/core/journal-page/";
+}
+
+// Global scope for sidebar state to fix undefined toggle variable
+let isSidebarCollapsed = false;
+
+async function loadDashboard(){
+    let moodRes;
+
+    if (cachedMoodData) {
+        moodRes = { res: { ok: true }, data: cachedMoodData };
+    } else {
+        moodRes = await apiRequest("/api/core/mood/");
+        if (moodRes.res?.ok) {
+            cachedMoodData = moodRes.data;
+        }
+    }
+    const assessRes = await apiRequest("/api/core/assessment-history/");
+    const summaryRes = await apiRequest("/api/core/assessment-summary/");
+    const recRes = await apiRequest("/api/core/assessment-recommendations/");
+    const journalRes = await apiRequest("/api/core/journal/", "GET");
+
+    if (moodRes.res?.ok && assessRes.res?.ok) {
+        renderMoodChart(moodRes.data);
+        renderAssessmentChart(assessRes.data);
+        renderEventMoodChart(moodRes.data);
+
+        updateSummaryCards(moodRes.data, assessRes.data, journalRes.data);
+
+        const list = document.getElementById("insightsList");
+        if(!list) return;
+
+        // 🔥 If there is NO live alert, show the default insights
+        if (!LIVE_ALERT || !LIVE_ALERT.msg) {
+            if (summaryRes.res?.ok) {
+                const insights = generateInsights(summaryRes.data);
+
+                if (insights.length) {
+                    // Treat generated insights as a "yellow/warning" level
+                    applyAlertStyling("yellow");
+                    list.innerHTML = insights.map(i => `
+                        <li class="flex items-start gap-3">
+                            <span class="w-2 h-2 rounded-full bg-yellow-500 shrink-0 mt-1.5 shadow-sm animate-pulse"></span>
+                            <span>${i}</span>
+                        </li>
+                    `).join("");
+                } else {
+                    // Treat clean state as "green/good" level
+                    applyAlertStyling("green");
+                    list.innerHTML = `
+                        <li class="flex items-start gap-3">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5 shadow-sm animate-pulse"></span>
+                            <span>You're doing well. Keep it up.</span>
+                        </li>
+                    `;
+                }
+            }
+        }
+        
+        // ... (The rest of your loadDashboard logic for recRes stays exactly the same)
+        if (recRes.res?.ok){
+            const recBox = document.getElementById("recommendBox");
+            if(!recBox) return;
+            const type = recRes.data.type;
+            const rec = recRes.data.recommended || [];
+
+            // 🔥 Extract latest mood
+            let latestMood = null;
+            if (moodRes.data && moodRes.data.length > 0) {
+                const sorted = [...moodRes.data].sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                );
+                latestMood = sorted[0]?.mood;
+            }
+
+            const moodBoost = (latestMood === "sad" || latestMood === "anxious");
+
+            const messages = {
+                first_time: "Let’s build your mental baseline",
+                reminder: "A gentle check-in might help today",
+                clean: "You're doing well — no check-ins needed now"
+            };
+
+            //  FIRST TIME
+            if (type === "first_time") {
+                recBox.innerHTML = `
+                    <div class="text-xs font-semibold text-indigo-600 mb-2">
+                        ${messages.first_time}
+                    </div>
+                ` + rec.map(r => `
+                    <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-md text-[10px] font-black border border-indigo-200 cursor-pointer hover:bg-indigo-100"
+                    onclick="loadAssessment()">
+                        Start ${r.toUpperCase()}
+                    </span>
+                `).join("");
+                return;
+            }
+
+            //  REMINDER / MOOD BOOST
+            if (rec.length > 0) {
+                recBox.innerHTML = `
+                    <div class="text-xs font-semibold text-orange-600 mb-2">
+                        ${moodBoost ? "You might benefit from a quick check-in" : messages.reminder}
+                    </div>
+                ` + rec.map(r => `
+                    <span class="px-2.5 py-1 bg-orange-50 text-orange-600 rounded-md text-[10px] font-black border border-orange-200 cursor-pointer hover:bg-orange-100 animate-pulse"
+                    onclick="loadAssessment()">
+                        ⏳ ${r.toUpperCase()} due
+                    </span>
+                `).join("");
+            }
+            else if (moodBoost) {
+                recBox.innerHTML = `
+                    <span class="text-xs text-orange-500 font-semibold">
+                        You seem low — try a quick check-in
+                    </span>
+                `;
+                }
+
+            //  CLEAN STATE
+            else {
+                recBox.innerHTML = `
+                    <span class="text-xs text-green-500 font-semibold">
+                        ${messages.clean}
+                    </span>
+                `;
+            }
+        }
+    }
+}
+
+// Update the parameters to accept journalData
+function updateSummaryCards(moodData, assessData, journalData) {
+    try {
+    const lastAssessDateEl = document.getElementById("card-last-checkin");
+    const moodStatusEl = document.getElementById("card-mood-status");
+    const lastAssessNameEl = document.getElementById("card-assessments");
+    const journalEntriesEl = document.getElementById("card-journal-entries");
+
+    // Helper map to display pretty names instead of raw backend keys
+    const ASSESS_TITLES = {
+        who5: "WHO-5",
+        pss: "PSS",
+        dass21: "DASS-21",
+        isi: "ISI",
+        burnout: "Burnout"
+    };
+
+    // 1. Process Mood Data (Status only)
+    if (moodData && moodData.length > 0) {
+        const sortedMoods = [...moodData].sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+
+        const latestMood = sortedMoods[0];
+
+        // 🔥 Normalize here
+        const normalizeMood = (mood) => {
+            mood = (mood || "").toLowerCase().trim();
+
+            const map = {
+                happy: "neutral",
+                excellent: "neutral",
+                angry: "anxious"
+            };
+
+            return map[mood] || mood;
+        };
+
+        const cleanMood = normalizeMood(latestMood.mood);
+
+        moodStatusEl.innerText = cleanMood;
+    }else {
+        moodStatusEl.innerText = "No data";
+    }
+
+    // 2. Process Assessment Data (Date & Name)
+    if (assessData && assessData.length > 0) {
+        // Sort descending to get the newest entry first
+        const sortedAssess = [...assessData].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const latestAssess = sortedAssess[0];
+        
+        // Format the date (e.g., 28/4/2026)
+        const dateObj = new Date(latestAssess.created_at);
+        lastAssessDateEl.innerText = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+        
+        // Map the backend key to the readable title
+        const typeKey = latestAssess.assessment_type;
+        lastAssessNameEl.innerText = ASSESS_TITLES[typeKey] || typeKey.toUpperCase();
+    } else {
+        lastAssessDateEl.innerText = "--";
+        lastAssessNameEl.innerText = "None";
+    }
+
+    // 3. Process Journal Data
+    if (journalData && journalData.length > 0) {
+        journalEntriesEl.innerText = journalData.length;
+    } else {
+        journalEntriesEl.innerText = "0";
+    }
+
+    } catch (error) {
+        console.error("Error updating summary cards:", error);
+    }
+}
+
+let moodChartInstance = null;
+let assessmentChartInstance = null;
+
+// Dark mode helper for Chart.js
+function getChartThemeColors() {
+    const isDark = document.documentElement.classList.contains('dark');
+    return {
+        text: isDark ? '#9ca3af' : '#4b5563',     // gray-400 : gray-600
+        grid: isDark ? '#374151' : '#e5e7eb',      // gray-700 : gray-200
+        pointBg: isDark ? '#1f2937' : '#ffffff'    // gray-800 : white (matches the card background)
+    };
+}
+
+function createGradient(ctx, colorStart, colorEnd) {
+    // The y-values (0 to 300) define a vertical gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+    return gradient;
+}
+
+let eventMoodChartInstance = null;
+
+function renderEventMoodChart(data) {
+    const canvas = document.getElementById("eventMoodChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const theme = getChartThemeColors();
+
+    if (eventMoodChartInstance) {
+        eventMoodChartInstance.destroy();
+    }
+
+    // Sort chronologically
+    const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    // Dynamic colors for each specific mood
+    const palette = {
+        0: { bg: 'rgba(239, 68, 68, 0.4)', border: '#ef4444' },   // Angry (Red)
+        1: { bg: 'rgba(249, 115, 22, 0.4)', border: '#f97316' },  // Anxious (Orange)
+        2: { bg: 'rgba(59, 130, 246, 0.4)', border: '#3b82f6' },  // Sad (Blue)
+        3: { bg: 'rgba(148, 163, 184, 0.4)', border: '#94a3b8' }, // Neutral (Slate)
+        4: { bg: 'rgba(16, 185, 129, 0.4)', border: '#10b981' },  // Happy (Emerald)
+        5: { bg: 'rgba(168, 85, 247, 0.4)', border: '#a855f7' }   // Excellent (Purple)
+    };
+
+    const labels = [];
+    const scores = [];
+    const pointBgs = [];
+    const pointBorders = [];
+
+    sortedData.forEach(d => {
+        const dt = new Date(d.created_at);
+        // Include both Date and exact Time for the label
+        const formattedTime = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const formattedDate = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        const score = mapMood(d.mood);
+        
+        labels.push(`${formattedDate} @ ${formattedTime}`);
+        scores.push(score);
+        pointBgs.push(palette[score].bg);
+        pointBorders.push(palette[score].border);
+    });
+
+    eventMoodChartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Logged Mood",
+                data: scores,
+                showLine: false, // <--- This turns it into a scatter bubble chart!
+                pointBackgroundColor: pointBgs,
+                pointBorderColor: pointBorders,
+                pointBorderWidth: 3,
+                pointRadius: 10,        // Large bubbles
+                pointHoverRadius: 16,   // Huge pop effect on hover
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleColor: '#94a3b8',
+                    titleFont: { size: 11, weight: 'normal' },
+                    bodyColor: '#ffffff',
+                    bodyFont: { weight: 'bold', size: 15 },
+                    padding: 14,
+                    cornerRadius: 16,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return `⏰ ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            const moodLabels = ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'];
+                            return ` Felt: ${moodLabels[context.raw]}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: -0.5, // Adds padding so top and bottom bubbles don't clip
+                    max: 5.5,
+                    ticks: { 
+                        color: theme.text,
+                        stepSize: 1,
+                        padding: 15,
+                        font: { size: 11, weight: '600' },
+                        callback: function(value) {
+                            return ['ANGRY', 'ANXIOUS', 'SAD', 'NEUTRAL', 'HAPPY', 'EXCELLENT'][value] || '';
+                        }
+                    },
+                    border: { display: false },
+                    grid: { 
+                        color: theme.grid,
+                        drawBorder: false,
+                        tickLength: 0
+                    }
+                },
+                x: {
+                    ticks: { 
+                        display: false // Hide X-axis labels to keep it looking clean and abstract
+                    },
+                    border: { display: false },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function renderMoodChart(data){
+    const canvas = document.getElementById("moodChart");
+    const ctx = canvas.getContext('2d');
+    const theme = getChartThemeColors();
+
+    if (moodChartInstance) {
+        moodChartInstance.destroy();
+    }
+
+    // Sort chronologically first
+    const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    // --- SMART AGGREGATION: Calculate the "Overall Mood" per day ---
+    const dailyMoods = {};
+    
+    sortedData.forEach(d => {
+        const dt = new Date(d.created_at);
+        // Format to a clean "May 4" style string
+        const dateLabel = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        if (!dailyMoods[dateLabel]) {
+            dailyMoods[dateLabel] = [];
+        }
+        // Store the numeric value of the mood for that day
+        dailyMoods[dateLabel].push(mapMood(d.mood));
+    });
+
+    const labels = Object.keys(dailyMoods); // Extracts the unique formatted dates
+    
+    // Calculate the average mood score for each day
+    const aggregatedData = labels.map(date => {
+        const scores = dailyMoods[date];
+        const sum = scores.reduce((total, current) => total + current, 0);
+        // Round to nearest whole number to snap to our specific mood emojis (0-5)
+        return Math.round(sum / scores.length); 
+    });
+
+    // Create the vibrant gradient
+    const gradientFill = createGradient(ctx, 'rgba(6, 182, 212, 0.5)', 'rgba(59, 130, 246, 0.0)'); 
+
+    moodChartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Daily Average Mood",
+                data: aggregatedData,
+                borderColor: '#06b6d4', 
+                backgroundColor: gradientFill,
+                borderWidth: 4, 
+                tension: 0.4, // Keeps the line organically smooth
+                fill: true,
+                pointBackgroundColor: theme.pointBg, 
+                pointBorderColor: '#06b6d4', 
+                pointBorderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#06b6d4',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)', 
+                    titleColor: '#94a3b8',
+                    titleFont: { size: 12, weight: 'normal' },
+                    bodyColor: '#ffffff',
+                    bodyFont: { weight: 'bold', size: 14 },
+                    padding: 14,
+                    cornerRadius: 16,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return `📅 ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            const moodLabels = ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'];
+                            return ` Overall: ${moodLabels[context.raw]}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: 0,
+                    max: 5,
+                    ticks: { 
+                        color: theme.text,
+                        stepSize: 1,
+                        padding: 10,
+                        font: { size: 11, weight: '600' },
+                        callback: function(value) {
+                            return ['ANGRY', 'ANXIOUS', 'SAD', 'NEUTRAL', 'HAPPY', 'EXCELLENT'][value] || '';
+                        }
+                    },
+                    border: { display: false }, 
+                    grid: { 
+                        color: theme.grid,
+                        drawBorder: false,
+                        tickLength: 0 
+                    }
+                },
+                x: {
+                    ticks: { 
+                        color: theme.text,
+                        font: { size: 11, weight: 'bold' },
+                        padding: 10,
+                        maxTicksLimit: 6, // Prevents overcrowding on the X-axis
+                        maxRotation: 0,
+                        autoSkip: true
+                    },
+                    border: { display: false },
+                    grid: { display: false } 
+                }
+            }
+        }
+    });
+}
+
+function mapMood(m){
+    const moodMap = {
+        angry: 0,
+        anxious: 1,
+        sad: 2,
+        neutral: 3,
+        happy: 4,
+        excellent: 5
+    };
+    return moodMap[m] !== undefined ? moodMap[m] : 3;
+}
+
+function renderAssessmentChart(data){
+    const canvas = document.getElementById("assessmentChart");
+    const ctx = canvas.getContext('2d');
+    const theme = getChartThemeColors();
+
+    if (assessmentChartInstance) {
+        assessmentChartInstance.destroy();
+    }
+
+    // Sort oldest to newest chronologically
+    const chartData = [...data].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at));
+
+    // --- SMART DATES: Format nicely (e.g., "May 4") instead of "5/4" ---
+    const labels = [...new Set(chartData.map(d => {
+        const dt = new Date(d.created_at);
+        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); 
+    }))];
+
+    // Defining distinct, high-contrast "neon" colors for each test
+    const lineConfig = {
+        who5:   { color: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.5)' },  // Purple
+        pss:    { color: '#f43f5e', shadow: 'rgba(244, 63, 94, 0.5)' },   // Rose/Red
+        dass21: { color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.5)' },  // Amber
+        isi:    { color: '#10b981', shadow: 'rgba(16, 185, 129, 0.5)' },  // Emerald
+        burnout:{ color: '#6b7280', shadow: 'rgba(107, 114, 128, 0.5)' }   // Pink
+    };
+
+    const types = ["who5","pss","dass21","isi","burnout"];
+
+    const datasets = types.map(type => {
+        const typeData = labels.map(labelDate => {
+             // Find the *latest* entry for this specific formatted date
+             const matchingData = [...chartData].reverse().find(d => {
+                 const dt = new Date(d.created_at);
+                 const formattedDate = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                 return formattedDate === labelDate && d.assessment_type === type;
+             });
+             return matchingData ? matchingData.score : null;
+        });
+
+        // Check if this dataset actually has any data points to avoid drawing empty lines
+        const hasData = typeData.some(val => val !== null);
+        if (!hasData) return null;
+
+        return {
+            label: type.toUpperCase(),
+            data: typeData,
+            borderColor: lineConfig[type].color,
+            borderWidth: 3,
+            tension: 0.4, // Smooth curves
+            fill: false,
+            spanGaps: true, // Connects the line even if a day is skipped
+            pointBackgroundColor: theme.pointBg,
+            pointBorderColor: lineConfig[type].color,
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            pointHoverBackgroundColor: lineConfig[type].color,
+            pointHoverBorderColor: '#fff',
+        };
+    }).filter(dataset => dataset !== null); // Remove empty datasets
+
+    // --- Adding CSS Drop Shadows to Canvas Lines ---
+    const glowPlugin = {
+        id: 'glowPlugin',
+        beforeDatasetDraw: (chart, args, options) => {
+            const ctx = chart.ctx;
+            ctx.save();
+            ctx.shadowColor = args.meta.dataset.borderColor; 
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 4;
+        },
+        afterDatasetDraw: (chart, args, options) => {
+            chart.ctx.restore();
+        }
+    };
+
+    assessmentChartInstance = new Chart(ctx, {
+        type: "line",
+        data: { labels, datasets },
+        plugins: [glowPlugin], 
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        color: theme.text,
+                        usePointStyle: true, 
+                        boxWidth: 8,
+                        padding: 20,
+                        font: { weight: 'bold', size: 11 }
+                    }
+                },
+                // --- SMART TOOLTIPS ---
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)', // Sleeker dark background
+                    titleColor: '#94a3b8', // Subtle grey for the date
+                    titleFont: { size: 12, weight: 'normal' },
+                    bodyColor: '#ffffff', // Bright white for the score
+                    bodyFont: { size: 14, weight: 'bold' },
+                    bodySpacing: 8,
+                    padding: 14,
+                    cornerRadius: 16,
+                    usePointStyle: true,
+                    boxPadding: 6,
+                    callbacks: {
+                        title: function(context) {
+                            // Adds a calendar icon and the nicely formatted date
+                            return `📅 ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            // Cleans up the score presentation
+                            return ` ${context.dataset.label}: ${context.raw} Points`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { 
+                        color: theme.text,
+                        font: { size: 11, weight: '600' },
+                        padding: 10
+                    },
+                    border: { display: false },
+                    grid: { 
+                        color: theme.grid,
+                        drawBorder: false,
+                        tickLength: 0
+                    }
+                },
+                x: {
+                    // --- SMART AXIS CULLING ---
+                    ticks: { 
+                        color: theme.text,
+                        font: { size: 11, weight: 'bold' },
+                        padding: 10,
+                        maxTicksLimit: 6, // FORCES the chart to only show a maximum of 6 dates
+                        maxRotation: 0,   // Stops the dates from tilting diagonally
+                        autoSkip: true    // Automatically hides dates in between
+                    },
+                    border: { display: false },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function generateInsights(summary){
+    const latest = summary.latest;
+
+    let insights = [];
+
+    if (latest.pss?.risk === "high" && latest.isi?.risk === "moderate"){
+        insights.push("Stress may be affecting your sleep");
+    }
+
+    if (latest.who5?.risk === "low_wellbeing"){
+        insights.push("Your wellbeing is low. Consider rest and recovery.");
+    }
+
+    if (latest.burnout?.risk === "high"){
+        insights.push("Burnout risk is high. You need rest.");
+    }
+
+    return insights;
+}
+
+
+
+// Sidebar state management
+window.onload = function () {
+    const state = localStorage.getItem("sidebarCollapsed");
+    if (state === "true") {
+        isSidebarCollapsed = false; // Set opposite so toggle works correctly
+        toggleSidebar();
+    }
+
+    // Highlight active nav item
+    document.querySelectorAll(".nav-item").forEach(link => {
+        if (link.href === window.location.href) {
+            link.classList.add("bg-blue-50", "dark:bg-gray-700", "text-blue-600", "dark:text-blue-400");
+            link.classList.remove("text-gray-700", "dark:text-gray-300");
+        }
+    });
+};
+
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    isSidebarCollapsed = !isSidebarCollapsed;
+    
+    if (isSidebarCollapsed) {
+        sidebar.classList.add("sidebar-collapsed");
+    } else {
+        sidebar.classList.remove("sidebar-collapsed");
+    }
+    
+    localStorage.setItem("sidebarCollapsed", isSidebarCollapsed);
+    
+    // Trigger window resize event to force Chart.js to redraw smoothly inside the new container dimensions
+    setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 300);
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    
+    // Check if it's currently hidden by looking at the translate class
+    const isHidden = sidebar.classList.contains("-translate-x-full");
+    
+    if (isHidden) {
+        sidebar.classList.remove("-translate-x-full");
+        overlay.classList.remove("hidden");
+    } else {
+        sidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+    }
+}
+function goChatbot(){
+    window.location.href = "/api/core/chatbot-page/";
+}
+
+// [CHANGE]: Changed to an async function to handle the REST API call
+async function setGreeting() {
+    const greetingElement = document.getElementById('dynamicGreeting');
+    let userName = "Friend"; // Default fallback
+
+    try {
+        // [CHANGE]: Fetching user profile from your REST API endpoint
+        const response = await apiRequest("/api/user/profile/", "GET");
+        
+        if (response && response.data && response.data.display_name) {
+            userName = response.data.display_name;
+        }
+    } catch (error) {
+        console.error("Could not fetch user profile:", error);
+        // Fallback remains "Friend" if the API fails
+    }
+
+    const hour = new Date().getHours();
+    let greetingText = "";
+    
+    if (hour < 12) {
+        greetingText = `Good Morning, <span class="text-indigo-600">${userName}.</span>`;
+    } else if (hour < 18) {
+        greetingText = `Good Afternoon, <span class="text-indigo-600">${userName}.</span>`;
+    } else {
+        greetingText = `Good Evening, <span class="text-indigo-600">${userName}.</span>`;
+    }
+    
+    greetingElement.innerHTML = greetingText;
+}
+
+
+const SmeraLines = [
+    // --- Emotional Support ---
+    "It's okay to feel however you're feeling right now. ❤️",
+    "In case no one told you today: I'm really glad you're here. 🌟",
+    "You’ve survived 100% of your hardest days. You're doing great. 💪",
+    "You don't have to figure everything out today. Just breathe. 🕊️",
+    
+    // --- Mindfulness & Grounding ---
+    "Pause for a second. What's one thing you can hear right now? 👂",
+    "Close your eyes and take one slow, deep breath with me. 🌬️",
+    "Your thoughts are like clouds; let them just float by for a bit. ☁️",
+    "Feeling overwhelmed? Let's name three things you can see. 👀",
+
+    // --- Gentle Self-Care ---
+    "Is your phone on night mode? Your eyes deserve a rest, too. 📱",
+    "When was the last time you stretched? Reach for the sky! ☁️",
+    "Remember to drink a little water. Your body will thank you. 💧",
+    "A five-minute break can change your whole afternoon. ☕"
+];
+
+// Function to update Smera's message
+function updateSmeraMessage() {
+    const messageElement = document.getElementById('Smera-message');
+    if (messageElement) {
+        const randomLine = SmeraLines[Math.floor(Math.random() * SmeraLines.length)];
+        messageElement.innerText = randomLine;
+    }
+}
+// Run it whenever the page loads
+updateSmeraMessage();
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await Promise.all([
+        loadLiveAlert(),
+        loadDashboard(),
+        loadArticles()
+    ]);
+    setGreeting();
+
+    const section = document.querySelector(".group\\/section");
+    if (section) {
+        section.addEventListener("mouseenter", pauseFeed);
+        section.addEventListener("mouseleave", resumeFeed);
+    }
+});
+
+function goConsultation() {
+    window.location.href = "/api/consultation/";
+}
+</script>
+{% endblock %}
+
