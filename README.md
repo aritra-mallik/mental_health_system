@@ -4,6 +4,7 @@ A privacy-focused web-based Mental Health Digital Intervention System developed 
 The system provides mental health awareness, self-assessment, encrypted journaling, and AI-assisted supportive guidance in a **non-diagnostic and ethical manner**.
 
 **z_dev set up**
+
 cd z_dev
 
 npm init -y
