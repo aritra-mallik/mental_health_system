@@ -5,7 +5,9 @@ The system provides mental health awareness, self-assessment, encrypted journali
 
 **z_dev set up**
 cd z_dev
+
 npm init -y
+
 npm install tailwindcss @tailwindcss/cli
 
 **add this during the deployment in the input**
