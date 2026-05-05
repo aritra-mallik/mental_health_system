@@ -141,6 +141,24 @@
                     </p>
                     
                     <div class="flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-4 mt-8 w-full">
+
+                        <button onclick="goConsultation()" 
+                            class="group relative bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg transition-all hover:-translate-y-1 active:translate-y-0 flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
+
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 10h.01M12 14h.01M16 10h.01M9 16h6M12 20c4.418 0 8-3.582 8-8S16.418 4 12 4 4 7.582 4 12s3.582 8 8 8z"/>
+                            </svg>
+
+                            <div class="text-left">
+                                <span class="block text-[17px] font-black">
+                                    Consultation
+                                </span>
+                                <span class="block text-xs opacity-80">
+                                    Book a session with experts
+                                </span>
+                            </div>
+                        </button>
                         
                         <button onclick="goChatbot()" 
                             class="group relative bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-[0_15px_30px_-5px_rgba(79,70,229,0.4)] transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden w-full sm:w-auto flex justify-center items-center">
@@ -1554,6 +1572,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+function goConsultation() {
+    window.location.href = "/api/consultation/";
+}
 </script>
 {% endblock %}
 

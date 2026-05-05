@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-3xl mx-auto p-6">
+
+<h1 class="text-2xl font-bold mb-4">Book Appointment</h1>
+
+<div id="msg" class="mb-3 text-sm"></div>
+
+<div class="space-y-4">
+
+    <label>Search Counselor</label>
+    <input id="search" placeholder="Type name..." class="border p-2 w-full">
+
+    <label>Select Counselor</label>
+    <select id="counselor" class="border p-2 w-full"></select>
+
+    <label>Consultation Type</label>
+    <input id="type" class="border p-2 w-full" placeholder="e.g. Therapy">
+
+    <label>Mode</label>
+    <select id="mode" class="border p-2 w-full">
+        <option value="online">Online</option>
+        <option value="offline">Offline</option>
+    </select>
+
+    <label>Session Duration (minutes)</label>
+    <input id="duration" type="number" class="border p-2 w-full">
+
+    <label>Select Date</label>
+    <input id="date" type="date" class="border p-2 w-full">
+
+    <label>Available Slots</label>
+    <div id="slots" class="grid grid-cols-2 gap-2"></div>
+
+    <button id="bookBtn"
+        onclick="openModal()"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500 transition">
+        Book Appointment
+    </button>
+
+</div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modal"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.6); z-index:9999;">
+
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+                background:white; padding:25px; border-radius:10px; width:300px; text-align:center;">
+
+        <h3 style="margin-bottom:15px;">Confirm Booking?</h3>
+
+        <div style="display:flex; justify-content:center; gap:15px;">
+
+            <button onclick="bookSlot()"
+                style="background:#16a34a; color:white; padding:8px 18px; border:none; border-radius:6px; cursor:pointer;">
+                Yes
+            </button>
+
+            <button onclick="closeModal()"
+                style="background:#dc2626; color:white; padding:8px 18px; border:none; border-radius:6px; cursor:pointer;">
+                No
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let selectedCounselor = null;
+let selectedSlot = null;
+let allCounselors = [];
+
+/* MESSAGE */
+function showMsg(text, type="error"){
+    const m = document.getElementById("msg");
+    m.innerText = text;
+    m.className = type === "error" ? "text-red-600 mb-3" : "text-green-600 mb-3";
+}
+
+/* DEBOUNCE */
+function debounce(fn, delay){
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+}
+
+/* LOAD COUNSELORS */
+async function loadCounselors(){
+    const res = await fetch("/api/consultation/counselors/");
+    allCounselors = await res.json();
+    renderCounselors(allCounselors);
+}
+
+/* RENDER */
+function renderCounselors(list){
+    const dropdown = document.getElementById("counselor");
+    dropdown.innerHTML = "";
+
+    list.forEach(c => {
+        dropdown.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+
+    selectedCounselor = dropdown.value;
+    loadSlots();
+}
+
+/* SEARCH */
+document.getElementById("search").addEventListener("input",
+    debounce((e) => {
+        const val = e.target.value.toLowerCase();
+        const filtered = allCounselors.filter(c =>
+            c.name.toLowerCase().includes(val)
+        );
+        renderCounselors(filtered);
+    }, 400)
+);
+
+/* EVENTS */
+document.getElementById("counselor").addEventListener("change", e => {
+    selectedCounselor = e.target.value;
+    loadSlots();
+});
+
+document.getElementById("date").addEventListener("change", loadSlots);
+
+/* LOAD SLOTS */
+async function loadSlots(){
+
+    const date = document.getElementById("date").value;
+    if(!selectedCounselor || !date) return;
+
+    const container = document.getElementById("slots");
+    container.innerHTML = "Loading...";
+
+    const res = await fetch(`/api/consultation/counselors/${selectedCounselor}/?date=${date}`);
+    const data = await res.json();
+
+    const slots = data.slots.filter(s => !s.is_booked);
+
+    if(slots.length === 0){
+        container.innerHTML = "<p class='text-gray-500'>No slots available</p>";
+        return;
+    }
+
+    container.innerHTML = "";
+
+    slots.forEach(s => {
+        container.innerHTML += `
+            <div onclick="selectSlot(this, ${s.id})"
+                 class="border p-2 rounded cursor-pointer hover:bg-blue-100">
+                ${s.time} (${s.mode})
+            </div>
+        `;
+    });
+}
+
+/* SELECT SLOT */
+function selectSlot(el, id){
+    selectedSlot = id;
+
+    document.querySelectorAll("#slots div").forEach(d => {
+        d.classList.remove("bg-blue-500","text-white");
+    });
+
+    el.classList.add("bg-blue-500","text-white");
+}
+
+/* VALIDATION */
+function validate(){
+    if(!selectedCounselor) return "Select counselor";
+    if(!document.getElementById("type").value) return "Enter type";
+    if(!document.getElementById("duration").value) return "Enter duration";
+    if(!selectedSlot) return "Select a slot";
+    return null;
+}
+
+/* MODAL */
+function openModal(){
+    const err = validate();
+    if(err){
+        showMsg(err);
+        return;
+    }
+    document.getElementById("modal").style.display = "block";
+}
+
+function closeModal(){
+    document.getElementById("modal").style.display = "none";
+}
+
+/* BOOK */
+async function bookSlot(){
+
+    closeModal();
+
+    const btn = document.getElementById("bookBtn");
+    btn.disabled = true;
+    btn.innerText = "Booking...";
+
+    const token = localStorage.getItem("access");
+
+    try {
+        const res = await fetch("/api/consultation/create-booking/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                counselor: selectedCounselor,
+                slot: selectedSlot
+            })
+        });
+
+        const data = await res.json();
+
+        if(res.ok){
+            window.location.href = `/consultation/success/${data.id}/`;
+        } else {
+            showMsg(data.error || "Booking failed");
+        }
+
+    } catch (err) {
+        showMsg("Server error");
+    }
+
+    btn.disabled = false;
+    btn.innerText = "Book Appointment";
+}
+
+loadCounselors();
+
+</script>
+
+{% endblock %}
