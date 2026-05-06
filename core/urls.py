@@ -3,7 +3,8 @@ from .views import(MoodView, JournalView, AssessmentView,
                    AssessmentHistoryView, app_dashboard, app_assessment, app_chatbot, ChatSessionCreateView, 
                    ChatMessageView, ChatSessionCloseView, journal, 
                    AssessmentRecommendationView, AssessmentSummaryView,ChatSessionDetailView,ChatSessionListView,
-                   ChatSessionDeleteView, ChatSessionPinView, LiveAlertView,ChatInitialMessageView,ChatSessionWithContextView) 
+                   ChatSessionDeleteView, ChatSessionPinView, LiveAlertView,ChatInitialMessageView,
+                   ChatSessionWithContextView,MoodTrendView) 
 urlpatterns = [
     path("mood/", MoodView.as_view()),
     path("journal/", JournalView.as_view()),
@@ -28,4 +29,5 @@ urlpatterns = [
     path("live-alert/", LiveAlertView.as_view()),
     path("chat/initial/", ChatInitialMessageView.as_view()),
     path("chat/session-with-context/", ChatSessionWithContextView.as_view()),
+    path("mood-trends/", MoodTrendView.as_view()),
 ]

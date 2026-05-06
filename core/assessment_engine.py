@@ -178,71 +178,13 @@ class AssessmentEngine:
 
         score = cls.calculate_score(answers, test_type)
         risk = cls.get_risk_level(config, score)
-        alert = cls.generate_alert(
-            source="assessment",
-            risk=risk
-        )
+        
         return {
             "score": score,
             "risk_level": risk,
-            "alert": alert,
+            
             "insight": cls.INTERPRETATION.get(risk, ""),
             "meta": {},
             "disclaimer": cls.DISCLAIMER
         }
-    @classmethod
-    def generate_alert(cls, source, risk=None, mood=None, text=None):
-
-        if source == "assessment":
-            if risk in ["high", "severe", "low_wellbeing"]:
-                return {"level": "red", "msg": "High concern detected"}
-            elif risk in ["moderate", "subthreshold"]:
-                return {"level": "orange", "msg": "Some strain detected"}
-            return {"level": "green", "msg": "You're doing okay"}
-
-        if source == "mood":
-            if mood in ["sad", "anxious", "angry"]:
-                return {"level": "orange", "msg": "You're not feeling your best"}
-            elif mood == "neutral":
-                return {"level": "yellow", "msg": "Neutral day"}
-            return {"level": "green", "msg": "You're feeling positive"}
-
-        if source == "chat":
-            t = text.lower()
-            if any(x in t for x in ["hopeless", "can't go on", "worthless"]):
-                return {"level": "red", "msg": "Smera sensed distress"}
-            if any(x in t for x in ["sad", "stress", "overwhelmed", "tired"]):
-                return {"level": "yellow", "msg": "Something feels off"}
-            return {"level": "green", "msg": "Conversation stable"}
-        if source == "journal":
-            # sentiment-driven mood already computed upstream
-            if mood in ["sad"]:
-                return {
-                    "level": "orange",
-                    "msg": "You seem a bit distressed"
-                }
-            elif mood in ["angry"]:
-                return {
-                    "level": "orange",
-                    "msg": "You seem to be frustrated at this moment"
-                }
-            elif mood in ["anxious"]:
-                return {
-                    "level": "yellow",
-                    "msg": "You seem a bit anxious"
-                }
-            elif mood in ["happy"]:
-                return {
-                    "level": "green",
-                    "msg": "You seem to be doing good"
-                }
-            elif mood in ["excellent"]:
-                return {
-                    "level": "green",
-                    "msg": "You seem to be doing great"
-                }
-            else:
-                return {
-                    "level": "green",
-                    "msg": "You're stable"
-                }
+    

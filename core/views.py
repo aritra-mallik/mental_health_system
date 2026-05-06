@@ -14,6 +14,7 @@ from ChatBot.chatbot.llm_client import generate_response
 from ChatBot.chatbot.prompt_builder import build_prompt
 from .sentiment import analyze_text
 from .aggregator import compute_state
+from .alerts import generate_alert
 
 MAX_MESSAGES = 8
 def normalize_risk(risk):
@@ -114,11 +115,16 @@ class AssessmentView(APIView):
         
         
 
-        request.session["Smera_alert"] = {
-            "level": state["overall_risk"],
-            "mood": state["overall_mood"],
-            "score": state["score"]
-        }
+        alert = generate_alert(
+            global_state=state,
+            trigger_context={
+                "source": "assessment",
+                "mood": derived_mood,
+                "risk": normalized_risk
+            }
+        )
+
+        request.session["Smera_alert"] = alert
         request.session["last_mood_context"] = {
             "mood": derived_mood,
             "risk": normalized_risk,
@@ -157,11 +163,16 @@ class MoodView(APIView):
 
             state = compute_state(request.user)
 
-            request.session["Smera_alert"] = {
-                "level": state["overall_risk"],
-                "mood": state["overall_mood"],
-                "score": state["score"]
-            }
+            alert = generate_alert(
+                global_state=state,
+                trigger_context={
+                    "source": "mood",
+                    "mood": mood,
+                    "risk": "low"
+                }
+            )
+
+            request.session["Smera_alert"] = alert
             request.session["last_mood_context"] = {
                 "mood": mood,
                 "risk": "low",
@@ -224,11 +235,18 @@ class JournalView(APIView):
             # 3. Override Smera alert
             state = compute_state(request.user)
 
-            request.session["Smera_alert"] = {
-                "level": state["overall_risk"],
-                "mood": state["overall_mood"],
-                "score": state["score"]
-            }
+            risk = "moderate" if mood in ["sad", "angry", "anxious"] else "low"
+
+            alert = generate_alert(
+                global_state=state,
+                trigger_context={
+                    "source": "journal",
+                    "mood": mood,
+                    "risk": risk
+                }
+            )
+
+            request.session["Smera_alert"] = alert
             request.session.modified = True
             request.session["last_mood_context"] = {
                 "mood": mood,
@@ -432,19 +450,16 @@ class ChatMessageView(APIView):
             return Response({"error": "Missing data"}, status=400)       
 
 
-        text_lower = user_message.lower()
+        # --- transformer emotion analysis ---
+        result = analyze_text(user_message)
 
-        if any(x in text_lower for x in ["sad", "tired", "down"]):
-            mood = "sad"
-            risk = "moderate"
-        elif any(x in text_lower for x in ["anxious", "stress", "overwhelmed"]):
-            mood = "anxious"
-            risk = "moderate"
-        elif any(x in text_lower for x in ["angry", "frustrated"]):
-            mood = "angry"
-            risk = "moderate"
+        mood = result["mood"]
+        score = result["score"]
+
+        # risk derivation
+        if mood in ["sad", "anxious", "angry"]:
+            risk = "high" if score > 0.80 else "moderate"
         else:
-            mood = "neutral"
             risk = "low"
 
         MentalSignal.objects.create(
@@ -452,8 +467,25 @@ class ChatMessageView(APIView):
             source="chat",
             mood=mood,
             risk=risk,
-            metadata={}
+            metadata={
+                "score": score,
+                "source_model": "distilroberta-emotion"
+            }
         )
+        global_state = compute_state(request.user)
+        
+        alert = generate_alert(
+            global_state=global_state,
+            trigger_context={
+                "source": "chat",
+                "mood": mood,
+                "risk": risk
+            }
+        )
+
+        request.session["Smera_alert"] = alert
+
+        request.session.modified = True
         state = None 
         try:
             session = ChatSession.objects.get(
@@ -642,7 +674,7 @@ class ChatInitialMessageView(APIView):
         # ✅ CRITICAL FIX
         if not mood_context:
             return Response({
-                "reply": None   # ⛔ DO NOT CALL LLM
+                "reply": None 
             })
 
         initial_input = [{
@@ -678,3 +710,31 @@ class ChatSessionWithContextView(APIView):
         return Response({
             "session_id": session.id
         })
+
+class MoodTrendView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        now = timezone.now()
+
+        points = []
+
+        # Last 7 days
+        for i in range(6, -1, -1):
+
+            ref_time = now - timedelta(days=i)
+
+            state = compute_state(
+                request.user,
+                reference_time=ref_time
+            )
+
+            points.append({
+                "date": ref_time.date(),
+                "score": state["score"],
+                "mood": state["overall_mood"],
+                "risk": state["overall_risk"]
+            })
+
+        return Response(points)

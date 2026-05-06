@@ -1,3 +1,4 @@
+#core/aggregator.py
 from datetime import timedelta
 from django.utils import timezone
 from .models import MentalSignal
@@ -26,13 +27,14 @@ SOURCE_WEIGHT = {
 }
 
 
-def compute_state(user):
-    now = timezone.now()
+def compute_state(user, reference_time=None):
+    now = reference_time or timezone.now()
     window = now - timedelta(days=3)
 
     signals = MentalSignal.objects.filter(
         user=user,
-        created_at__gte=window
+        created_at__gte=window,
+        created_at__lte=now
     )
 
     if not signals.exists():

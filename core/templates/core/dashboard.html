@@ -802,7 +802,11 @@ async function loadDashboard(){
     const journalRes = await apiRequest("/api/core/journal/", "GET");
 
     if (moodRes.res?.ok && assessRes.res?.ok) {
-        renderMoodChart(moodRes.data);
+        const trendRes = await apiRequest("/api/core/mood-trends/");
+
+        if (trendRes.res?.ok) {
+            renderMoodChart(trendRes.data);
+        }
         renderAssessmentChart(assessRes.data);
         renderEventMoodChart(moodRes.data);
 
@@ -1123,6 +1127,7 @@ function renderEventMoodChart(data) {
 }
 
 function renderMoodChart(data){
+
     const canvas = document.getElementById("moodChart");
     const ctx = canvas.getContext('2d');
     const theme = getChartThemeColors();
@@ -1131,119 +1136,168 @@ function renderMoodChart(data){
         moodChartInstance.destroy();
     }
 
-    // Sort chronologically first
-    const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    // New backend already sends aggregated trend points
+    const labels = data.map(d => d.date);
 
-    // --- SMART AGGREGATION: Calculate the "Overall Mood" per day ---
-    const dailyMoods = {};
-    
-    sortedData.forEach(d => {
-        const dt = new Date(d.created_at);
-        // Format to a clean "May 4" style string
-        const dateLabel = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        
-        if (!dailyMoods[dateLabel]) {
-            dailyMoods[dateLabel] = [];
+    const scores = data.map(d => d.score);
+
+    // Dynamic point colors based on risk
+    const pointColors = data.map(d => {
+
+        if (d.risk === "high") {
+            return "#ef4444"; // red
         }
-        // Store the numeric value of the mood for that day
-        dailyMoods[dateLabel].push(mapMood(d.mood));
+
+        if (d.risk === "moderate") {
+            return "#f59e0b"; // orange
+        }
+
+        return "#10b981"; // green
     });
 
-    const labels = Object.keys(dailyMoods); // Extracts the unique formatted dates
-    
-    // Calculate the average mood score for each day
-    const aggregatedData = labels.map(date => {
-        const scores = dailyMoods[date];
-        const sum = scores.reduce((total, current) => total + current, 0);
-        // Round to nearest whole number to snap to our specific mood emojis (0-5)
-        return Math.round(sum / scores.length); 
-    });
-
-    // Create the vibrant gradient
-    const gradientFill = createGradient(ctx, 'rgba(6, 182, 212, 0.5)', 'rgba(59, 130, 246, 0.0)'); 
+    // Smooth indigo gradient
+    const gradientFill = createGradient(
+        ctx,
+        'rgba(99,102,241,0.35)',
+        'rgba(99,102,241,0)'
+    );
 
     moodChartInstance = new Chart(ctx, {
+
         type: "line",
+
         data: {
-            labels: labels,
+            labels,
+
             datasets: [{
-                label: "Daily Average Mood",
-                data: aggregatedData,
-                borderColor: '#06b6d4', 
+                label: "Global Emotional State",
+
+                data: scores,
+
+                borderColor: "#6366f1",
                 backgroundColor: gradientFill,
-                borderWidth: 4, 
-                tension: 0.4, // Keeps the line organically smooth
+
                 fill: true,
-                pointBackgroundColor: theme.pointBg, 
-                pointBorderColor: '#06b6d4', 
-                pointBorderWidth: 3,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                pointHoverBackgroundColor: '#06b6d4',
-                pointHoverBorderColor: '#ffffff',
-                pointHoverBorderWidth: 3,
+
+                tension: 0.45,
+                borderWidth: 4,
+
+                pointRadius: 6,
+                pointHoverRadius: 9,
+
+                pointBackgroundColor: pointColors,
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 2,
             }]
         },
+
         options: {
+
             responsive: true,
             maintainAspectRatio: false,
+
             interaction: {
                 mode: 'index',
                 intersect: false,
             },
+
             plugins: {
-                legend: { display: false },
+
+                legend: {
+                    display: false
+                },
+
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)', 
+
+                    backgroundColor: 'rgba(15,23,42,0.95)',
                     titleColor: '#94a3b8',
-                    titleFont: { size: 12, weight: 'normal' },
+
                     bodyColor: '#ffffff',
-                    bodyFont: { weight: 'bold', size: 14 },
+
                     padding: 14,
                     cornerRadius: 16,
+
                     displayColors: false,
+
                     callbacks: {
+
                         title: function(context) {
                             return `📅 ${context[0].label}`;
                         },
+
                         label: function(context) {
-                            const moodLabels = ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'];
-                            return ` Overall: ${moodLabels[context.raw]}`;
+
+                            const item = data[context.dataIndex];
+
+                            return [
+                                `Mood: ${item.mood}`,
+                                `Risk: ${item.risk}`,
+                                `Score: ${item.score}`
+                            ];
                         }
                     }
                 }
             },
+
             scales: {
+
                 y: {
-                    min: 0,
-                    max: 5,
-                    ticks: { 
+
+                    min: -2,
+                    max: 2,
+
+                    ticks: {
+
                         color: theme.text,
+
                         stepSize: 1,
-                        padding: 10,
-                        font: { size: 11, weight: '600' },
+
                         callback: function(value) {
-                            return ['ANGRY', 'ANXIOUS', 'SAD', 'NEUTRAL', 'HAPPY', 'EXCELLENT'][value] || '';
+
+                            const labels = {
+                                "-2": "Distressed",
+                                "-1": "Anxious",
+                                "0": "Neutral",
+                                "1": "Positive",
+                                "2": "Excellent"
+                            };
+
+                            return labels[value] || "";
                         }
                     },
-                    border: { display: false }, 
-                    grid: { 
+
+                    border: {
+                        display: false
+                    },
+
+                    grid: {
                         color: theme.grid,
                         drawBorder: false,
-                        tickLength: 0 
+                        tickLength: 0
                     }
                 },
+
                 x: {
-                    ticks: { 
+
+                    ticks: {
                         color: theme.text,
-                        font: { size: 11, weight: 'bold' },
+                        font: {
+                            size: 11,
+                            weight: 'bold'
+                        },
                         padding: 10,
-                        maxTicksLimit: 6, // Prevents overcrowding on the X-axis
+                        maxTicksLimit: 6,
                         maxRotation: 0,
                         autoSkip: true
                     },
-                    border: { display: false },
-                    grid: { display: false } 
+
+                    border: {
+                        display: false
+                    },
+
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
