@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="min-h-screen px-6 py-20">
+
+    <div class="max-w-5xl mx-auto">
+
+        <a href="/api/core/dashboard-page/" class="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 font-medium transition-colors mb-8">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Dashboard
+        </a>
+
+        <div class="text-center mb-16">
+
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-bold uppercase tracking-widest mb-6">
+                About Smera Mindful Mental Health Support System
+            </div>
+
+            <h1 class="text-5xl md:text-6xl font-black text-slate-800 dark:text-white leading-tight">
+                Your Digital
+                <span class="text-indigo-600 dark:text-indigo-400">
+                    Mental Wellness
+                </span>
+                Companion
+            </h1>
+
+            <p class="mt-6 text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                Smera is an AI-powered mental health support system designed to provide emotional guidance,
+                secure journaling, assessments, and professional consultation in a safe digital environment.
+            </p>
+
+        </div>
+
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-7">
+
+            <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_12px_25px_-6px_rgba(155,89,182,0.6)]">
+
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-3xl shadow-lg shadow-indigo-500/20 mb-7">
+                    🤖
+                </div>
+
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4">
+                    AI Emotional Support
+                </h3>
+
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Chat securely with Smera for emotional guidance,
+                    wellness conversations, and mindful daily support.
+                </p>
+
+            </div>
+
+            <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_12px_25px_-6px_rgba(155,89,182,0.6)]">
+
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl shadow-lg shadow-purple-500/20 mb-7">
+                    📓
+                </div>
+
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4">
+                    Secure Journaling
+                </h3>
+
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Your private thoughts remain encrypted and protected
+                    with secure digital journaling and emotional tracking.
+                </p>
+
+            </div>
+
+            <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_12px_25px_-6px_rgba(155,89,182,0.6)]">
+
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-3xl shadow-lg shadow-rose-500/20 mb-7">
+                    👨‍⚕️
+                </div>
+
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4">
+                    Professional Consultation
+                </h3>
+
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Connect with mental health professionals for personalized
+                    support and guided wellness care.
+                </p>
+
+            </div>
+
+            <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_12px_25px_-6px_rgba(155,89,182,0.6)]">
+
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-3xl shadow-lg shadow-emerald-500/20 mb-7">
+                    📈
+                </div>
+
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4">
+                    Visual Mood Graphs
+                </h3>
+
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Analyze emotional patterns using interactive wellness graphs,
+                    mood analytics, and progress tracking dashboards.
+                </p>
+
+            </div>
+
+            <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_12px_25px_-6px_rgba(155,89,182,0.6)]">
+
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/20 mb-7">
+                    ✨
+                </div>
+
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4">
+                    Interactive Experience
+                </h3>
+
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Enjoy a smooth and calming digital experience with modern UI,
+                    dark mode, responsive layouts, and real-time interactions.
+                </p>
+
+            </div>
+
+            <div class="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_12px_25px_-6px_rgba(155,89,182,0.6)]">
+
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-3xl shadow-lg shadow-cyan-500/20 mb-7">
+                    📋
+                </div>
+
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4">
+                    Smart Assessments
+                </h3>
+
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Complete scientifically inspired mental wellness assessments
+                    for anxiety, depression, stress, and emotional health tracking.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

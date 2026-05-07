@@ -1,45 +1,253 @@
-<footer class="w-full z-40 
-               bg-white dark:bg-gray-900 
-               border-t border-gray-200 dark:border-gray-700 
-               shadow-lg">
+<style>
+    /* Custom animations for the extravagant background blobs */
+    @keyframes blob {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob {
+        animation: blob 7s infinite;
+    }
+    .animation-delay-2000 {
+        animation-delay: 2s;
+    }
+    .animation-delay-4000 {
+        animation-delay: 4s;
+    }
+</style>
 
-    <div class="max-w-7xl mx-auto px-6 py-6">
+<footer class="relative mt-20 overflow-hidden">
 
-        <!-- Links -->
-        <div class="flex flex-wrap justify-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
+    <div class="absolute inset-0 bg-slate-50 dark:bg-slate-950 -z-20"></div>
 
-            <a href="https://github.com/aritra-mallik/mental_health_system" target="_blank"
-               class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                GitHub
-            </a>
+    <div class="absolute inset-0 opacity-[0.04] dark:opacity-[0.07] -z-10"
+        style="
+            background-image:
+            linear-gradient(to right, currentColor 1px, transparent 1px),
+            linear-gradient(to bottom, currentColor 1px, transparent 1px);
+            background-size: 80px 80px;">
+    </div>
 
-            <a href="/api/" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                API Docs
-            </a>
+    <div class="absolute top-0 -left-4 w-96 h-96 bg-indigo-400/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-70 animate-blob -z-10"></div>
+    <div class="absolute top-0 -right-4 w-96 h-96 bg-purple-400/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-70 animate-blob animation-delay-2000 -z-10"></div>
+    <div class="absolute bottom-0 left-20 w-96 h-96 bg-pink-400/30 dark:bg-pink-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-70 animate-blob animation-delay-4000 -z-10"></div>
 
-            <a href="/privacy/" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                Privacy
-            </a>
+    <div class="relative z-10 w-full 
+                bg-white/60 dark:bg-slate-900/60 
+                backdrop-blur-3xl 
+                rounded-t-[3rem] 
+                shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.1)] dark:shadow-[0_-8px_40px_-12px_rgba(99,102,241,0.15)]">
 
-            <a href="/contact/" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                Contact
-            </a>
+        <div class="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-t-[3rem] opacity-90 shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
 
-            <a href="/about/" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                About
-            </a>
+        <div class="max-w-7xl mx-auto px-6 py-10 md:py-14">
 
-        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12">
 
-        <!-- Divider -->
-        <div class="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
+                <div class="xl:pr-6">
 
-        <!-- Text -->
-        <div class="text-center text-sm text-gray-500 dark:text-gray-400">
-            © 2026 Mental Health Support System • Developed by 
-            <span class="font-semibold text-gray-700 dark:text-gray-200">
-                xyz
-            </span>
+                    <div class="flex items-center gap-4 mb-6">
+
+                        <div class="relative group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-xl opacity-40 group-hover:opacity-75 transition-opacity duration-500 rounded-full animate-spin-slow"></div>
+
+                            <div class="relative w-16 h-16 rounded-[1.6rem]
+                                        bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500
+                                        flex items-center justify-center
+                                        shadow-[0_10px_30px_rgba(79,70,229,0.4)]
+                                        group-hover:scale-105 transition-transform duration-500">
+
+                                <svg class="w-8 h-8 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 21C12 21 4 16 4 10a5 5 0 0110 0 5 5 0 0110 0c0 6-8 11-8 11z"></path>
+                                </svg>
+
+                            </div>
+                        </div>
+
+                        <div>
+                            <h2 class="text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                                Smera
+                            </h2>
+                            <p class="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400 font-extrabold mt-1">
+                                Mental Wellness
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <p class="text-[15px] leading-relaxed text-slate-600 dark:text-slate-400 max-w-sm mb-8 font-medium">
+                        AI-powered emotional support, private journaling,
+                        smart assessments, secure consultations,
+                        and mindful recovery guidance.
+                    </p>
+
+                    <div class="group inline-flex items-center gap-3 px-5 py-3 rounded-2xl
+                                bg-white/80 dark:bg-slate-800/80
+                                backdrop-blur-xl
+                                border border-emerald-100 dark:border-emerald-900/30
+                                shadow-[0_0_20px_-5px_rgba(16,185,129,0.2)]
+                                hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.4)]
+                                transition-all duration-300 cursor-default">
+
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                        </span>
+
+                        <span class="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                            System Online
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-[0.25em] text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Features
+                    </h3>
+
+                    <div class="space-y-2">
+                        <a href="/api/core/dashboard-page/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-indigo-600 dark:text-indigo-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">Dashboard</span>
+                        </a>
+
+                        <a href="/api/core/chatbot-page/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-indigo-600 dark:text-indigo-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">AI Chatbot</span>
+                        </a>
+
+                        <a href="/api/core/assessment-page/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-indigo-600 dark:text-indigo-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">Mental Assessments</span>
+                        </a>
+
+                        <a href="/api/core/journal-page/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-indigo-600 dark:text-indigo-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">Secure Journal</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-[0.25em] text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-purple-500"></span> Resources
+                    </h3>
+
+                    <div class="space-y-2">
+                        <a href="/api/articles/page/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-600 dark:text-purple-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">Articles</span>
+                        </a>
+
+                        <a href="/api/user/consent-page/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-600 dark:text-purple-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">Consent</span>
+                        </a>
+
+                        <a href="/api/consultation/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-600 dark:text-purple-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">Consultation</span>
+                        </a>
+
+                        <a href="/about/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all font-semibold">
+                            <span class="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-purple-600 dark:text-purple-400">→</span>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">About</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-black uppercase tracking-[0.25em] text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-pink-500"></span> Connect
+                    </h3>
+
+                    <div class="space-y-4">
+                        <div class="group flex items-center gap-4 p-3 -ml-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:shadow-lg transition-all duration-300 cursor-default border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all duration-500 text-xl">
+                                📞
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-black mb-1">Phone</p>
+                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">+91 98765 43210</p>
+                            </div>
+                        </div>
+
+                        <div class="group flex items-center gap-4 p-3 -ml-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:shadow-lg transition-all duration-300 cursor-default border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all duration-500 text-xl">
+                                ✉️
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-black mb-1">Email</p>
+                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200 break-all group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">MindfulSpace@smera.com</p>
+                            </div>
+                        </div>
+
+                        <div class="group flex items-center gap-4 p-3 -ml-3 rounded-2xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:shadow-lg transition-all duration-300 cursor-default border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-500 text-xl">
+                                📍
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-black mb-1">Location</p>
+                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">West Bengal, India</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="my-10 h-[2px] w-full bg-slate-200 dark:bg-slate-700/80 relative overflow-hidden rounded-full">
+                <div class="absolute top-0 left-0 h-full w-1/4 bg-indigo-500 dark:bg-indigo-400 animate-[translateX_3s_ease-in-out_infinite] rounded-full shadow-[0_0_10px_rgba(99,102,241,0.8)]"></div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+
+                <div class="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    © 2026 Smera Mental Health Support System | All rights reserved.
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-3">
+
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl
+                                bg-white/50 dark:bg-slate-800/50 backdrop-blur-md
+                                border border-indigo-100 dark:border-indigo-500/20
+                                shadow-[0_0_10px_-2px_rgba(99,102,241,0.2)]
+                                hover:shadow-[0_0_15px_-2px_rgba(99,102,241,0.4)]
+                                hover:-translate-y-0.5 transition-all duration-300
+                                text-[10px] font-black uppercase tracking-[0.2em]
+                                text-indigo-700 dark:text-indigo-300">
+                        <span class="text-base leading-none">🔒</span> Secure
+                    </div>
+
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl
+                                bg-white/50 dark:bg-slate-800/50 backdrop-blur-md
+                                border border-purple-100 dark:border-purple-500/20
+                                shadow-[0_0_10px_-2px_rgba(168,85,247,0.2)]
+                                hover:shadow-[0_0_15px_-2px_rgba(168,85,247,0.4)]
+                                hover:-translate-y-0.5 transition-all duration-300
+                                text-[10px] font-black uppercase tracking-[0.2em]
+                                text-purple-700 dark:text-purple-300">
+                        <span class="text-base leading-none">🛡</span> Private
+                    </div>
+
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl
+                                bg-white/50 dark:bg-slate-800/50 backdrop-blur-md
+                                border border-pink-100 dark:border-pink-500/20
+                                shadow-[0_0_10px_-2px_rgba(236,72,153,0.2)]
+                                hover:shadow-[0_0_15px_-2px_rgba(236,72,153,0.4)]
+                                hover:-translate-y-0.5 transition-all duration-300
+                                text-[10px] font-black uppercase tracking-[0.2em]
+                                text-pink-700 dark:text-pink-300">
+                        <span class="text-base leading-none">✨</span> Encrypted
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
 
     </div>

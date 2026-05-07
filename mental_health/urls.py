@@ -18,6 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.urls import path, include
 from accounts.views import landing_page
+from articles.views import (
+    about_page,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +30,5 @@ urlpatterns = [
     path("api/user/", include("user_control.urls")),
     path("api/articles/", include("articles.urls")),
     path("api/consultation/", include("consultation.urls")),
+    path('about/', about_page, name='about'),
 ]

@@ -3,10 +3,20 @@
 A privacy-focused web-based Mental Health Digital Intervention System developed using **Django**.  
 The system provides mental health awareness, self-assessment, encrypted journaling, and AI-assisted supportive guidance in a **non-diagnostic and ethical manner**.
 
+**z_dev set up**
+
+cd z_dev
+
+npm init -y
+
+npm install tailwindcss @tailwindcss/cli
+
 **add this during the deployment in the input**
-@import "tailwindcss" source(none);
-@source "./templates/**/*.html";
-@source "./apps/**/templates/**/*.html";
+
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@source "../templates/**/*.html";
+@source "../**/templates/**/*.html";
 
 
 **Django secret key generation**

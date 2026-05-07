@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Articles{% endblock %}
+
+{% block content %}
+
+<section class="min-h-screen px-6 py-14">
+
+    <div class="max-w-7xl mx-auto">
+
+        <a href="/api/core/dashboard-page/" class="inline-flex items-center gap-2 text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 font-medium transition-colors mb-8">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Dashboard
+        </a>
+
+        <div class="text-center mb-14">
+
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-black uppercase tracking-widest mb-5">
+                📚 Wellness Articles
+            </div>
+
+            <h1 class="text-5xl md:text-6xl font-black text-slate-800 dark:text-white leading-tight">
+                Explore Helpful
+                <span class="text-purple-600 dark:text-purple-400">
+                    Mental Health Insights
+                </span>
+            </h1>
+
+            <p class="mt-6 text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                Personalized wellness articles, emotional guidance,
+                mindfulness practices, and mental health education.
+            </p>
+
+        </div>
+
+        <div class="max-w-2xl mx-auto mb-10">
+
+            <div class="relative">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search articles..."
+                    class="w-full px-6 py-5 rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg focus:ring-2 focus:ring-purple-500 outline-none text-slate-700 dark:text-white"
+                >
+
+                <svg class="w-6 h-6 absolute right-5 top-1/2 -translate-y-1/2 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z">
+                    </path>
+                </svg>
+
+            </div>
+
+        </div>
+
+        <div id="articlesContainer"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        </div>
+
+    </div>
+
+</section>
+
+<script>
+
+let allArticles = [];
+
+async function loadArticles() {
+
+    const res = await fetch('/api/articles/');
+    const data = await res.json();
+
+    allArticles = data;
+
+    renderArticles(data);
+}
+
+function getMoodTheme(mood) {
+
+    mood = mood?.toLowerCase()?.trim();
+
+    const themes = {
+
+        happy: {
+            badge: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300",
+            gradient: "from-emerald-500 to-cyan-500",
+            hover: "group-hover:text-emerald-600 dark:group-hover:text-emerald-400",
+            icon: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300",
+            shadow: "hover:shadow-[0_12px_25px_-6px_rgba(16,185,129,0.6)]" // Emerald glow
+        },
+
+        neutral: {
+            badge: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300",
+            gradient: "from-cyan-500 to-blue-500",
+            hover: "group-hover:text-cyan-600 dark:group-hover:text-cyan-400",
+            icon: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-300",
+            shadow: "hover:shadow-[0_12px_25px_-6px_rgba(6,182,212,0.6)]" // Cyan glow
+        },
+
+        sad: {
+            badge: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
+            gradient: "from-indigo-500 to-blue-600",
+            hover: "group-hover:text-indigo-600 dark:group-hover:text-indigo-400",
+            icon: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300",
+            shadow: "hover:shadow-[0_12px_25px_-6px_rgba(99,102,241,0.6)]" // Indigo glow
+        },
+
+        anxious: {
+            badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+            gradient: "from-orange-500 to-rose-500",
+            hover: "group-hover:text-orange-600 dark:group-hover:text-orange-400",
+            icon: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300",
+            shadow: "hover:shadow-[0_12px_25px_-6px_rgba(249,115,22,0.6)]" // Orange glow
+        },
+
+        stress: {
+            badge: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300",
+            gradient: "from-rose-500 to-pink-500",
+            hover: "group-hover:text-rose-600 dark:group-hover:text-rose-400",
+            icon: "bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300",
+            shadow: "hover:shadow-[0_12px_25px_-6px_rgba(244,63,94,0.6)]" // Rose/Pink glow
+        },
+
+        angry: {
+            badge: "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300",
+            gradient: "from-slate-500 to-indigo-500",
+            hover: "group-hover:text-slate-700 dark:group-hover:text-slate-300",
+            icon: "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300",
+            shadow: "hover:shadow-[0_12px_25px_-6px_rgba(100,116,139,0.6)]" // Slate/Gray glow
+        }
+
+    };
+
+    return themes[mood] || themes.neutral;
+}
+
+function renderArticles(data) {
+
+    const container = document.getElementById('articlesContainer');
+
+    if (!data.length) {
+
+        container.innerHTML = `
+            <div class="col-span-full text-center py-20">
+
+                <h2 class="text-2xl font-black text-slate-700 dark:text-white mb-3">
+                    No Articles Found
+                </h2>
+
+                <p class="text-slate-500 dark:text-slate-400">
+                    Try another search keyword.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = data.map(article => {
+
+        const theme = getMoodTheme(article.mood);
+
+        return `
+
+        <div onclick="openArticle(${article.id})"
+            class="group relative overflow-hidden cursor-pointer bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-lg transition-all duration-500 hover:-translate-y-2 ${theme.shadow}">
+
+            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/0 via-white/0 to-slate-100 dark:to-slate-700"></div>
+
+            <div class="h-2 bg-gradient-to-r ${theme.gradient}"></div>
+
+            <div class="relative z-10 p-8">
+
+                <div class="flex items-center justify-between mb-5">
+
+                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${theme.badge}">
+                        ${article.mood}
+                    </span>
+
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                        ${article.read_time}
+                    </span>
+
+                </div>
+
+                <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-4 ${theme.hover} transition-colors line-clamp-2">
+                    ${article.title}
+                </h2>
+
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 line-clamp-3">
+                    ${article.short}
+                </p>
+
+                <div class="flex items-center justify-between pt-5 border-t border-slate-100 dark:border-slate-700">
+
+                    <div>
+
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300">
+                            ${article.author}
+                        </p>
+
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            ${article.date}
+                        </p>
+
+                    </div>
+
+                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center ${theme.icon} group-hover:scale-110 transition-transform duration-300 shadow-sm">
+
+                        <svg class="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2.5"
+                                d="M9 5l7 7-7 7">
+                            </path>
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        `;
+
+    }).join('');
+}
+
+function openArticle(id) {
+    window.location.href = `/api/articles/view/${id}/`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    loadArticles();
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+
+        const value = e.target.value.toLowerCase();
+
+        const filtered = allArticles.filter(article =>
+            article.title.toLowerCase().includes(value) ||
+            article.mood.toLowerCase().includes(value)
+        );
+
+        renderArticles(filtered);
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

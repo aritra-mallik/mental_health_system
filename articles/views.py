@@ -67,3 +67,9 @@ def article_detail(request, index):
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
     return Response(data[index])
+
+def all_articles_page(request):
+    return render(request, "articles/all_articles.html")
+
+def about_page(request):
+    return render(request, "includes/about.html")

@@ -1,10 +1,10 @@
 import re
 
 def safe_text(x):
-    """Ensure text is always a non-null string."""
     return x if isinstance(x, str) and x.strip() else ""
 
-def build_prompt(input_data, strategy, is_critical=False, region="IN"):
+
+def build_prompt(input_data, strategy, is_critical=False, region="IN", state=None,suggest_consultation=False):
 
     # --- Conversation formatting ---
     if isinstance(input_data, str):
@@ -16,35 +16,76 @@ def build_prompt(input_data, strategy, is_critical=False, region="IN"):
         history = ""
         last_user = ""
 
-        # Build history safely
         for m in input_data:
-            role = "User" if getattr(m, "role", None) == "user" else "Assistant"
-            content = safe_text(getattr(m, "content", ""))
+            if isinstance(m, dict):
+                role_val = m.get("role")
+                content_val = m.get("content", "")
+            else:
+                role_val = getattr(m, "role", None)
+                content_val = getattr(m, "content", "")
+
+            role = "User" if role_val == "user" else "Assistant"
+            content = safe_text(content_val)
             history += f"{role}: {content}\n"
 
-        # Extract last valid user message
         for m in reversed(input_data):
-            if getattr(m, "role", None) == "user":
-                content = safe_text(getattr(m, "content", ""))
+            if isinstance(m, dict):
+                role_val = m.get("role")
+                content_val = m.get("content", "")
+            else:
+                role_val = getattr(m, "role", None)
+                content_val = getattr(m, "content", "")
+
+            if role_val == "user":
+                content = safe_text(content_val)
                 if content:
                     last_user = content
                     break
 
-        # Final fallback (prevents API crash)
-        last_user = last_user or " "
+        last_user = last_user or "I just completed a mental health assessment."
 
+    # --- 🧠 Inject mental state ---
+    state_block = ""
+
+    if state:
+        mood = state.get("overall_mood")
+        risk = state.get("overall_risk")
+        score = state.get("score")
+
+        state_block = f"""
+    User mental state (IMPORTANT — use this actively):
+    - Mood: {mood}
+    - Risk: {risk}
+    - Score: {score}
+
+    Instructions:
+    - Do NOT start with generic phrases like "I'm here to listen"
+    - Speak as if you already understand their situation
+    - If mood is anxious → help reduce overwhelm or guide thinking
+    - If risk is moderate/high → gently guide toward coping or clarity
+    - Reference their state naturally in your response
+    """
+    consultation_block = ""
+
+    if suggest_consultation:
+        consultation_block = """
+    If it feels natural, gently suggest talking to a professional.
+    Do NOT push strongly.
+    Do NOT sound like a recommendation engine.
+    Make it feel like a human suggestion in conversation.
+    """
     # --- Strategy mapping ---
     strategy_map = {
         "NORMAL": "Respond like a thoughtful human conversation partner.",
         "GUIDANCE": "Offer light, practical suggestions only if they fit naturally.",
-        "SUPPORT": "Acknowledge feelings briefly, then engage normally.",
+        "SUPPORT": "Respond as if you already understand the user's situation. Be specific and grounded. Avoid generic empathy.",
         "ESCALATE": "Gently suggest reaching out to someone they trust.",
         "CRITICAL": "Prioritize immediate real-world support in a calm, direct way."
     }
 
     strategy_text = strategy_map.get(strategy, "Respond in a supportive, natural way.")
 
-    # --- Crisis / critical override ---
+    # --- Crisis override ---
     if is_critical:
         if region == "IN":
             helplines = """
@@ -61,35 +102,22 @@ The user may be in immediate emotional distress.
 
 Respond like a calm, grounded person in the moment:
 - Acknowledge briefly, without dramatizing.
-- Gently suggest reaching out to someone nearby (friend, family, trusted person).
-- Encourage real-world support in a natural way (not as an instruction block).
-- If appropriate, include a helpline as an option — not as a script.
-
-Tone:
-- Steady, human, and direct.
-- No generic reassurance lines.
-- No heavy or clinical language.
-- No long lists.
-
-Example tone:
-"I'm really sorry you're dealing with this. If things feel intense right now, it might help to reach out to someone close to you or even call a helpline — they’re there to talk in moments like this."
+- Gently suggest reaching out to someone nearby.
+- Encourage real-world support naturally.
+- Optionally include a helpline.
 
 {helplines}
 """
 
-    # --- Style constraints ---
+    # --- Style rules ---
     style_rules = """
 Style guidelines:
-- Write like a real person, not a therapist script.
-- Avoid overused phrases like "that sounds really hard" or "you're not alone".
-- Do NOT over-validate or exaggerate empathy.
-- Keep responses grounded, specific, and slightly informal.
-- Avoid long disclaimers or overly clinical language.
-- Do not give multiple suggestions unless clearly needed.
-- Match the user’s tone (don’t be overly soft if they are casual).
-- Prefer natural phrasing over structured advice.
-- If appropriate, include a simple follow-up question.
-- In crisis situations, do not start with refusal-style phrasing.
+- Write like a real person.
+- Avoid generic empathy phrases.
+- Keep it grounded and slightly informal.
+- No long disclaimers.
+- Match user tone.
+- Ask at most one question.
 """
 
     # --- Final prompt ---
@@ -99,6 +127,9 @@ Conversation:
 
 Last user message:
 {last_user}
+
+{state_block}
+{consultation_block}
 
 Instruction:
 {strategy_text}
