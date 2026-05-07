@@ -14,8 +14,11 @@ npm install tailwindcss @tailwindcss/cli
 **add this during the deployment in the input**
 
 @import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
+
 @source "../templates/**/*.html";
+
 @source "../**/templates/**/*.html";
 
 
