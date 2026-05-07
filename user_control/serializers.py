@@ -17,7 +17,6 @@ class ProfileViewSerializer(serializers.ModelSerializer):
             "date_of_birth",  # view only
             "gender"  ,        # view only
             "is_onboarded",
-            "preferred_language",
             "dark_mode",
             "font_size"
         ]
@@ -38,7 +37,6 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             "first_name",
             "middle_name",
             "last_name",
-            "preferred_language",
             "dark_mode",
             "font_size",
         ]

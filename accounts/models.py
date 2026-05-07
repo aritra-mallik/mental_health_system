@@ -48,7 +48,6 @@ class User(AbstractUser):
     ]
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
 
-    preferred_language = models.CharField(max_length=10, default="en")
     dark_mode = models.BooleanField(default=False)
     font_size = models.CharField(max_length=10, default="medium")
 

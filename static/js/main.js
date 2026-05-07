@@ -296,11 +296,6 @@ function applySettingsLocally(settings) {
 
     body.classList.add(fontMap[settings.font_size] || "text-base");
 
-    /* ---------------- LANGUAGE ---------------- */
-    if (settings.preferred_language) {
-        document.documentElement.lang = settings.preferred_language;
-    }
-
     /* ---------------- CACHE ---------------- */
     localStorage.setItem("user_settings", JSON.stringify(settings));
 }
