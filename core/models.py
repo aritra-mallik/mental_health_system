@@ -33,15 +33,12 @@ class JournalEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
-
 class Assessment(models.Model):
     TYPE_CHOICES = [
         ("who5", "WHO-5"),
         ("pss", "PSS"),
-        ("dass21", "DASS-21"),
+        ("wemwbs", "WEMWBS"),
         ("isi", "ISI"),
-        ("burnout", "Burnout"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -51,7 +48,7 @@ class Assessment(models.Model):
     score = models.FloatField()
     risk_level = models.CharField(max_length=30)
 
-    # Optional: store breakdown (important for DASS-21)
+    # Optional: store breakdown
     meta = models.JSONField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -141,8 +138,6 @@ class MentalSignal(models.Model):
 
     class Meta:
         ordering = ["created_at"]
-
-    class Meta:
         indexes = [
             models.Index(fields=['user', 'created_at']),
             models.Index(fields=['source']),

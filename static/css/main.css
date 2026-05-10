@@ -7209,6 +7209,11 @@
       stroke: var(--color-blue-400);
     }
   }
+  .dark\:text-amber-300 {
+    &:where(.dark, .dark *) {
+      color: var(--color-amber-300);
+    }
+  }
   .dark\:text-amber-400 {
     &:where(.dark, .dark *) {
       color: var(--color-amber-400);

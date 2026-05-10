@@ -8,7 +8,6 @@ from datetime import timedelta
 from django.utils import timezone
 from collections import defaultdict
 from .assessment_engine import AssessmentEngine
-# from django.contrib.auth.decorators import login_required
 from .models import ChatSession, ChatMessage
 from ChatBot.chatbot.llm_client import generate_response
 from ChatBot.chatbot.prompt_builder import build_prompt
@@ -17,35 +16,32 @@ from .aggregator import compute_state
 from .alerts import generate_alert
 
 MAX_MESSAGES = 8
+
 def normalize_risk(risk):
     return {
-        # WHO5
-        "low_wellbeing": "moderate",
-        "good_wellbeing": "low",
+        # WHO5 & WEMWBS Mappings
+        "low_wellbeing": "high",   # Lower WHO-5 indicates higher risk
+        "good_wellbeing": "low", 
+        "wemwbs_low": "high",      # Low WEMWBS score
+        "wemwbs_average": "moderate",
+        "wemwbs_high": "low",
 
         # ISI
         "no_insomnia": "low",
         "subthreshold": "moderate",
-
-        # DASS21
-        "normal": "low",
-        "mild": "moderate",
-        "moderate": "moderate",
         "severe": "high",
-        "extremely_severe": "high",
     }.get(risk, risk)
     
 class AssessmentView(APIView):
     permission_classes = [IsAuthenticated]
 
-    VALID_TESTS = ["who5", "pss", "dass21", "isi", "burnout"]
+    VALID_TESTS = ["who5", "pss", "wemwbs", "isi"]
 
     EXPECTED_LENGTH = {
         "who5": 5,
         "pss": 10,
-        "dass21": 21,
+        "wemwbs": 14,
         "isi": 7,
-        "burnout": 10,
     }
 
     def post(self, request):
@@ -72,8 +68,6 @@ class AssessmentView(APIView):
         # -------------------------
         result = AssessmentEngine.evaluate(test_type, answers)
         new_alert = result.get("alert")
-
-
 
         request.session.modified = True
         risk_to_mood = {
@@ -112,9 +106,6 @@ class AssessmentView(APIView):
         )
         state = compute_state(request.user)
         
-        
-        
-
         alert = generate_alert(
             global_state=state,
             trigger_context={
@@ -131,6 +122,7 @@ class AssessmentView(APIView):
             "source": "assessment"
         }
         request.session.modified = True
+        
         # -------------------------
         # RESPONSE
         # -------------------------
@@ -159,7 +151,6 @@ class MoodView(APIView):
                 risk="low",
                 metadata={}
             )
-
 
             state = compute_state(request.user)
 
@@ -200,11 +191,7 @@ class JournalView(APIView):
             for e in entries
         ])
 
-    # =========================
-    # CREATE JOURNAL
-    # =========================
     def post(self, request):
-
         encrypted_content = request.data.get("content")
         raw_text = request.data.get("raw_text")
 
@@ -225,11 +212,7 @@ class JournalView(APIView):
             "id": entry.id
         })
 
-    # =========================
-    # UPDATE JOURNAL
-    # =========================
     def put(self, request):
-
         entry_id = request.data.get("id")
         encrypted_content = request.data.get("content")
         raw_text = request.data.get("raw_text")
@@ -239,24 +222,18 @@ class JournalView(APIView):
                 id=entry_id,
                 user=request.user
             )
-
         except JournalEntry.DoesNotExist:
-            return Response({
-                "error": "Entry not found"
-            }, status=404)
+            return Response({"error": "Entry not found"}, status=404)
 
-        # update encrypted content
         entry.encrypted_content = encrypted_content
         entry.save()
 
-        # DELETE OLD SIGNALS
         MentalSignal.objects.filter(
             user=request.user,
             source="journal",
             source_id=entry.id
         ).delete()
 
-        # recreate fresh signal
         self.process_journal_signal(
             request=request,
             user=request.user,
@@ -264,15 +241,9 @@ class JournalView(APIView):
             raw_text=raw_text
         )
 
-        return Response({
-            "message": "Journal updated successfully"
-        })
+        return Response({"message": "Journal updated successfully"})
 
-    # =========================
-    # DELETE JOURNAL
-    # =========================
     def delete(self, request):
-
         entry_id = request.data.get("id")
 
         try:
@@ -280,20 +251,15 @@ class JournalView(APIView):
                 id=entry_id,
                 user=request.user
             )
-
         except JournalEntry.DoesNotExist:
-            return Response({
-                "error": "Entry not found"
-            }, status=404)
+            return Response({"error": "Entry not found"}, status=404)
 
-        # delete linked mental signals
         MentalSignal.objects.filter(
             user=request.user,
             source="journal",
             source_id=entry.id
         ).delete()
 
-        # optional mood cleanup
         time_lower = entry.created_at - timedelta(minutes=2)
         time_upper = entry.created_at + timedelta(minutes=2)
 
@@ -302,10 +268,8 @@ class JournalView(APIView):
             created_at__range=(time_lower, time_upper)
         ).delete()
 
-        # delete journal
         entry.delete()
 
-        # refresh dashboard state
         state = compute_state(request.user)
 
         alert = generate_alert(
@@ -320,41 +284,26 @@ class JournalView(APIView):
         request.session["Smera_alert"] = alert
         request.session.modified = True
 
-        return Response({
-            "message": "Journal deleted successfully"
-        })
+        return Response({"message": "Journal deleted successfully"})
 
-    # =========================
-    # SHARED SENTIMENT LOGIC
-    # =========================
     def process_journal_signal(self, request, user, entry, raw_text):
-
         if not raw_text:
             return
 
         result = analyze_text(raw_text)
 
         mood = result["mood"]
+        risk = "moderate" if mood in ["sad", "angry", "anxious"] else "low"
 
-        risk = (
-            "moderate"
-            if mood in ["sad", "angry", "anxious"]
-            else "low"
-        )
-
-        # create mental signal
         MentalSignal.objects.create(
             user=user,
             source="journal",
             source_id=entry.id,
             mood=mood,
             risk=risk,
-            metadata={
-                "score": result["score"]
-            }
+            metadata={"score": result["score"]}
         )
 
-        # PREVENT DUPLICATE MoodEntry
         exists_today = MoodEntry.objects.filter(
             user=user,
             mood=mood,
@@ -362,21 +311,10 @@ class JournalView(APIView):
         ).exists()
 
         if not exists_today:
-            if not MoodEntry.objects.filter(
-                user=user,
-                mood=mood,
-                created_at__date=timezone.now().date()
-            ).exists():
+            MoodEntry.objects.create(user=user, mood=mood)
 
-                MoodEntry.objects.create(
-                    user=user,
-                    mood=mood
-                )
-
-        # recompute dashboard state
         state = compute_state(user)
 
-        # regenerate alert
         alert = generate_alert(
             global_state=state,
             trigger_context={
@@ -387,7 +325,6 @@ class JournalView(APIView):
         )
 
         request.session["Smera_alert"] = alert
-
         request.session["last_mood_context"] = {
             "mood": mood,
             "risk": risk,
@@ -428,11 +365,10 @@ class AssessmentRecommendationView(APIView):
         "who5": 7,
         "pss": 7,
         "isi": 7,
-        "dass21": 14,
-        "burnout": 30,
+        "wemwbs": 14,
     }
 
-    ALL_TESTS = ["who5", "pss", "dass21", "isi", "burnout"]
+    ALL_TESTS = ["who5", "pss", "wemwbs", "isi"]
 
     def get(self, request):
         user = request.user
@@ -440,14 +376,12 @@ class AssessmentRecommendationView(APIView):
 
         history = Assessment.objects.filter(user=user)
 
-        #  FIRST TIME USER
         if not history.exists():
             return Response({
                 "type": "first_time",
                 "recommended": self.ALL_TESTS
             })
 
-        #  SMART REMINDER LOGIC
         recommendations = []
 
         for test, days in self.TEST_FREQUENCY.items():
@@ -476,7 +410,6 @@ class AssessmentSummaryView(APIView):
 
     def get(self, request):
         user = request.user
-
         data = Assessment.objects.filter(user=user)
 
         latest = {}
@@ -485,7 +418,6 @@ class AssessmentSummaryView(APIView):
         for a in data:
             t = a.assessment_type
 
-            # latest
             if t not in latest:
                 latest[t] = {
                     "score": a.score,
@@ -493,7 +425,6 @@ class AssessmentSummaryView(APIView):
                     "date": a.created_at
                 }
 
-            # trends
             trends[t].append({
                 "score": a.score,
                 "date": a.created_at
@@ -510,7 +441,6 @@ class AssessmentHistoryView(APIView):
 
     def get(self, request):
         data = Assessment.objects.filter(user=request.user).order_by("created_at").values("score", "created_at", "assessment_type")
-
         return Response(list(data))
     
 
@@ -519,10 +449,7 @@ class LiveAlertView(APIView):
 
     def get(self, request):
         alert = request.session.get("Smera_alert")
-
-        return Response({
-            "alert": alert if alert else None
-        })
+        return Response({"alert": alert if alert else None})
         
         
 def app_dashboard(request): return render(request, "core/dashboard.html")
@@ -531,42 +458,29 @@ def app_assessment(request): return render(request, "core/assessment.html")
 
 
 def trim_messages(session, max_messages=MAX_MESSAGES):
-
     messages = ChatMessage.objects.filter(
         session=session
     ).order_by("-created_at")
 
     if messages.count() > max_messages:
-
         extra_messages = messages[max_messages:]
-
-        ids_to_delete = [
-            m.id for m in extra_messages
-        ]
-
-        ChatMessage.objects.filter(
-            id__in=ids_to_delete
-        ).delete()
+        ids_to_delete = [m.id for m in extra_messages]
+        ChatMessage.objects.filter(id__in=ids_to_delete).delete()
 
 
 def get_context_messages(session):
-    return ChatMessage.objects.filter(session=session)\
-        .order_by("created_at")
+    return ChatMessage.objects.filter(session=session).order_by("created_at")
         
 class ChatSessionCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         mood_context = request.session.pop("last_mood_context", None)
-
         session = ChatSession.objects.create(
             user=request.user,
             initial_context=mood_context
         )
-
-        return Response({
-            "session_id": session.id
-        })
+        return Response({"session_id": session.id})
         
 class ChatMessageView(APIView):
     permission_classes = [IsAuthenticated]
@@ -586,29 +500,23 @@ class ChatMessageView(APIView):
         except ChatSession.DoesNotExist:
             return Response({"error": "Invalid session"}, status=404)
 
-        # --- transformer emotion analysis ---
         result = analyze_text(user_message)
         mood = result["mood"]
         score = result["score"]
 
-        # Risk derivation based on the current message's mood
         if mood in ["sad", "anxious", "angry"]:
             risk = "high" if score > 0.80 else "moderate"
         else:
             risk = "low"
 
-        # Find if there is already a signal for this active chat session
         signal = MentalSignal.objects.filter(user=request.user, source="chat", source_id=session.id).first()
         
         if signal:
-            # Update the existing signal with the latest mood directly
             signal.mood = mood
             signal.risk = risk
             signal.metadata["score"] = score
             signal.save()
-            
         else:
-            # Create a new signal for this session
             signal = MentalSignal.objects.create(
                 user=request.user,
                 source="chat",
@@ -635,31 +543,21 @@ class ChatMessageView(APIView):
         request.session["Smera_alert"] = alert
         request.session.modified = True
 
-        # -------------------------
-        # 1. Save user message
-        # -------------------------
         ChatMessage.objects.create(
             session=session,
             role="user",
             content=user_message
         )
 
-        # -------------------------
-        # 3. Get context (max 8)
-        # -------------------------
         messages = get_context_messages(session).only(
             "role",
             "content",
             "created_at"
         )
 
-
         from ChatBot.rules.safety import check_critical
 
-        # --- Safety detection ---
         is_critical = check_critical(user_message)
-
-        # --- Strategy (minimal) ---
         strategy = "CRITICAL" if is_critical else "SUPPORT"
 
         should_suggest_consultation = False
@@ -674,34 +572,16 @@ class ChatMessageView(APIView):
             suggest_consultation=should_suggest_consultation
         )
         
-        # -------------------------
-        # 6. Generate response
-        # -------------------------
         bot_reply = generate_response(prompt)
 
-
-        # -------------------------
-        # 7. Save bot reply
-        # -------------------------
         ChatMessage.objects.create(
             session=session,
             role="bot",
             content=bot_reply
         )
 
-        # =========================
-        # MEMORY CLEANUP FIX
-        # =========================
-
         trim_messages(session)
-
-        # # refresh session timestamp
-        # session.updated_at = timezone.now()
-        # session.save(update_fields=["updated_at"])
-
-        return Response({
-            "reply": bot_reply
-        })
+        return Response({"reply": bot_reply})
 
 
 class ChatSessionCloseView(APIView):
@@ -722,7 +602,6 @@ class ChatSessionCloseView(APIView):
                 source="chat",
                 source_id=session.id
             ).delete()
-
 
             return Response({"message": "Session closed"})
         except ChatSession.DoesNotExist:
@@ -791,16 +670,13 @@ class ChatSessionDeleteView(APIView):
                 user=request.user
             )
             
-            # 1. Explicitly delete the linked MentalSignal first
             MentalSignal.objects.filter(
                 user=request.user,
                 source="chat",
                 source_id=session.id
             ).delete()
             
-            # 2. Then delete the session
             session.delete()
-            
             return Response({"message": "Session and linked signals deleted"})
             
         except ChatSession.DoesNotExist:
@@ -815,7 +691,6 @@ class ChatInitialMessageView(APIView):
 
     def get(self, request):
         session_id = request.query_params.get("session_id")
-
         mood_context = None
 
         if session_id and session_id != "null":
@@ -827,18 +702,14 @@ class ChatInitialMessageView(APIView):
                 mood_context = session.initial_context
 
                 if mood_context:
-                    # consume ONLY if valid
                     session.initial_context = None
                     session.save()
 
             except (ChatSession.DoesNotExist, ValueError):
                 pass
 
-        # ✅ CRITICAL FIX
         if not mood_context:
-            return Response({
-                "reply": None 
-            })
+            return Response({"reply": None})
 
         initial_input = [{
             "role": "user",
@@ -854,40 +725,31 @@ class ChatInitialMessageView(APIView):
         )
 
         reply = generate_response(prompt)
-
-        return Response({
-            "reply": reply
-        })
+        return Response({"reply": reply})
         
 class ChatSessionWithContextView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        context = request.data.get("context")  # mood data
+        context = request.data.get("context") 
 
         session = ChatSession.objects.create(
             user=request.user,
             initial_context=context
         )
 
-        return Response({
-            "session_id": session.id
-        })
-
+        return Response({"session_id": session.id})
 
 class MoodTrendView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
         range_type = request.query_params.get("range", "7d")
-
         now = timezone.now()
 
         if range_type == "24h":
             start_time = now - timedelta(hours=24)
             bucket_hours = 2
-
         else:
             start_time = now - timedelta(days=7)
             bucket_hours = 12
@@ -902,14 +764,11 @@ class MoodTrendView(APIView):
             return Response([])
 
         points = []
-
         current = start_time
 
         while current < now:
-
             bucket_end = current + timedelta(hours=bucket_hours)
 
-            # prevent future timestamps
             if bucket_end > now:
                 bucket_end = now
 
@@ -934,14 +793,11 @@ class RawMoodEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
         range_type = request.query_params.get("range", "24h")
-
         now = timezone.now()
 
         if range_type == "24h":
             start_time = now - timedelta(hours=24)
-
         else:
             start_time = now - timedelta(days=7)
 

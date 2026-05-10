@@ -68,14 +68,21 @@ const QUESTIONS = {
         "Angered by things outside control?",
         "Difficulties piling up?"
     ],
-    dass21: [
-        "Hard to wind down", "Dryness of mouth", "No positive feeling",
-        "Breathing difficulty", "Hard to initiate tasks", "Over-reacting",
-        "Trembling", "Using nervous energy", "Fear of panic",
-        "Nothing to look forward to", "Agitated", "Hard to relax",
-        "Down-hearted", "Intolerant", "Close to panic",
-        "No enthusiasm", "Low self-worth", "Touchy",
-        "Heart awareness", "Unexplained fear", "Life meaningless"
+    wemwbs: [
+        "I've been feeling optimistic about the future",
+        "I've been feeling useful",
+        "I've been feeling relaxed",
+        "I've been feeling interested in other people",
+        "I've had energy to spare",
+        "I've been dealing with problems well",
+        "I've been thinking clearly",
+        "I've been feeling good about myself",
+        "I've been feeling close to other people",
+        "I've been feeling confident",
+        "I've been able to make up my own mind about things",
+        "I've been feeling loved",
+        "I've been interested in new things",
+        "I've been feeling cheerful"
     ],
     isi: [
         "Difficulty falling asleep",
@@ -85,18 +92,6 @@ const QUESTIONS = {
         "Sleep noticeable to others",
         "Distress about sleep",
         "Interference with daily functioning"
-    ],
-    burnout: [
-        "Emotionally drained",
-        "Used up at end of day",
-        "Fatigued in morning",
-        "Burned out",
-        "Frustrated",
-        "Working too hard",
-        "Emotionally exhausted",
-        "At the end of rope",
-        "Detached",
-        "Less motivated"
     ]
 };
 
@@ -111,36 +106,30 @@ const OPTIONS_MAP = {
         {label:"Sometimes", value:2}, {label:"Fairly often", value:3},
         {label:"Very often", value:4}
     ],
-    dass21: [
-        {label:"Not at all", value:0}, {label:"Some degree", value:1},
-        {label:"Considerable", value:2}, {label:"Very much", value:3}
+    wemwbs: [
+        {label:"None of the time", value:1}, {label:"Rarely", value:2},
+        {label:"Some of the time", value:3}, {label:"Often", value:4},
+        {label:"All of the time", value:5}
     ],
     isi: [
         {label:"None", value:0}, {label:"Mild", value:1},
         {label:"Moderate", value:2}, {label:"Severe", value:3},
         {label:"Very severe", value:4}
-    ],
-    burnout: [
-        {label:"Never", value:0}, {label:"Rarely", value:1},
-        {label:"Sometimes", value:2}, {label:"Often", value:3},
-        {label:"Always", value:4}
     ]
 };
 
 const TITLES = {
     who5: "Well-Being Index (WHO-5)",
     pss: "Perceived Stress Scale",
-    dass21: "DASS-21 Check",
-    isi: "Insomnia Severity Index",
-    burnout: "Burnout Assessment"
+    wemwbs: "Warwick-Edinburgh Mental Wellbeing Scale",
+    isi: "Insomnia Severity Index"
 };
 
 const INSTRUCTIONS = {
     who5: "Reflect on how you have been feeling over the last 2 weeks.",
     pss: "Consider your thoughts and feelings over the last month.",
-    dass21: "Focus on your experiences over the past week.",
-    isi: "Think about your sleep patterns over the last 2 weeks.",
-    burnout: "Reflect on your work and life balance over the last month."
+    wemwbs: "Below are some statements about feelings and thoughts. Please select the option that best describes your experience of each over the last 2 weeks.",
+    isi: "Think about your sleep patterns over the last 2 weeks."
 };
 
 /* =========================
@@ -178,13 +167,14 @@ function render() {
             case 0: return renderWelcome();
             case 1: return renderSelect();
             case 2: return renderIntro();
-            case 3: return renderQuestion(true); // Pass true to animate on first load
+            case 3: return renderQuestion(true); 
             case 4: return renderReview();
             case 5: return renderResult();
             case 6: return renderReport();
         }
     }, 10);
 }
+
 /* =========================
    UI COMPONENTS
 ========================= */
@@ -261,7 +251,6 @@ function renderQuestion(animate = true) {
     const progress = (state.index / totalQ) * 100;
     const selected = state.answers[state.index];
 
-    // Conditionally apply the fade-in animation to prevent flicker
     const animationClass = animate ? "animate-fade-in" : "";
 
     app.innerHTML = `
@@ -422,7 +411,6 @@ let reportChart = null;
 
 function renderReport() {
     const resultData = state.results[state.type];
-    const isDass = state.type === 'dass21';
     const recommendations = generateRecommendations(state.type, resultData.risk_level);
 
     app.innerHTML = `
@@ -482,12 +470,13 @@ function renderReport() {
             </div>
         </div>`;
 
-    renderChart(resultData, isDass);
+    renderChart(resultData);
 }
 
 function generateRecommendations(type, risk) {
-    const isSevere = risk.includes('high') || risk.includes('severe') || risk.includes('extremely');
-    const isModerate = risk.includes('moderate') || risk.includes('subthreshold');
+    // WEMWBS uses different labels (low_wellbeing = severe risk in practice)
+    const isSevere = risk.includes('high') || risk.includes('severe') || risk.includes('extremely') || risk === 'wemwbs_low' || risk === 'low_wellbeing';
+    const isModerate = risk.includes('moderate') || risk.includes('subthreshold') || risk === 'wemwbs_average';
     let category = isSevere ? 'severe' : (isModerate ? 'moderate' : 'good');
 
     if (type === 'isi') { // Insomnia
@@ -514,36 +503,12 @@ function generateRecommendations(type, risk) {
         ];
     }
 
-    if (type === 'burnout') { // Burnout
-        if (category === 'severe') return [
-            "Strongly consider taking dedicated time off work to completely disconnect.",
-            "Speak with a professional counselor or therapist to process this exhaustion.",
-            "Have an honest conversation with your manager or team about your current workload.",
-            "Completely unplug from work communications after hours—no exceptions.",
-            "Focus entirely on basic restorative needs: sleeping, eating, and resting."
-        ];
-        if (category === 'moderate') return [
-            "Set clear, rigid boundaries between work hours and personal time.",
-            "Schedule short, mandatory breaks away from your desk during the workday.",
-            "Practice delegating tasks and saying 'no' to non-essential requests.",
-            "Engage in a hobby that is completely unrelated to your profession.",
-            "Ensure you are taking a full, uninterrupted lunch break every day."
-        ];
-        return [
-            "Continue enforcing healthy work-life boundaries.",
-            "Keep acknowledging and celebrating your daily accomplishments.",
-            "Maintain your regular breaks to prevent fatigue from building up.",
-            "Stay connected with supportive colleagues and friends outside of work tasks.",
-            "Keep investing time in your personal hobbies and passions."
-        ];
-    }
-
-    // Default Mental Health (DASS21, PSS, WHO5)
+    // Default Mental Health (WEMWBS, PSS, WHO5)
     if (category === 'severe') return [
         "Reach out to a mental health professional for personalized guidance.",
         "Share how you are genuinely feeling with someone you deeply trust.",
         "Focus only on the immediate next step, rather than the overwhelming big picture.",
-        "Practice a physical grounding technique (like the 5-4-3-2-1 method) when feeling panicked.",
+        "Practice a physical grounding technique (like the 5-4-3-2-1 method) when feeling overwhelmed.",
         "Be incredibly gentle and patient with yourself right now; recovery takes time."
     ];
     
@@ -565,12 +530,12 @@ function generateRecommendations(type, risk) {
 }
 
 function generateFallbackInsight(risk) {
-    if (risk.includes('low') || risk === 'minimal' || risk === 'normal') return "Your scores indicate minimal to no significant symptoms currently. Maintain your current routines.";
-    if (risk.includes('moderate') || risk.includes('subthreshold')) return "Elevated symptoms detected. Consider monitoring your routines and practicing self-care.";
+    if (risk.includes('low') || risk === 'minimal' || risk === 'normal' || risk === 'wemwbs_high' || risk === 'good_wellbeing') return "Your scores indicate minimal to no significant symptoms currently. Maintain your current routines.";
+    if (risk.includes('moderate') || risk.includes('subthreshold') || risk === 'wemwbs_average') return "Elevated symptoms detected. Consider monitoring your routines and practicing self-care.";
     return "High severity detected. We strongly recommend discussing these feelings with a professional or trusted confidant.";
 }
 
-function renderChart(data, isDass) {
+function renderChart(data) {
     const ctx = document.getElementById("resultChart");
     if(reportChart) reportChart.destroy();
 
@@ -582,17 +547,6 @@ function renderChart(data, isDass) {
     let values = [data.score];
     let bgColors = ['rgba(79, 70, 229, 0.8)']; // Indigo
 
-    // Extract breakdown if it's the DASS-21
-    if (isDass && data.meta) {
-        labels = ['Depression', 'Anxiety', 'Stress'];
-        values = [data.meta.depression || 0, data.meta.anxiety || 0, data.meta.stress || 0];
-        bgColors = [
-            'rgba(59, 130, 246, 0.8)', // Blue
-            'rgba(16, 185, 129, 0.8)', // Emerald
-            'rgba(245, 158, 11, 0.8)'  // Amber
-        ];
-    }
-
     reportChart = new Chart(ctx, {
         type: "bar",
         data: {
@@ -602,7 +556,7 @@ function renderChart(data, isDass) {
                 backgroundColor: bgColors,
                 borderRadius: 8,
                 borderSkipped: false,
-                barThickness: isDass ? 40 : 80
+                barThickness: 80
             }]
         },
         options: {
@@ -625,32 +579,33 @@ function renderChart(data, isDass) {
         }
     });
 }
+
 function mapRiskToMood(risk) {
     if (!risk) return "neutral";
 
-    if (risk.includes("high") || risk.includes("severe")) return "sad";
-    if (risk.includes("moderate")) return "anxious";
+    if (risk.includes("high") || risk.includes("severe") || risk === "wemwbs_low" || risk === "low_wellbeing") return "sad";
+    if (risk.includes("moderate") || risk === "wemwbs_average") return "anxious";
     return "neutral";
 }
+
 async function goToChatWithContext() {
     try {
         const resultData = state.results[state.type];
 
-        // 🔥 Extract ONLY what chatbot needs
+        // Extract ONLY what chatbot needs
         const context = {
             overall_mood: mapRiskToMood(resultData.risk_level),
             overall_risk: resultData.risk_level,
             score: resultData.score
         };
 
-        // 🔥 Create session WITH context
+        // Create session WITH context
         const { data } = await apiRequest(
             "/api/core/chat/session-with-context/",
             "POST",
             { context: context }
         );
 
-        // 🔥 Store session temporarily
         if (!data || !data.session_id) {
             console.error("Invalid session response", data);
             alert("Session creation failed");
@@ -659,7 +614,6 @@ async function goToChatWithContext() {
 
         sessionStorage.setItem("chat_session_id", data.session_id);
 
-        // ensure write completes before navigation
         setTimeout(() => {
             window.location.href = "/api/core/chatbot-page/";
         }, 50);

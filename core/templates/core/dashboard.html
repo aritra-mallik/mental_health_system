@@ -198,10 +198,7 @@
                                 WHO-5, PSS & ISI: <strong class="text-indigo-600 dark:text-indigo-400 ml-0.5">Weekly</strong>
                             </span>
                             <span class="px-2.5 py-1 bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-[11px] font-semibold rounded-lg backdrop-blur-sm shadow-sm">
-                                DASS-21: <strong class="text-indigo-600 dark:text-indigo-400 ml-0.5">Bi-weekly</strong>
-                            </span>
-                            <span class="px-2.5 py-1 bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-[11px] font-semibold rounded-lg backdrop-blur-sm shadow-sm">
-                                Burnout: <strong class="text-indigo-600 dark:text-indigo-400 ml-0.5">Monthly</strong>
+                                WEMWBS: <strong class="text-indigo-600 dark:text-indigo-400 ml-0.5">Bi-weekly</strong>
                             </span>
                         </div>
                     </div>
@@ -497,7 +494,7 @@
                 
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-inner border border-purple-100 dark:border-purple-800/50">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <div>
                         <h3 class="text-xl font-black tracking-tight text-slate-800 dark:text-white">
@@ -1008,7 +1005,6 @@ async function loadDashboard(){
             }
         }
         
-        // ... (The rest of your loadDashboard logic for recRes stays exactly the same)
         if (recRes.res?.ok){
             const recBox = document.getElementById("recommendBox");
             if(!recBox) return;
@@ -1094,9 +1090,8 @@ function updateSummaryCards(moodData, assessData, journalData) {
     const ASSESS_TITLES = {
         who5: "WHO-5",
         pss: "PSS",
-        dass21: "DASS-21",
-        isi: "ISI",
-        burnout: "Burnout"
+        wemwbs: "WEMWBS",
+        isi: "ISI"
     };
 
     // 1. Process Mood Trend Data (Status only)
@@ -1610,12 +1605,11 @@ function renderAssessmentChart(data){
     const lineConfig = {
         who5:   { color: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.5)' },  // Purple
         pss:    { color: '#f43f5e', shadow: 'rgba(244, 63, 94, 0.5)' },   // Rose/Red
-        dass21: { color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.5)' },  // Amber
+        wemwbs: { color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.5)' },  // Amber
         isi:    { color: '#10b981', shadow: 'rgba(16, 185, 129, 0.5)' },  // Emerald
-        burnout:{ color: '#6b7280', shadow: 'rgba(107, 114, 128, 0.5)' }   // Pink
     };
 
-    const types = ["who5","pss","dass21","isi","burnout"];
+    const types = ["who5","pss","wemwbs","isi"];
 
     const datasets = types.map(type => {
         const typeData = labels.map(labelDate => {
@@ -1789,8 +1783,8 @@ function generateInsights(summary){
         insights.push("Your wellbeing is low. Consider rest and recovery.");
     }
 
-    if (latest.burnout?.risk === "high"){
-        insights.push("Burnout risk is high. You need rest.");
+    if (latest.wemwbs?.risk === "wemwbs_low"){
+        insights.push("Your mental wellbeing score is low. You might need to take a break.");
     }
 
     return insights;
