@@ -198,7 +198,14 @@
 
 {% block extra_js %}
 <script>
-let sessionId = null;
+let rawSession = sessionStorage.getItem("chat_session_id");
+
+let sessionId = rawSession ? parseInt(rawSession) : null;
+
+if (isNaN(sessionId)) {
+    sessionId = null;
+    sessionStorage.removeItem("chat_session_id");
+}
 
 /* Layout & UI Toggles */
 function toggleSidebar() {
@@ -285,10 +292,16 @@ function goDashboard(){
 
 /* Chat Operations */
 async function initChat(){
-    if(sessionId) return; 
+    if (sessionId && !isNaN(sessionId)) return; 
+
     try {
         const {data} = await apiRequest("/api/core/chat/session/", "POST");
+
         sessionId = data.session_id;
+
+        // 🔥 persist session
+        sessionStorage.setItem("chat_session_id", sessionId);
+
     } catch (e) { 
         console.error("Session failed", e); 
     }
@@ -306,7 +319,9 @@ async function sendMessage(){
     }
     // -------------------------------------------------------------
 
-    if (!sessionId) await initChat();
+    if (!sessionId || isNaN(sessionId)) {
+        await initChat();
+    }
 
     appendMessage("user", msg);
     input.value = "";
@@ -319,8 +334,14 @@ async function sendMessage(){
             session_id: sessionId,
             message: msg
         });
-        appendMessage("bot", data.reply);
-        loadChatHistory();
+        if (data.reply) {
+            appendMessage("bot", data.reply);
+        } else {
+            showDefaultGreeting();  // ✅ clean UI greeting
+        }
+        if (sessionId) {
+            await loadChatHistory();
+        }
     } catch (e) {
         appendMessage("bot", "I encountered an error connecting. Let's try that again.");
     } finally {
@@ -509,6 +530,7 @@ async function loadChatHistory(){
 
 async function switchSession(id){
     sessionId = id;
+    sessionStorage.setItem("chat_session_id", id);
     try {
         const {data} = await apiRequest(`/api/core/chat/session/${id}/`, "GET");
         const box = document.getElementById("chatBox");
@@ -531,17 +553,29 @@ function searchChats() {
 }
 
 function createNewChat(){
+
+    // clear active runtime session
     sessionId = null;
+
+    // clear persisted session
+    sessionStorage.removeItem("chat_session_id");
+
+    // clear chat ui
     document.getElementById("chatBox").innerHTML = "";
-    showDefaultGreeting(); // Inject the welcome screen
-    
-    // Deselect any active chat in the sidebar
+
+    // show welcome screen
+    showDefaultGreeting();
+
+    // remove active state from sidebar items
     document.querySelectorAll(".chat-item").forEach(el => {
         el.classList.remove("bg-gray-200", "dark:bg-gray-800");
         el.classList.add("hover:bg-gray-100", "dark:hover:bg-gray-800");
     });
 
-    if (window.innerWidth < 768) toggleSidebar();
+    // mobile close
+    if (window.innerWidth < 768) {
+        toggleSidebar();
+    }
 }
 
 async function deleteChat(event, chatId) {
@@ -550,17 +584,56 @@ async function deleteChat(event, chatId) {
     try {
         await apiRequest(`/api/core/chat/session/${chatId}/delete/`, "DELETE");
         if (sessionId === chatId) {
+
             document.getElementById("chatBox").innerHTML = "";
+
             sessionId = null;
+
+            sessionStorage.removeItem("chat_session_id");
         }
         loadChatHistory();
     } catch (e) {
         console.error("Delete failed", e);
     }
 }
+async function loadInitialMessage() {
+    try {
+        // 🚫 HARD STOP: no invalid calls
+        if (!sessionId || isNaN(sessionId)) {
+            showDefaultGreeting();
+            return;
+        }
 
-// Init
-loadChatHistory();
-showDefaultGreeting();
+        const { data } = await apiRequest(
+            `/api/core/chat/initial/?session_id=${sessionId}`,
+            "GET",
+            null,
+            { silent: true }
+        );
+
+        const box = document.getElementById("chatBox");
+
+        if (box.children.length === 0 && data?.reply) {
+            appendMessage("bot", data.reply);
+        }
+
+    } catch (e) {
+        console.error("Initial message failed", e);
+        showDefaultGreeting();
+    }
+}
+async function initPage() {
+    await loadChatHistory();
+
+    if (sessionId && !isNaN(sessionId)) {
+        await loadInitialMessage();
+
+      
+    } else {
+        showDefaultGreeting();
+    }
+}
+
+initPage();
 </script>
 {% endblock %}

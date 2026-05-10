@@ -29,7 +29,7 @@ class JournalEntry(models.Model):
 
     # ZERO-KNOWLEDGE STORAGE
     encrypted_content = models.TextField()
-
+    is_pinned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -76,7 +76,7 @@ class ChatSession(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_pinned = models.BooleanField(default=False)
-
+    initial_context = models.JSONField(null=True, blank=True)
     def __str__(self):
         return f"Session {self.id} - {self.user.username}"
 
@@ -101,3 +101,52 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.role} - {self.content[:30]}"
+    
+class MentalSignal(models.Model):
+    SOURCE_CHOICES = [
+        ("mood", "Mood"),
+        ("journal", "Journal"),
+        ("chat", "Chat"),
+        ("assessment", "Assessment"),
+    ]
+
+    RISK_CHOICES = [
+        ("low", "Low"),
+        ("moderate", "Moderate"),
+        ("high", "High"),
+    ]
+
+    MOOD_CHOICES = [
+        ("excellent", "Excellent"),
+        ("happy", "Happy"),
+        ("neutral", "Neutral"),
+        ("anxious", "Anxious"),
+        ("sad", "Sad"),
+        ("angry", "Angry"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
+
+    mood = models.CharField(max_length=20, choices=MOOD_CHOICES)
+
+    risk = models.CharField(max_length=20, choices=RISK_CHOICES, default="low")
+
+    metadata = models.JSONField(default=dict)
+
+    source_id = models.IntegerField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['source']),
+        ]
+
+    def __str__(self):
+        return f"{self.user} | {self.source} | {self.mood} | {self.risk}"

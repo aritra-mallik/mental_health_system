@@ -1,69 +1,240 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="max-w-3xl mx-auto p-6">
+<div class="min-h-screen bg-[#f5f7fb] py-10">
 
-<h1 class="text-2xl font-bold mb-4">Book Appointment</h1>
+    <div class="max-w-7xl mx-auto px-4 md:px-6">
 
-<div id="msg" class="mb-3 text-sm"></div>
+        <!-- HEADER -->
+        <div class="mb-10">
 
-<div class="space-y-4">
+            <a href="/api/consultation/"
+               class="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-all">
 
-    <label>Search Counselor</label>
-    <input id="search" placeholder="Type name..." class="border p-2 w-full">
+                ← Back to Counselors
 
-    <label>Select Counselor</label>
-    <select id="counselor" class="border p-2 w-full"></select>
+            </a>
 
-    <label>Consultation Type</label>
-    <input id="type" class="border p-2 w-full" placeholder="e.g. Therapy">
+            <h1 class="text-5xl font-black text-gray-900 mt-4">
+                Book Consultation
+            </h1>
 
-    <label>Mode</label>
-    <select id="mode" class="border p-2 w-full">
-        <option value="online">Online</option>
-        <option value="offline">Offline</option>
-    </select>
+            <p class="text-gray-500 text-lg mt-3">
+                Securely book your counseling session in a few simple steps.
+            </p>
 
-    <label>Session Duration (minutes)</label>
-    <input id="duration" type="number" class="border p-2 w-full">
+        </div>
 
-    <label>Select Date</label>
-    <input id="date" type="date" class="border p-2 w-full">
+        <div class="grid lg:grid-cols-[400px_1fr] gap-8">
 
-    <label>Available Slots</label>
-    <div id="slots" class="grid grid-cols-2 gap-2"></div>
+            <!-- COUNSELOR CARD -->
+            <div class="bg-white rounded-[32px] shadow-xl border border-gray-100 overflow-hidden h-fit">
 
-    <button id="bookBtn"
-        onclick="openModal()"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500 transition">
-        Book Appointment
-    </button>
+                <div class="p-7">
 
-</div>
+                    <div class="flex items-start gap-5">
 
-</div>
+                        <img
+                            src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                            class="w-24 h-24 rounded-3xl object-cover border border-gray-200"
+                        >
 
-<!-- MODAL -->
-<div id="modal"
-     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.6); z-index:9999;">
+                        <div class="flex-1">
 
-    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
-                background:white; padding:25px; border-radius:10px; width:300px; text-align:center;">
+                            <div class="flex items-center gap-2 flex-wrap">
 
-        <h3 style="margin-bottom:15px;">Confirm Booking?</h3>
+                                <h2 class="text-3xl font-black text-gray-900">
+                                    {{ counselor.name }}
+                                </h2>
 
-        <div style="display:flex; justify-content:center; gap:15px;">
+                                <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                                    Verified
+                                </span>
 
-            <button onclick="bookSlot()"
-                style="background:#16a34a; color:white; padding:8px 18px; border:none; border-radius:6px; cursor:pointer;">
-                Yes
-            </button>
+                            </div>
 
-            <button onclick="closeModal()"
-                style="background:#dc2626; color:white; padding:8px 18px; border:none; border-radius:6px; cursor:pointer;">
-                No
-            </button>
+                            <p class="text-indigo-600 font-semibold mt-2">
+                                {{ counselor.designation }}
+                            </p>
+
+                            <div class="flex items-center gap-4 mt-4 flex-wrap">
+
+                                <span class="text-yellow-600 font-bold">
+                                    ⭐ 4.9
+                                </span>
+
+                                <span class="text-gray-500 text-sm">
+                                    {{ counselor.experience_years }} Years Experience
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-7 space-y-4">
+
+                        <div class="bg-[#f8fafc] rounded-2xl border border-gray-100 p-5">
+
+                            <p class="text-sm text-gray-500">
+                                Consultation Fee
+                            </p>
+
+                            <h3 class="text-3xl font-black text-gray-900 mt-1">
+                                ₹{{ counselor.consultation_fee }}
+                            </h3>
+
+                        </div>
+
+                        <div class="bg-[#f8fafc] rounded-2xl border border-gray-100 p-5">
+
+                            <p class="text-sm text-gray-500">
+                                Session Duration
+                            </p>
+
+                            <h3 class="text-3xl font-black text-gray-900 mt-1">
+                                {{ counselor.session_duration }} Minutes
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- BOOKING SECTION -->
+            <div class="bg-white rounded-[32px] shadow-xl border border-gray-100 p-6 lg:p-8">
+
+                <div class="flex justify-between items-start flex-wrap gap-5">
+
+                    <div>
+
+                        <h2 class="text-4xl font-black text-gray-900">
+                            Session Details
+                        </h2>
+
+                        <p class="text-gray-500 mt-2">
+                            Select mode, date and slot to continue
+                        </p>
+
+                    </div>
+
+                    <div class="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-bold">
+                        Available Today
+                    </div>
+
+                </div>
+
+                <!-- MESSAGE -->
+                <div id="messageBox"
+                     class="hidden mt-6 rounded-2xl px-5 py-4 font-semibold">
+                </div>
+
+                <div class="space-y-7 mt-8">
+
+                    <!-- CONSULTATION TYPE -->
+                    <div>
+
+                        <label class="block text-gray-700 font-bold mb-3">
+                            Consultation Type
+                        </label>
+
+                        <select
+                            id="consultationType"
+                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-indigo-100">
+
+                            <option>Therapy Session</option>
+                            <option>Anxiety Counseling</option>
+                            <option>Stress Management</option>
+                            <option>Depression Counseling</option>
+                            <option>Relationship Counseling</option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- MODE -->
+                    <div>
+
+                        <label class="block text-gray-700 font-bold mb-3">
+                            Session Mode
+                        </label>
+
+                        <div class="grid grid-cols-2 gap-4">
+
+                            <button
+                                type="button"
+                                id="onlineBtn"
+                                onclick="selectMode('online')"
+                                class="mode-btn bg-indigo-600 text-white py-4 rounded-2xl font-bold transition-all">
+
+                                🎥 Online
+
+                            </button>
+
+                            <button
+                                type="button"
+                                id="offlineBtn"
+                                onclick="selectMode('offline')"
+                                class="mode-btn bg-gray-100 text-gray-700 py-4 rounded-2xl font-bold transition-all">
+
+                                🏥 Offline
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <!-- DATE -->
+                    <div>
+
+                        <label class="block text-gray-700 font-bold mb-3">
+                            Select Date
+                        </label>
+
+                        <input
+                            id="dateInput"
+                            type="date"
+                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-indigo-100">
+
+                    </div>
+
+                    <!-- SLOT -->
+                    <div>
+
+                        <label class="block text-gray-700 font-bold mb-3">
+                            Available Slots
+                        </label>
+
+                        <select
+                            id="slotSelect"
+                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-indigo-100">
+
+                            <option value="">
+                                Select a Slot
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- BOOK -->
+                    <button
+                        id="bookBtn"
+                        onclick="bookSession()"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-5 rounded-2xl font-black text-lg shadow-lg transition-all">
+
+                        Confirm Booking
+
+                    </button>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -73,179 +244,306 @@
 
 <script>
 
-let selectedCounselor = null;
-let selectedSlot = null;
-let allCounselors = [];
+const counselorId = "{{ counselor.id }}";
 
-/* MESSAGE */
-function showMsg(text, type="error"){
-    const m = document.getElementById("msg");
-    m.innerText = text;
-    m.className = type === "error" ? "text-red-600 mb-3" : "text-green-600 mb-3";
+let selectedMode = "online";
+
+/* =========================================
+MESSAGE
+========================================= */
+
+function showMessage(text, type="error") {
+
+    const box = document.getElementById("messageBox");
+
+    box.classList.remove("hidden");
+
+    box.innerText = text;
+
+    if(type === "success"){
+
+        box.className =
+            "mt-6 rounded-2xl px-5 py-4 font-semibold bg-green-100 text-green-700";
+
+    }else{
+
+        box.className =
+            "mt-6 rounded-2xl px-5 py-4 font-semibold bg-red-100 text-red-700";
+    }
 }
 
-/* DEBOUNCE */
-function debounce(fn, delay){
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), delay);
-    };
-}
+/* =========================================
+MODE
+========================================= */
 
-/* LOAD COUNSELORS */
-async function loadCounselors(){
-    const res = await fetch("/api/consultation/counselors/");
-    allCounselors = await res.json();
-    renderCounselors(allCounselors);
-}
+function selectMode(mode){
 
-/* RENDER */
-function renderCounselors(list){
-    const dropdown = document.getElementById("counselor");
-    dropdown.innerHTML = "";
+    selectedMode = mode;
 
-    list.forEach(c => {
-        dropdown.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-    });
+    const onlineBtn =
+        document.getElementById("onlineBtn");
 
-    selectedCounselor = dropdown.value;
-    loadSlots();
-}
+    const offlineBtn =
+        document.getElementById("offlineBtn");
 
-/* SEARCH */
-document.getElementById("search").addEventListener("input",
-    debounce((e) => {
-        const val = e.target.value.toLowerCase();
-        const filtered = allCounselors.filter(c =>
-            c.name.toLowerCase().includes(val)
+    onlineBtn.className =
+        "mode-btn py-4 rounded-2xl font-bold transition-all";
+
+    offlineBtn.className =
+        "mode-btn py-4 rounded-2xl font-bold transition-all";
+
+    if(mode === "online"){
+
+        onlineBtn.classList.add(
+            "bg-indigo-600",
+            "text-white"
         );
-        renderCounselors(filtered);
-    }, 400)
-);
 
-/* EVENTS */
-document.getElementById("counselor").addEventListener("change", e => {
-    selectedCounselor = e.target.value;
+        offlineBtn.classList.add(
+            "bg-gray-100",
+            "text-gray-700"
+        );
+
+    }else{
+
+        offlineBtn.classList.add(
+            "bg-indigo-600",
+            "text-white"
+        );
+
+        onlineBtn.classList.add(
+            "bg-gray-100",
+            "text-gray-700"
+        );
+    }
+
     loadSlots();
-});
+}
 
-document.getElementById("date").addEventListener("change", loadSlots);
+/* =========================================
+LOAD SLOTS
+========================================= */
 
-/* LOAD SLOTS */
 async function loadSlots(){
 
-    const date = document.getElementById("date").value;
-    if(!selectedCounselor || !date) return;
+    const date =
+        document.getElementById("dateInput").value;
 
-    const container = document.getElementById("slots");
-    container.innerHTML = "Loading...";
+    const slotSelect =
+        document.getElementById("slotSelect");
 
-    const res = await fetch(`/api/consultation/counselors/${selectedCounselor}/?date=${date}`);
-    const data = await res.json();
+    if(!date){
 
-    const slots = data.slots.filter(s => !s.is_booked);
-
-    if(slots.length === 0){
-        container.innerHTML = "<p class='text-gray-500'>No slots available</p>";
         return;
     }
 
-    container.innerHTML = "";
+    slotSelect.innerHTML = `
 
-    slots.forEach(s => {
-        container.innerHTML += `
-            <div onclick="selectSlot(this, ${s.id})"
-                 class="border p-2 rounded cursor-pointer hover:bg-blue-100">
-                ${s.time} (${s.mode})
-            </div>
+        <option>
+            Loading slots...
+        </option>
+
+    `;
+
+    try{
+
+        const response = await fetch(
+            `/api/consultation/counselors/${counselorId}/?date=${date}`
+        );
+
+        const data = await response.json();
+
+        console.log("SLOTS API:", data);
+
+        if(!data.slots){
+
+            slotSelect.innerHTML = `
+
+                <option>
+                    No slots found
+                </option>
+
+            `;
+
+            return;
+        }
+
+        const filteredSlots =
+            data.slots.filter(slot => {
+
+                return (
+                    slot.mode &&
+                    slot.mode.toLowerCase()
+                    ===
+                    selectedMode.toLowerCase()
+                );
+            });
+
+        if(filteredSlots.length === 0){
+
+            slotSelect.innerHTML = `
+
+                <option>
+                    No ${selectedMode} slots available
+                </option>
+
+            `;
+
+            return;
+        }
+
+        slotSelect.innerHTML = `
+
+            <option value="">
+                Select a Slot
+            </option>
+
         `;
-    });
+
+        filteredSlots.forEach(slot => {
+
+            slotSelect.innerHTML += `
+
+                <option value="${slot.id}">
+                    ${slot.time} (${slot.mode})
+                </option>
+
+            `;
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+        slotSelect.innerHTML = `
+
+            <option>
+                Failed to load slots
+            </option>
+
+        `;
+    }
 }
 
-/* SELECT SLOT */
-function selectSlot(el, id){
-    selectedSlot = id;
+/* =========================================
+BOOK SESSION
+========================================= */
 
-    document.querySelectorAll("#slots div").forEach(d => {
-        d.classList.remove("bg-blue-500","text-white");
-    });
+async function bookSession(){
 
-    el.classList.add("bg-blue-500","text-white");
-}
+    const slot =
+        document.getElementById("slotSelect").value;
 
-/* VALIDATION */
-function validate(){
-    if(!selectedCounselor) return "Select counselor";
-    if(!document.getElementById("type").value) return "Enter type";
-    if(!document.getElementById("duration").value) return "Enter duration";
-    if(!selectedSlot) return "Select a slot";
-    return null;
-}
+    if(!slot){
 
-/* MODAL */
-function openModal(){
-    const err = validate();
-    if(err){
-        showMsg(err);
+        showMessage(
+            "Please select a slot"
+        );
+
         return;
     }
-    document.getElementById("modal").style.display = "block";
-}
 
-function closeModal(){
-    document.getElementById("modal").style.display = "none";
-}
-
-/* BOOK */
-async function bookSlot(){
-
-    closeModal();
-
-    const btn = document.getElementById("bookBtn");
-    btn.disabled = true;
-    btn.innerText = "Booking...";
-
-    const token = localStorage.getItem("access");
+    const token =
+        localStorage.getItem("access");
 
     if(!token){
-        showMsg("You are not logged in");
+
+        showMessage(
+            "Please login first"
+        );
+
         return;
     }
 
-    const res = await fetch("/api/consultation/create-booking/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-            counselor: selectedCounselor,
-            slot: selectedSlot
-        })
-    });
+    const btn =
+        document.getElementById("bookBtn");
 
-    let data;
-    try {
-        data = await res.json();
-    } catch {
-        showMsg("Invalid server response");
-        return;
-    }
+    btn.disabled = true;
 
-    if(res.ok){
-        console.log("Booking success → redirecting", data);
-        window.location.href = `/api/consultation/success/${data.id}/`;
-    } else {
-        console.error("Booking failed:", res.status, data);
-        showMsg(data.error || `Error ${res.status}`);
+    btn.innerText = "Booking...";
+
+    try{
+
+        const response = await fetch(
+            "/api/consultation/create-booking/",
+            {
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/json",
+
+                    "Authorization":
+                        `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+
+                    counselor: counselorId,
+                    slot: slot,
+                    mode: selectedMode
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        console.log(data);
+
+        if(response.ok){
+
+           window.location.href = data.payment_url;
+
+        }else{
+
+            showMessage(
+                data.message ||
+                "Booking failed"
+            );
+        }
+
+    }catch(error){
+
+        console.error(error);
+
+        showMessage(
+            "Something went wrong"
+        );
     }
 
     btn.disabled = false;
-    btn.innerText = "Book Appointment";
+
+    btn.innerText = "Confirm Booking";
 }
 
-loadCounselors();
+/* =========================================
+DATE CHANGE
+========================================= */
+
+document
+    .getElementById("dateInput")
+    .addEventListener(
+        "change",
+        loadSlots
+    );
+
+/* =========================================
+AUTO LOAD
+========================================= */
+
+window.onload = function(){
+
+    const today =
+        new Date()
+        .toISOString()
+        .split("T")[0];
+
+    document.getElementById("dateInput")
+        .value = today;
+
+    loadSlots();
+}
 
 </script>
 

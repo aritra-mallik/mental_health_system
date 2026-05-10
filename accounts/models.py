@@ -1,7 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-#from phonenumber_field.modelfields import PhoneNumberField
-from django.utils.translation import gettext_lazy as _
 from datetime import date
 import base64, os
 
@@ -28,7 +26,7 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
 
-    email = models.EmailField(_("email address"), unique=True)
+    email = models.EmailField(("email address"), unique=True)
     phone = models.CharField(max_length=15, unique=True)
 
     first_name = models.CharField(max_length=100)

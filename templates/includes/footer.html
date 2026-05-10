@@ -114,7 +114,7 @@
                             <span class="group-hover:translate-x-1 transition-transform duration-300">Dashboard</span>
                         </a>
 
-                        <a href="/api/core/chatbot-page/" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-semibold">
+                        <a href="javascript:void(0)" onclick="goChatbot()" class="group flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all font-semibold">
                             <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-indigo-600 dark:text-indigo-400">→</span>
                             <span class="group-hover:translate-x-1 transition-transform duration-300">AI Chatbot</span>
                         </a>
@@ -253,3 +253,10 @@
     </div>
 
 </footer>
+<script>
+function goChatbot() {
+    sessionStorage.removeItem("chat_session_id");
+
+    window.location.href = "/api/core/chatbot-page/";
+}
+</script>

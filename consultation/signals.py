@@ -129,7 +129,7 @@ def seed_data(sender, **kwargs):
         for i in range(5):
             for t in [time(10, 0), time(12, 0), time(15, 0)]:
 
-                mode = 'offline' if "Hospital" in c["hospital"] else 'online'
+                mode = 'online' if t == time(10, 0) else 'offline'
 
                 AvailabilitySlot.objects.create(
                     counselor=counselor,

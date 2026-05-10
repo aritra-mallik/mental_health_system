@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center bg-[#f5f7fb] px-4">
+
+    <div class="bg-white rounded-[32px] shadow-2xl p-12 text-center max-w-lg w-full">
+
+        <!-- ICON -->
+        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+
+            <svg class="w-12 h-12 text-green-600"
+                 fill="none"
+                 stroke="currentColor"
+                 viewBox="0 0 24 24">
+
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M5 13l4 4L19 7">
+                </path>
+
+            </svg>
+
+        </div>
+
+        <!-- TITLE -->
+        <h1 class="text-3xl font-bold text-gray-900 mt-8">
+
+            Booking Cancelled
+
+        </h1>
+
+        <!-- TEXT -->
+        <p class="text-gray-500 mt-3 leading-relaxed">
+
+            Your appointment has been cancelled successfully.
+
+            Redirecting to My Bookings...
+
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+
+setTimeout(() => {
+
+    window.location.href =
+        "/api/consultation/my-bookings/";
+
+}, 2000);
+
+</script>
+
+{% endblock %}

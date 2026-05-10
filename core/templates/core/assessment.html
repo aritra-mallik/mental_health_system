@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n static %}
+{% load static %}
 
 {% block title %}Mental Health Assessment{% endblock %}
 
@@ -407,7 +407,9 @@ function renderResult() {
             
             <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
                 <button onclick="state.step = 6; render();" class="${BTN_PRIMARY} hover:-translate-y-1">View Full Report</button>
-                <button onclick="window.location.href='/api/core/chatbot-page/'" class="${BTN_SECONDARY}">Discuss with Smera</button>
+                <button onclick="goToChatWithContext()" class="${BTN_SECONDARY}">
+                    Discuss with Smera
+                </button>
                 <button onclick="window.location.href='/api/core/dashboard-page/'" class="mt-4 text-sm font-bold text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">Return to Dashboard</button>
             </div>
         </div>`;
@@ -622,6 +624,50 @@ function renderChart(data, isDass) {
             }
         }
     });
+}
+function mapRiskToMood(risk) {
+    if (!risk) return "neutral";
+
+    if (risk.includes("high") || risk.includes("severe")) return "sad";
+    if (risk.includes("moderate")) return "anxious";
+    return "neutral";
+}
+async function goToChatWithContext() {
+    try {
+        const resultData = state.results[state.type];
+
+        // 🔥 Extract ONLY what chatbot needs
+        const context = {
+            overall_mood: mapRiskToMood(resultData.risk_level),
+            overall_risk: resultData.risk_level,
+            score: resultData.score
+        };
+
+        // 🔥 Create session WITH context
+        const { data } = await apiRequest(
+            "/api/core/chat/session-with-context/",
+            "POST",
+            { context: context }
+        );
+
+        // 🔥 Store session temporarily
+        if (!data || !data.session_id) {
+            console.error("Invalid session response", data);
+            alert("Session creation failed");
+            return;
+        }
+
+        sessionStorage.setItem("chat_session_id", data.session_id);
+
+        // ensure write completes before navigation
+        setTimeout(() => {
+            window.location.href = "/api/core/chatbot-page/";
+        }, 50);
+
+    } catch (e) {
+        console.error("Failed to start contextual chat", e);
+        alert("Unable to open chat. Try again.");
+    }
 }
 
 // Initialize
