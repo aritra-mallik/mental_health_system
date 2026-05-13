@@ -377,6 +377,22 @@ function handleSessionExpired() {
 if (isAuthenticatedPage() && localStorage.getItem("access")) {
     monitorSessionExpiry();
 }
+
+function togglePasswordVisibility(inputId, toggleBtn) {
+    const input = document.getElementById(inputId);
+    const eyeOpen = toggleBtn.querySelector('.eye-open');
+    const eyeClosed = toggleBtn.querySelector('.eye-closed');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.classList.add('hidden');
+        eyeClosed.classList.remove('hidden');
+    } else {
+        input.type = 'password';
+        eyeOpen.classList.remove('hidden');
+        eyeClosed.classList.add('hidden');
+    }
+}
 // // ✅ STEP 5 GOES HERE
 //     if (res.status === 401) {
 //       localStorage.clear();

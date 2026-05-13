@@ -16,6 +16,17 @@ def generate_alert(global_state, trigger_context=None):
     mood = global_state.get("overall_mood")
     risk = global_state.get("overall_risk")
     score = global_state.get("score")
+    # ---------------------------------
+    # NO DATA STATE
+    # ---------------------------------
+    if mood is None and risk is None:
+        return {
+            "level": "gray",
+            "msg": "No emotional data available yet.",
+            "risk": None,
+            "mood": None,
+            "score": None
+        }
 
     trigger_text = ""
 
@@ -44,13 +55,13 @@ Current aggregated emotional state:
 INTERPRETATION GUIDELINES:
 
 Mood meanings:
-- happy/calm/neutral -> emotionally stable
-- sad/anxious/stressed -> emotional strain
-- angry/frustrated -> tension or emotional pressure
+- good/calm/neutral -> emotionally stable
+- low/stressed/stressed -> emotional strain
+- overwhelmed/frustrated -> tension or emotional pressure
 - lonely/tired -> emotional depletion
 
 Risk meanings:
-- low -> stable overall emotional condition
+- less -> stable overall emotional condition
 - moderate -> noticeable emotional fluctuation
 - high -> persistent or intense emotional strain
 
@@ -85,7 +96,7 @@ STYLE:
 - Natural sounding
 - Brief but specific
 
-LOW RISK RULES:
+LESS RISK RULES:
 - Sound grounded and steady
 - Reflect emotional balance or manageable fluctuation
 - Keep tone reassuring

@@ -3,7 +3,6 @@
 class AssessmentEngine:
 
     CONFIG = {
-
         "who5": {
             "max_score": 25,
             "ranges": [
@@ -11,16 +10,14 @@ class AssessmentEngine:
                 (14, 25, "good_wellbeing"),
             ],
         },
-
         "pss": {
             "max_score": 40,
             "ranges": [
-                (0, 13, "low"),
+                (0, 13, "less"),
                 (14, 26, "moderate"),
                 (27, 40, "high"),
             ],
         },
-
         "isi": {
             "max_score": 28,
             "ranges": [
@@ -30,29 +27,27 @@ class AssessmentEngine:
                 (22, 28, "severe"),
             ],
         },
-
         "wemwbs": {
             "max_score": 70,
             "ranges": [
-                (14, 42, "wemwbs_low"),
-                (43, 59, "wemwbs_average"),
-                (60, 70, "wemwbs_high"),
+                (14, 42, "low_wellbeing"),
+                (43, 59, "average_wellbeing"),
+                (60, 70, "high_wellbeing"),
             ],
         }
     }
 
     INTERPRETATION = {
-        "low": "Low level",
+        "less": "low level",
         "moderate": "Moderate level",
         "high": "High level",
         "severe": "Severe level",
         "low_wellbeing": "Low wellbeing",
+        "average_wellbeing": "Average wellbeing",
         "good_wellbeing": "Good wellbeing",
+        "high_wellbeing": "High wellbeing",
         "no_insomnia": "No significant sleep issues",
         "subthreshold": "Mild sleep issues",
-        "wemwbs_low": "Low mental wellbeing",
-        "wemwbs_average": "Average mental wellbeing",
-        "wemwbs_high": "High mental wellbeing",
     }
 
     DISCLAIMER = "This is not a diagnosis. This is only a screening tool."
@@ -70,7 +65,7 @@ class AssessmentEngine:
             valid = all(isinstance(a, int) and 0 <= a <= 4 for a in answers)
 
         if not valid:
-            raise ValueError(f"Invalid answer range for {test_type}")
+            raise ValueError("Invalid answer range")
 
         return sum(answers)
 
@@ -91,8 +86,8 @@ class AssessmentEngine:
     # =========================
     @classmethod
     def get_risk_level(cls, config, score):
-        for low, high, label in config["ranges"]:
-            if low <= score <= high:
+        for less, high, label in config["ranges"]:
+            if less <= score <= high:
                 return label
         return "unknown"
 

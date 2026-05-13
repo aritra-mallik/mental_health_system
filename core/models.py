@@ -4,26 +4,6 @@ from django.utils import timezone
 
 User = settings.AUTH_USER_MODEL
 
-
-class MoodEntry(models.Model):
-    MOOD_CHOICES = [
-        ("excellent", "Excellent"),
-        ("happy", "Happy"),
-        ("sad", "Sad"),
-        ("anxious", "Anxious"),
-        ("neutral", "Neutral"),
-        ("angry", "Angry"),
-    ]
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    mood = models.CharField(max_length=20, choices=MOOD_CHOICES)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-
-
 class JournalEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -55,6 +35,7 @@ class Assessment(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
 
 class ActivityLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -108,18 +89,18 @@ class MentalSignal(models.Model):
     ]
 
     RISK_CHOICES = [
-        ("low", "Low"),
+        ("less", "Less"),
         ("moderate", "Moderate"),
         ("high", "High"),
     ]
 
     MOOD_CHOICES = [
-        ("excellent", "Excellent"),
-        ("happy", "Happy"),
+        ("overwhelmed", "Overwhelmed"),
+        ("low", "Low"),
+        ("stressed", "Stressed"),
         ("neutral", "Neutral"),
-        ("anxious", "Anxious"),
-        ("sad", "Sad"),
-        ("angry", "Angry"),
+        ("good", "Good"),
+        ("great", "Great"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -128,7 +109,7 @@ class MentalSignal(models.Model):
 
     mood = models.CharField(max_length=20, choices=MOOD_CHOICES)
 
-    risk = models.CharField(max_length=20, choices=RISK_CHOICES, default="low")
+    risk = models.CharField(max_length=20, choices=RISK_CHOICES, default="less")
 
     metadata = models.JSONField(default=dict)
 

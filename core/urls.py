@@ -4,9 +4,10 @@ from .views import(JournalPinView, MoodView, JournalView, AssessmentView,
                    ChatMessageView, ChatSessionCloseView, journal, 
                    AssessmentRecommendationView, AssessmentSummaryView,ChatSessionDetailView,ChatSessionListView,
                    ChatSessionDeleteView, ChatSessionPinView, LiveAlertView,ChatInitialMessageView,
-                   ChatSessionWithContextView,MoodTrendView,RawMoodEventsView) 
+                   ChatSessionWithContextView,MoodTrendView,RawMoodEventsView,CurrentMoodView) 
 urlpatterns = [
     path("mood/", MoodView.as_view()),
+    path("current-mood/", CurrentMoodView.as_view()),
     path("journal/", JournalView.as_view()),
     path("journal/<int:entry_id>/pin/", JournalPinView.as_view()),
     path("assessment/", AssessmentView.as_view()),

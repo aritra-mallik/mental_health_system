@@ -45,13 +45,13 @@ def split_text(text, max_len=400):
 # -------------------------------
 def map_emotion_to_mood(emotion: str):
     if emotion == "joy":
-        return "happy"
+        return "good"
     elif emotion == "sadness":
-        return "sad"
+        return "low"
     elif emotion == "anger":
-        return "angry"
+        return "overwhelmed"
     elif emotion == "fear":
-        return "anxious"
+        return "stressed"
     elif emotion == "neutral":
         return "neutral"
     else:
@@ -105,7 +105,7 @@ def analyze_text(text: str):
     mood = map_emotion_to_mood(best_emotion)
 
     return {
-        "label": "POSITIVE" if mood in ["happy"] else "NEGATIVE",
+        "label": "POSITIVE" if mood in ["good"] else "NEGATIVE",
         "score": float(best_score),
         "mood": mood
     }

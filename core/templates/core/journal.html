@@ -248,10 +248,24 @@ async function unlockJournal() {
     const salt = await getSalt();
     journalKey = await deriveKey(password, salt);
 
+    const res = await apiRequest("/api/core/journal/", "GET");
+    entries = res.data;
+
+    if (entries.length > 0) {
+        try {
+            await decrypt(entries[0].content);
+        } catch (err) {
+        
+            journalKey = null; 
+            alert("Incorrect vault password.");
+            return; 
+        }
+    }
+
     document.getElementById("lockScreen").classList.add("hidden");
     document.getElementById("journalApp").classList.remove("hidden");
 
-    await loadEntries();
+    renderList();
 }
 
 function lockJournal() {
@@ -264,6 +278,8 @@ function lockJournal() {
 ========================= */
 
 async function loadEntries() {
+    if (!journalKey) return; 
+    
     const res = await apiRequest("/api/core/journal/", "GET");
     entries = res.data;
     renderList();
@@ -699,14 +715,10 @@ async function saveEntry() {
         );
 
         if (!titleValue || !hasContent) {
-
-            alert(
-                "Please provide both title and content."
-            );
-
+            alert("Please provide both title and content.");
             saveBtn.disabled = false;
             saveBtn.innerText = "Securely Save";
-
+            isSaving = false; 
             return;
         }
 

@@ -5,29 +5,36 @@ from .models import MentalSignal
 
 
 RISK_SCORE = {
-    "low": 1,
+    "less": 1,
     "moderate": 2,
     "high": 3
 }
 
 MOOD_SCORE = {
-    "excellent": 2,
-    "happy": 1,
+    "great": 2,
+    "good": 1,
     "neutral": 0,
-    "anxious": -1,
-    "sad": -2,
-    "angry": -1.5
+    "stressed": -1,
+    "low": -2,
+    "overwhelmed": -3 
 }
 
 SOURCE_WEIGHT = {
-    "assessment": 1.0,
-    "journal": 0.8,
-    "chat": 0.6,
-    "mood": 0.5
+    # realtime emotional intent
+    "mood": 1.6,
+
+    # conversational emotional state
+    "chat": 1.3,
+
+    # reflective emotional processing
+    "journal": 0.9,
+
+    # slower long-term stability
+    "assessment": 0.7,
 }
 
 
-def compute_state(user, reference_time=None, days=3):
+def compute_state(user,reference_time=None,days=1,mode="realtime"):
     now = reference_time or timezone.now()
     window = now - timedelta(days=days)
 
@@ -35,7 +42,7 @@ def compute_state(user, reference_time=None, days=3):
         user=user,
         created_at__gte=window,
         created_at__lte=now
-    )
+    ).order_by("created_at")
 
     if not signals.exists():
         return {
@@ -51,11 +58,54 @@ def compute_state(user, reference_time=None, days=3):
     for s in signals:
         base_weight = SOURCE_WEIGHT.get(s.source, 0.5)
 
-        # recency decay
-        age_hours = (now - s.created_at).total_seconds() / 3600
-        time_weight = max(0.3, 1 - (age_hours / 72))  # decay over 3 days
+        # ---------------------------------
+        # REALTIME MODE
+        # (current behavior preserved)
+        # ---------------------------------
+        if mode == "realtime":
 
-        weight = base_weight * time_weight
+            age_hours = (
+                now - s.created_at
+            ).total_seconds() / 3600
+
+            time_weight = max(
+                0.15,
+                1 - (age_hours / 6)
+            )
+
+            weight = base_weight * time_weight
+
+        # ---------------------------------
+        # HISTORICAL MODE
+        # (temporary identical behavior)
+        # ---------------------------------
+        elif mode == "historical":
+
+            # Historical mode should represent
+            # true emotional averages inside
+            # the selected time window.
+
+            # No recency decay.
+            # No realtime emotional bias.
+
+            historical_weights = {
+                "mood": 1.0,
+                "chat": 1.0,
+                "journal": 1.0,
+                "assessment": 1.0,
+            }
+
+            weight = historical_weights.get(
+                s.source,
+                1.0
+            )
+
+        # ---------------------------------
+        # FALLBACK
+        # ---------------------------------
+        else:
+
+            weight = base_weight
 
         total_weight += weight
 
@@ -65,7 +115,7 @@ def compute_state(user, reference_time=None, days=3):
     if total_weight == 0:
         return {
             "overall_mood": "neutral",
-            "overall_risk": "low",
+            "overall_risk": "less",
             "score": 0
         }
 
@@ -78,17 +128,21 @@ def compute_state(user, reference_time=None, days=3):
     elif avg_risk >= 1.5:
         overall_risk = "moderate"
     else:
-        overall_risk = "low"
+        overall_risk = "less"
 
     # classify mood
-    if avg_mood >= 1:
-        overall_mood = "happy"
-    elif avg_mood >= 0:
+    if avg_mood >= 1.5:          # 1.5 to 2.0+
+        overall_mood = "great"
+    elif avg_mood >= 0.5:        # 0.5 to 1.49
+        overall_mood = "good"
+    elif avg_mood >= -0.5:       # -0.5 to 0.49
         overall_mood = "neutral"
-    elif avg_mood >= -1.5:
-        overall_mood = "anxious"
-    else:
-        overall_mood = "sad"
+    elif avg_mood >= -1.5:       # -1.5 to -0.51
+        overall_mood = "stressed"
+    elif avg_mood >= -2.5:       # -2.5 to -1.51
+        overall_mood = "low"
+    else:                        # < -2.5
+        overall_mood = "overwhelmed"
 
     return {
         "overall_mood": overall_mood,

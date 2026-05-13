@@ -1,10 +1,11 @@
 from django.conf import settings
-import os
+import os, random
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import ArticleSerializer
 from django.shortcuts import render
+from core.aggregator import compute_state
 
 # HTML PAGE VIEW (for browser only)
 def article_page(request, index):
@@ -41,23 +42,91 @@ def load_articles():
     return articles
 
 
+
+
 @api_view(["GET"])
 def articles(request):
-    mood = request.GET.get("mood")
+
     data = load_articles()
 
-    if mood:
-        mood = mood.strip().lower()
+    # ---------------------------------
+    # GUEST USER FALLBACK
+    # ---------------------------------
+    if not request.user.is_authenticated:
+        random.shuffle(data)
+        return Response(data[:100])
 
-        filtered = [
-            a for a in data
-            if a["mood"].strip().lower() == mood
-        ]
+    # ---------------------------------
+    # COMPUTE USER STATE
+    # ---------------------------------
+    state = compute_state(
+        request.user,
+        days=2
+    )
 
-        return Response(filtered)  
+    mood = (
+        state.get("overall_mood")
+        or "neutral"
+    ).lower().strip()
 
-    return Response(data)
+    
+    # ---------------------------------
+    # EMOTIONAL DIVERSITY MIX
+    # ---------------------------------
 
+    ALL_MOODS = [
+        "great",
+        "good",
+        "neutral",
+        "stressed",
+        "low",
+        "overwhelmed"
+    ]
+
+    # everything except primary mood
+    mixed_pool = [
+        m for m in ALL_MOODS
+        if m != mood
+    ]
+
+    # ---------------------------------
+    # PRIMARY ARTICLES (75%)
+    # ---------------------------------
+    matched = [
+        a for a in data
+        if a["mood"].strip().lower() == mood
+    ]
+
+    # ---------------------------------
+    # MIXED ARTICLES (25%)
+    # ---------------------------------
+    mixed = [
+        a for a in data
+        if a["mood"].strip().lower() in mixed_pool
+    ]
+
+    # ---------------------------------
+    # SHUFFLE
+    # ---------------------------------
+    random.shuffle(matched)
+    random.shuffle(mixed)
+
+    # ---------------------------------
+    # BUILD FINAL FEED
+    # ---------------------------------
+    TOTAL = 25
+
+    matched_count = int(TOTAL * 0.75)
+    mixed_count = TOTAL - matched_count
+
+    final_feed = (
+        matched[:matched_count] +
+        mixed[:mixed_count]
+    )
+
+    random.shuffle(final_feed)
+
+    return Response(final_feed)
 
 @api_view(["GET"])
 def article_detail(request, index):

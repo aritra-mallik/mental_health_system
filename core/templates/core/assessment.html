@@ -121,15 +121,15 @@ const OPTIONS_MAP = {
 const TITLES = {
     who5: "Well-Being Index (WHO-5)",
     pss: "Perceived Stress Scale",
-    wemwbs: "Warwick-Edinburgh Mental Wellbeing Scale",
-    isi: "Insomnia Severity Index"
+    wemwbs: "Mental Wellbeing Scale (WEMWBS)",
+    isi: "Insomnia Severity Index",
 };
 
 const INSTRUCTIONS = {
     who5: "Reflect on how you have been feeling over the last 2 weeks.",
     pss: "Consider your thoughts and feelings over the last month.",
-    wemwbs: "Below are some statements about feelings and thoughts. Please select the option that best describes your experience of each over the last 2 weeks.",
-    isi: "Think about your sleep patterns over the last 2 weeks."
+    wemwbs: "Reflect on your experiences and feelings over the last 2 weeks.",
+    isi: "Think about your sleep patterns over the last 2 weeks.",
 };
 
 /* =========================
@@ -149,7 +149,7 @@ let state = {
 const BTN_PRIMARY = "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all active:scale-95 flex justify-center items-center gap-2";
 const BTN_SECONDARY = "bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 flex justify-center items-center gap-2";
 const OPTION_CARD = "w-full p-5 mb-3 border-2 border-slate-100 dark:border-slate-700/50 rounded-2xl text-left transition-all bg-white dark:bg-slate-800/50 hover:border-indigo-200 dark:hover:border-indigo-500/50 text-slate-700 dark:text-slate-200 font-medium cursor-pointer group";
-const OPTION_SELECTED = "border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300 scale-[1.01] shadow-md";
+const OPTION_SELECTED = "border-indigo-600 dark:border-indigo-50 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300 scale-[1.01] shadow-md";
 
 /* =========================
    ROUTER
@@ -474,10 +474,20 @@ function renderReport() {
 }
 
 function generateRecommendations(type, risk) {
-    // WEMWBS uses different labels (low_wellbeing = severe risk in practice)
-    const isSevere = risk.includes('high') || risk.includes('severe') || risk.includes('extremely') || risk === 'wemwbs_low' || risk === 'low_wellbeing';
-    const isModerate = risk.includes('moderate') || risk.includes('subthreshold') || risk === 'wemwbs_average';
-    let category = isSevere ? 'severe' : (isModerate ? 'moderate' : 'good');
+    let category = 'good';
+    
+    if (risk.includes('severe') || risk.includes('high') || risk === 'low_wellbeing') {
+        category = 'severe';
+    } else if (risk.includes('moderate') || risk.includes('subthreshold') || risk === 'average_wellbeing') {
+        category = 'moderate';
+    }
+    
+    // Exception mapping for Positive-Framed Assessments (WEMWBS & WHO5)
+    if ((type === 'wemwbs' && risk === 'high_wellbeing') || (type === 'who5' && risk === 'good_wellbeing')) {
+        category = 'good';
+    } else if ((type === 'wemwbs' && risk === 'low_wellbeing') || (type === 'who5' && risk === 'low_wellbeing')) {
+        category = 'severe';
+    }
 
     if (type === 'isi') { // Insomnia
         if (category === 'severe') return [
@@ -508,7 +518,7 @@ function generateRecommendations(type, risk) {
         "Reach out to a mental health professional for personalized guidance.",
         "Share how you are genuinely feeling with someone you deeply trust.",
         "Focus only on the immediate next step, rather than the overwhelming big picture.",
-        "Practice a physical grounding technique (like the 5-4-3-2-1 method) when feeling overwhelmed.",
+        "Practice a physical grounding technique (like the 5-4-3-2-1 method) when feeling panicked.",
         "Be incredibly gentle and patient with yourself right now; recovery takes time."
     ];
     
@@ -530,8 +540,8 @@ function generateRecommendations(type, risk) {
 }
 
 function generateFallbackInsight(risk) {
-    if (risk.includes('low') || risk === 'minimal' || risk === 'normal' || risk === 'wemwbs_high' || risk === 'good_wellbeing') return "Your scores indicate minimal to no significant symptoms currently. Maintain your current routines.";
-    if (risk.includes('moderate') || risk.includes('subthreshold') || risk === 'wemwbs_average') return "Elevated symptoms detected. Consider monitoring your routines and practicing self-care.";
+    if (risk.includes('less') || risk.includes('good') || risk.includes('high_wellbeing') || risk === 'minimal' || risk === 'normal') return "Your scores indicate minimal to no significant symptoms currently. Maintain your current routines.";
+    if (risk.includes('moderate') || risk.includes('average_wellbeing') || risk.includes('subthreshold')) return "Elevated symptoms detected. Consider monitoring your routines and practicing self-care.";
     return "High severity detected. We strongly recommend discussing these feelings with a professional or trusted confidant.";
 }
 
@@ -582,9 +592,17 @@ function renderChart(data) {
 
 function mapRiskToMood(risk) {
     if (!risk) return "neutral";
+    
+    if (risk === "high_wellbeing") return "great";
+    if (risk === "good_wellbeing") return "good";
+    if (risk === "average_wellbeing") return "neutral";
+    if (risk === "low_wellbeing") return "low";
 
-    if (risk.includes("high") || risk.includes("severe") || risk === "wemwbs_low" || risk === "low_wellbeing") return "sad";
-    if (risk.includes("moderate") || risk === "wemwbs_average") return "anxious";
+    // Handle PSS & ISI (Negative/Risk scales)
+    if (risk.includes("severe") || risk === "high") return "overwhelmed";
+    if (risk.includes("moderate") || risk === "subthreshold") return "stressed";
+    if (risk === "less" || risk === "no_insomnia") return "neutral";
+    
     return "neutral";
 }
 
@@ -592,20 +610,21 @@ async function goToChatWithContext() {
     try {
         const resultData = state.results[state.type];
 
-        // Extract ONLY what chatbot needs
+        //  Extract ONLY what chatbot needs
         const context = {
             overall_mood: mapRiskToMood(resultData.risk_level),
             overall_risk: resultData.risk_level,
             score: resultData.score
         };
 
-        // Create session WITH context
+        //  Create session WITH context
         const { data } = await apiRequest(
             "/api/core/chat/session-with-context/",
             "POST",
             { context: context }
         );
 
+        //  Store session temporarily
         if (!data || !data.session_id) {
             console.error("Invalid session response", data);
             alert("Session creation failed");
@@ -614,6 +633,7 @@ async function goToChatWithContext() {
 
         sessionStorage.setItem("chat_session_id", data.session_id);
 
+        // ensure write completes before navigation
         setTimeout(() => {
             window.location.href = "/api/core/chatbot-page/";
         }, 50);

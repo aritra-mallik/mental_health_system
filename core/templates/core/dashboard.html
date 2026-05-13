@@ -398,25 +398,34 @@
                 
                 <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-400/10 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
 
-                <div class="relative z-10 flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner border border-emerald-100 dark:border-emerald-800/50">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner border border-emerald-100 dark:border-emerald-800/50">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-lg font-black tracking-tight text-slate-800 dark:text-white">
+                            <h3 class="text-xl font-black tracking-tight text-slate-800 dark:text-white">
                                 Assessment Scores
                             </h3>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">Clinical test history</p>
+                            <p id="assess-subtitle" class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">Click any data point to view daily breakdown</p>
                         </div>
                     </div>
 
-                    <span class="text-[11px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 px-3 py-1.5 rounded-xl shadow-sm">
-                        History
-                    </span>
+                    <div class="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1.5 shadow-inner border border-slate-200/60 dark:border-slate-700/50">
+                        <button id="btn-assess-all" onclick="setAssessMode('all')" class="bg-emerald-500 text-white px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-md active:scale-95">All Time</button>
+                        
+                        <button id="btn-assess-date" onclick="document.getElementById('assess-date-picker').showPicker()" class="text-slate-500 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 active:scale-95 ml-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span id="assess-date-label">Pick Date</span>
+                        </button>
+                        
+                        <input type="date" id="assess-date-picker" onchange="setAssessMode('date', this.value)" style="position: absolute; visibility: hidden; width: 0; height: 0;">
+                    </div>
                 </div>
+
+                <div id="custom-legend" class="relative z-10 flex flex-wrap gap-3 mb-6"></div>
 
                 <div class="flex-1 relative z-10 min-h-[260px] w-full overflow-hidden">
                     <canvas id="assessmentChart"></canvas>
@@ -494,7 +503,7 @@
                 
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-inner border border-purple-100 dark:border-purple-800/50">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <div>
                         <h3 class="text-xl font-black tracking-tight text-slate-800 dark:text-white">
@@ -577,6 +586,11 @@ let feedInterval = null;
 let EVENT_RANGE = '24h';
 let dashboardRefreshing = false;
 
+let GLOBAL_ASSESS_DATA = [];
+let ASSESS_CHART_MODE = 'all'; 
+let ASSESS_SELECTED_DATE = null;
+let ASSESS_VISIBLE = { 'who5': true, 'pss': true, 'wemwbs': true, 'isi': true }; 
+
 async function setEventRange(range){
 
     EVENT_RANGE = range;
@@ -591,22 +605,11 @@ async function setEventRange(range){
         btn.classList.add("active");
     }
 
-    const moodRes = await apiRequest(
-        `/api/core/mood-trends/?range=${EVENT_RANGE}`
-    );
+    moodEventsCache = null;
 
-    if (moodRes.res?.ok) {
-        renderMoodChart(moodRes.data);
-    }
-
-    const rawMoodRes = await apiRequest(
-        `/api/core/mood-events/?range=${EVENT_RANGE}`
-    );
-
-    if (rawMoodRes.res?.ok) {
-        renderEventMoodChart(rawMoodRes.data);
-    }
+    await loadDashboard();
 }
+
 async function safeDashboardRefresh() {
 
     if (dashboardRefreshing) return;
@@ -627,10 +630,13 @@ async function safeDashboardRefresh() {
         }, 1200);
     }
 }
+
 async function loadLiveAlert() {
     try {
         const { data } = await apiRequest("/api/core/live-alert/");
-        LIVE_ALERT = data.alert;
+
+        LIVE_ALERT = data.alert || null;
+
         renderAlert(LIVE_ALERT);
     } catch (e) {
         console.error("Live alert failed", e);
@@ -648,19 +654,79 @@ function applyAlertStyling(level) {
     insightsList.className = "space-y-3 text-sm font-bold";
 
     // Apply color themes based on severity
-    if (level === "red") {
-        alertBox.classList.add("bg-red-50", "dark:bg-red-900/20", "border-red-200", "dark:border-red-800/50");
-        insightsList.classList.add("text-red-700", "dark:text-red-400");
-    } else if (level === "orange") {
-        alertBox.classList.add("bg-orange-50", "dark:bg-orange-900/20", "border-orange-200", "dark:border-orange-800/50");
-        insightsList.classList.add("text-orange-700", "dark:text-orange-400");
-    } else if (level === "yellow") {
-        alertBox.classList.add("bg-yellow-50", "dark:bg-yellow-900/20", "border-yellow-200", "dark:border-yellow-800/50");
-        insightsList.classList.add("text-yellow-700", "dark:text-yellow-500");
-    } else {
-        // Green / Default
-        alertBox.classList.add("bg-emerald-50", "dark:bg-emerald-900/20", "border-emerald-200", "dark:border-emerald-800/50");
-        insightsList.classList.add("text-emerald-700", "dark:text-emerald-400");
+    if (level === "gray") {
+
+        alertBox.classList.add(
+            "bg-slate-50",
+            "dark:bg-slate-900/20",
+            "border-slate-200",
+            "dark:border-slate-700"
+        );
+
+        insightsList.classList.add(
+            "text-slate-500",
+            "dark:text-slate-400"
+        );
+
+    }
+    else if (level === "red") {
+
+        alertBox.classList.add(
+            "bg-red-50",
+            "dark:bg-red-900/20",
+            "border-red-200",
+            "dark:border-red-800/50"
+        );
+
+        insightsList.classList.add(
+            "text-red-700",
+            "dark:text-red-400"
+        );
+
+    }
+    else if (level === "orange") {
+
+        alertBox.classList.add(
+            "bg-orange-50",
+            "dark:bg-orange-900/20",
+            "border-orange-200",
+            "dark:border-orange-800/50"
+        );
+
+        insightsList.classList.add(
+            "text-orange-700",
+            "dark:text-orange-400"
+        );
+
+    }
+    else if (level === "yellow") {
+
+        alertBox.classList.add(
+            "bg-yellow-50",
+            "dark:bg-yellow-900/20",
+            "border-yellow-200",
+            "dark:border-yellow-800/50"
+        );
+
+        insightsList.classList.add(
+            "text-yellow-700",
+            "dark:text-yellow-500"
+        );
+
+    }
+    else {
+
+        alertBox.classList.add(
+            "bg-emerald-50",
+            "dark:bg-emerald-900/20",
+            "border-emerald-200",
+            "dark:border-emerald-800/50"
+        );
+
+        insightsList.classList.add(
+            "text-emerald-700",
+            "dark:text-emerald-400"
+        );
     }
 }
 
@@ -669,10 +735,20 @@ function renderAlert(alert) {
     if (!list) return;
 
     if (!alert || !alert.msg) {
-        return; 
+
+        applyAlertStyling("gray");
+
+        list.innerHTML = `
+            <li class="flex items-start gap-3">
+                <span class="w-2 h-2 rounded-full bg-slate-400 shrink-0 mt-1.5 shadow-sm"></span>
+                <span>No emotional data available yet.</span>
+            </li>
+        `;
+
+        return;
     }
 
-    const validLevels = ["red","orange","yellow","green"];
+    const validLevels = ["gray","red","orange","yellow","green"];
     const level = validLevels.includes(alert.level) ? alert.level : "green";
     
     applyAlertStyling(level);
@@ -693,60 +769,41 @@ function renderAlert(alert) {
 }
 
 async function loadArticles() {
+
     try {
-        const moodRes = await apiRequest("/api/core/mood/");
 
-        
-        console.log("MOOD API RAW:", moodRes);
-        let mood = null;
+        const res = await apiRequest(
+            "/api/articles/"
+        );
 
-        if (moodRes?.data && Array.isArray(moodRes.data) && moodRes.data.length > 0) {
-            const sorted = [...moodRes.data].sort(
-                (a, b) => new Date(b.created_at) - new Date(a.created_at)
-            );
+        articles = res.data || [];
 
-            mood = sorted[0]?.mood || null;
-        }
-
-        // normalize
-        if (mood) {
-            mood = mood.toLowerCase().trim();
-
-            // FORCE VALID VALUES ONLY
-            const allowed = ["neutral", "anxious", "sad"];
-            if (!allowed.includes(mood)) {
-                mood = "neutral";
-            }
-        }
-
-        let url = "/api/articles/";
-
-        if (mood) {
-            url = `/api/articles/?mood=${encodeURIComponent(mood)}`;
-        }
-
-        console.log("FINAL MOOD:", mood);
-        console.log("FETCH URL:", url);
-        const res = await fetch(url);
-        articles = await res.json();
-
-        // FIX: reset everything
         articleIndex = 0;
+
         clearInterval(feedInterval);
 
-        if (Array.isArray(articles) && articles.length > 0) {
+        if (articles.length > 0) {
+
             renderArticles();
             resumeFeed();
+
         } else {
-            document.getElementById("article-container").innerHTML = `
+
+            document.getElementById(
+                "article-container"
+            ).innerHTML = `
                 <div class="col-span-2 text-center text-slate-400 font-semibold">
-                    No articles found for this mood.
+                    No articles available.
                 </div>
             `;
         }
 
     } catch (err) {
-        console.error("Articles load failed", err);
+
+        console.error(
+            "Articles load failed",
+            err
+        );
     }
 }
 // Add this flag right below your `let feedInterval;` declaration
@@ -756,31 +813,31 @@ let cardsInitialized = false;
 function getCardThemeClasses(mood) {
     const m = (mood || 'neutral').toLowerCase().trim();
     const themes = {
-        happy: {
+        good: {
             shadow: "hover:shadow-green-500/10",
             bgGradient: "from-green-50/50 dark:from-green-900/10",
             textHover: "group-hover:text-green-600 dark:group-hover:text-green-400",
             btnHover: "group-hover:bg-green-600 group-hover:border-green-600 group-hover:text-white"
         },
-        excellent: {
+        great: {
             shadow: "hover:shadow-purple-500/10",
             bgGradient: "from-purple-50/50 dark:from-purple-900/10",
             textHover: "group-hover:text-purple-600 dark:group-hover:text-purple-400",
             btnHover: "group-hover:bg-purple-600 group-hover:border-purple-600 group-hover:text-white"
         },
-        sad: {
+        low: {
             shadow: "hover:shadow-blue-500/10",
             bgGradient: "from-blue-50/50 dark:from-blue-900/10",
             textHover: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
             btnHover: "group-hover:bg-blue-600 group-hover:border-blue-600 group-hover:text-white"
         },
-        anxious: {
+        stressed: {
             shadow: "hover:shadow-red-500/10",
             bgGradient: "from-red-50/50 dark:from-red-900/10",
             textHover: "group-hover:text-red-600 dark:group-hover:text-red-400",
             btnHover: "group-hover:bg-red-600 group-hover:border-red-600 group-hover:text-white"
         },
-        angry: {
+        overwhelmed: {
             shadow: "hover:shadow-orange-500/10",
             bgGradient: "from-orange-50/50 dark:from-orange-900/10",
             textHover: "group-hover:text-orange-600 dark:group-hover:text-orange-400",
@@ -921,12 +978,12 @@ function resetFeed() {
 
 function getMoodColor(mood) {
     const colors = {
-        happy: "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/50",
-        excellent: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/50",
+        good: "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/50",
+        great: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/50",
         neutral: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
-        sad: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50",
-        anxious: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50",
-        angry: "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50"
+        low: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50",
+        stressed: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50",
+        overwhelmed: "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50"
     };
     return colors[mood] || "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:border-slate-700";
 }
@@ -951,50 +1008,108 @@ function goJournal(){
 // Global scope for sidebar state to fix undefined toggle variable
 let isSidebarCollapsed = false;
 
-async function loadDashboard(){
+let dashboardRequestInFlight = false;
+let moodEventsCache = null;
+let moodEventsCacheTime = 0;
 
-    const moodRes = await apiRequest(
-        `/api/core/mood-trends/?range=${EVENT_RANGE}`
-    );
-    
-    const assessRes = await apiRequest("/api/core/assessment-history/");
-    const summaryRes = await apiRequest("/api/core/assessment-summary/");
-    const recRes = await apiRequest("/api/core/assessment-recommendations/");
-    const journalRes = await apiRequest("/api/core/journal/", "GET");
+async function loadDashboard() {
 
-    if (moodRes.res?.ok && assessRes.res?.ok) {
-        renderMoodChart(moodRes.data);
-        renderAssessmentChart(assessRes.data);
-        const rawMoodRes = await apiRequest(
-            `/api/core/mood-events/?range=${EVENT_RANGE}`
-        );
+    if (dashboardRequestInFlight) {
+        return;
+    }
 
-        if (rawMoodRes.res?.ok) {
-            renderEventMoodChart(rawMoodRes.data);
+    dashboardRequestInFlight = true;
+
+    try {
+
+        const [
+            moodRes,
+            currentMoodRes,
+            assessRes,
+            summaryRes,
+            recRes,
+            journalRes
+        ] = await Promise.all([
+
+            apiRequest(`/api/core/mood-trends/?range=${EVENT_RANGE}`),
+
+            apiRequest("/api/core/current-mood/"),
+
+            apiRequest("/api/core/assessment-history/"),
+
+            apiRequest("/api/core/assessment-summary/"),
+
+            apiRequest("/api/core/assessment-recommendations/"),
+
+            apiRequest("/api/core/journal/", "GET")
+        ]);
+
+        // charts
+        if (moodRes.res?.ok) {
+            renderMoodChart(moodRes.data);
         }
 
-        updateSummaryCards(moodRes.data, assessRes.data, journalRes.data);
+        if (assessRes.res?.ok) {
+            GLOBAL_ASSESS_DATA = assessRes.data; 
+            renderAssessmentChart();
+        }
 
+        // mood events cache (prevents spam requests)
+        const now = Date.now();
+
+        if (
+            !moodEventsCache ||
+            now - moodEventsCacheTime > 10000
+        ) {
+
+            const rawMoodRes = await apiRequest(
+                `/api/core/mood-events/?range=${EVENT_RANGE}`
+            );
+
+            if (rawMoodRes.res?.ok) {
+
+                moodEventsCache = rawMoodRes.data;
+                moodEventsCacheTime = now;
+
+                renderEventMoodChart(rawMoodRes.data);
+            }
+
+        } else {
+
+            renderEventMoodChart(moodEventsCache);
+        }
+
+        // summary cards
+        updateSummaryCards(
+            currentMoodRes.data,
+            assessRes.data,
+            journalRes.data
+        );
+
+        // alerts
         const list = document.getElementById("insightsList");
-        if(!list) return;
 
-        // If there is NO live alert, show the default insights
-        if (!LIVE_ALERT || !LIVE_ALERT.msg) {
+        if (list && (!LIVE_ALERT || !LIVE_ALERT.msg)) {
+
             if (summaryRes.res?.ok) {
+
                 const insights = generateInsights(summaryRes.data);
 
                 if (insights.length) {
-                    // Treat generated insights as a "yellow/warning" level
+
                     applyAlertStyling("yellow");
+
                     list.innerHTML = insights.map(i => `
                         <li class="flex items-start gap-3">
                             <span class="w-2 h-2 rounded-full bg-yellow-500 shrink-0 mt-1.5 shadow-sm animate-pulse"></span>
                             <span>${i}</span>
                         </li>
                     `).join("");
+
                 } else {
-                    // Treat clean state as "green/good" level
+
                     applyAlertStyling("green");
+
                     list.innerHTML = `
                         <li class="flex items-start gap-3">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5 shadow-sm animate-pulse"></span>
@@ -1004,70 +1119,96 @@ async function loadDashboard(){
                 }
             }
         }
-        
-        if (recRes.res?.ok){
-            const recBox = document.getElementById("recommendBox");
-            if(!recBox) return;
-            const type = recRes.data.type;
-            const rec = recRes.data.recommended || [];
 
-            // Extract latest mood
-            let latestMood = null;
-            if (moodRes.data && moodRes.data.length > 0) {
-                const sorted = [...moodRes.data].sort(
-                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
-                );
-                latestMood = sorted[0]?.mood;
-            }
+        // recommendations
+        if (recRes.res?.ok) {
 
-            const moodBoost = (latestMood === "sad" || latestMood === "anxious");
+            const recBox =
+                document.getElementById("recommendBox");
+
+            if (!recBox) return;
+
+            const type =
+                recRes.data.type;
+
+            const rec =
+                recRes.data.recommended || [];
+
+            const latestMood =
+                currentMoodRes?.data?.mood || null;
+
+            const moodBoost =
+                latestMood === "low" ||
+                latestMood === "stressed";
 
             const messages = {
-                first_time: "Let’s build your mental baseline",
-                reminder: "A gentle check-in might help today",
-                clean: "You're doing well — no check-ins needed now"
+                first_time:
+                    "Let’s build your mental baseline",
+
+                reminder:
+                    "A gentle check-in might help today",
+
+                clean:
+                    "You're doing well — no check-ins needed now"
             };
 
-            //  FIRST TIME
             if (type === "first_time") {
+
                 recBox.innerHTML = `
                     <div class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mb-3 w-full">
                         ${messages.first_time}
                     </div>
+
                     <div class="flex flex-wrap gap-2 w-full">
-                ` + rec.map(r => `
-                    <span class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-black border border-indigo-200 dark:border-indigo-800/50 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-800/80 transition-all shadow-sm hover:-translate-y-0.5"
-                    onclick="loadAssessment()">
-                        Start ${r.toUpperCase()}
-                    </span>
-                `).join("") + `</div>`;
+
+                    ${rec.map(r => `
+                        <span
+                            class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-black border border-indigo-200 dark:border-indigo-800/50 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-800/80 transition-all shadow-sm hover:-translate-y-0.5"
+                            onclick="loadAssessment()">
+
+                            Start ${r.toUpperCase()}
+                        </span>
+                    `).join("")}
+
+                    </div>
+                `;
+
                 return;
             }
 
-            //  REMINDER / MOOD BOOST
             if (rec.length > 0) {
+
                 recBox.innerHTML = `
                     <div class="text-[11px] font-bold text-orange-600 dark:text-orange-400 mb-3 w-full">
-                        ${moodBoost ? "You might benefit from a quick check-in" : messages.reminder}
+                        ${moodBoost
+                            ? "You might benefit from a quick check-in"
+                            : messages.reminder}
                     </div>
+
                     <div class="flex flex-wrap gap-2 w-full">
-                ` + rec.map(r => `
-                    <span class="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg text-[10px] font-black border border-orange-200 dark:border-orange-800/50 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-800/80 transition-all shadow-sm hover:-translate-y-0.5"
-                    onclick="loadAssessment()">
-                        ⏳ ${r.toUpperCase()} due
-                    </span>
-                `).join("") + `</div>`;
-            }
-            else if (moodBoost) {
+
+                    ${rec.map(r => `
+                        <span
+                            class="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg text-[10px] font-black border border-orange-200 dark:border-orange-800/50 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-800/80 transition-all shadow-sm hover:-translate-y-0.5"
+                            onclick="loadAssessment()">
+
+                            ⏳ ${r.toUpperCase()} due
+                        </span>
+                    `).join("")}
+
+                    </div>
+                `;
+
+            } else if (moodBoost) {
+
                 recBox.innerHTML = `
                     <span class="text-xs text-orange-500 dark:text-orange-400 font-semibold bg-orange-50 dark:bg-orange-900/20 px-3 py-2 rounded-xl border border-orange-100 dark:border-orange-800/30 block w-fit">
                         You seem low — try a quick check-in
                     </span>
                 `;
-            }
 
-            //  CLEAN STATE
-            else {
+            } else {
+
                 recBox.innerHTML = `
                     <span class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-xl border border-emerald-100 dark:border-emerald-800/30 block w-fit">
                         ${messages.clean}
@@ -1075,11 +1216,21 @@ async function loadDashboard(){
                 `;
             }
         }
+
+    } catch (err) {
+
+        console.error(
+            "Dashboard load failed:",
+            err
+        );
+
+    } finally {
+
+        dashboardRequestInFlight = false;
     }
 }
-
 // Update the parameters to accept journalData
-function updateSummaryCards(moodData, assessData, journalData) {
+function updateSummaryCards(currentMoodData, assessData, journalData) {
     try {
     const lastAssessDateEl = document.getElementById("card-last-checkin");
     const moodStatusEl = document.getElementById("card-mood-status");
@@ -1094,25 +1245,19 @@ function updateSummaryCards(moodData, assessData, journalData) {
         isi: "ISI"
     };
 
-    // 1. Process Mood Trend Data (Status only)
-    if (moodData && moodData.length > 0) {
-        // Group today's scores to get the true daily average
-        const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const todayScores = moodData
-            .filter(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === todayStr)
-            .map(d => d.score);
-        
-        if (todayScores.length > 0) {
-            // Average today's scores
-            const avgScore = todayScores.reduce((a, b) => a + b, 0) / todayScores.length;
-            moodStatusEl.innerText = getMoodStringFromScore(avgScore);
-        } else {
-            // Fallback to the latest available day if no data exists for today yet
-            const latestState = moodData[moodData.length - 1];
-            moodStatusEl.innerText = latestState.mood?.charAt(0).toUpperCase() + latestState.mood?.slice(1);
-        }
+    // Current Mood Status
+    if (currentMoodData?.mood) {
+
+        const mood =
+            currentMoodData.mood;
+
+        moodStatusEl.innerText =
+            mood.charAt(0).toUpperCase() +
+            mood.slice(1);
+
     } else {
-        moodStatusEl.innerText = "No data";
+
+        moodStatusEl.innerText = "No Data";
     }
 
     // 2. Process Assessment Data (Date & Name)
@@ -1219,21 +1364,21 @@ function renderEventMoodChart(data) {
     });
 
     const moodMap = {
-        angry: 0,
-        anxious: 1,
-        sad: 2,
+        overwhelmed: 0,
+        low: 1,           
+        stressed: 2,      
         neutral: 3,
-        happy: 4,
-        excellent: 5
+        good: 4,
+        great: 5
     };
 
     const moodLabels = [
-        'Angry',
-        'Anxious',
-        'Sad',
+        'Overwhelmed',
+        'Low',            
+        'Stressed',       
         'Neutral',
-        'Happy',
-        'Excellent'
+        'Good',
+        'Great'
     ];
 
     const values = sorted.map(d =>
@@ -1344,8 +1489,7 @@ const moodEmojiPlugin = {
     id: 'moodEmojiPlugin',
     afterDatasetsDraw(chart) {
         const ctx = chart.ctx;
-        // Mapping our 0-5 scores to corresponding emojis
-        const emojis = ['😡', '😰', '😢', '😐', '😊', '🤩'];
+        const emojis = ['😡', '😢', '😰', '😐', '😊', '🤩']; 
         
         chart.getDatasetMeta(0).data.forEach((datapoint, index) => {
             const value = chart.data.datasets[0].data[index];
@@ -1367,8 +1511,8 @@ const moodLabelPlugin = {
     id: 'moodLabelPlugin',
     afterDatasetsDraw(chart) {
         const ctx = chart.ctx;
-        const emojis = ['😡', '😰', '😢', '😐', '😊', '🤩'];
-        const labels = ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'];
+        const emojis = ['😡', '😢', '😰', '😐', '😊', '🤩'];
+        const labels = ['Overwhelmed', 'Low', 'Stressed', 'Neutral', 'Good', 'Great'];
         
         chart.getDatasetMeta(0).data.forEach((datapoint, index) => {
             const value = chart.data.datasets[0].data[index];
@@ -1398,22 +1542,21 @@ const moodLabelPlugin = {
 
 // --- NEW HELPER FUNCTIONS ---
 function getChartIndexFromScore(avgScore) {
-    // Backend mapping: excellent=2, happy=1, neutral=0, anxious=-1, angry=-1.5, sad=-2
-    if (avgScore >= 1.5) return 5;       // Excellent
-    if (avgScore >= 0.5) return 4;       // Happy
+    if (avgScore >= 1.5) return 5;       // Great
+    if (avgScore >= 0.5) return 4;       // Good
     if (avgScore >= -0.5) return 3;      // Neutral
-    if (avgScore >= -1.25) return 1;     // Anxious
-    if (avgScore > -1.75) return 0;      // Angry
-    return 2;                            // Sad
+    if (avgScore >= -1.5) return 2;      // Stressed
+    if (avgScore > -2.5) return 1;       // Low
+    return 0;                            // Overwhelmed
 }
 
 function getMoodStringFromScore(avgScore) {
-    if (avgScore >= 1.5) return "Excellent";
-    if (avgScore >= 0.5) return "Happy";
+    if (avgScore >= 1.5) return "Great";
+    if (avgScore >= 0.5) return "Good";
     if (avgScore >= -0.5) return "Neutral";
-    if (avgScore >= -1.25) return "Anxious";
-    if (avgScore > -1.75) return "Angry";
-    return "Sad";
+    if (avgScore >= -1.5) return "Stressed";
+    if (avgScore > -2.5) return "Low";
+    return "Overwhelmed";
 }
 
 function renderMoodChart(data) {
@@ -1496,12 +1639,12 @@ function renderMoodChart(data) {
     });
 
     const palette = {
-        0: { bg: 'rgba(239, 68, 68, 0.4)', border: '#ef4444' },   
-        1: { bg: 'rgba(249, 115, 22, 0.4)', border: '#f97316' },  
-        2: { bg: 'rgba(59, 130, 246, 0.4)', border: '#3b82f6' },  
-        3: { bg: 'rgba(148, 163, 184, 0.4)', border: '#94a3b8' }, 
-        4: { bg: 'rgba(16, 185, 129, 0.4)', border: '#10b981' },  
-        5: { bg: 'rgba(168, 85, 247, 0.4)', border: '#a855f7' }   
+        0: { bg: 'rgba(239, 68, 68, 0.4)', border: '#ef4444' },   // Red (Overwhelmed)
+        1: { bg: 'rgba(59, 130, 246, 0.4)', border: '#3b82f6' },  // Blue (Low)
+        2: { bg: 'rgba(249, 115, 22, 0.4)', border: '#f97316' },  // Orange (Stressed)
+        3: { bg: 'rgba(148, 163, 184, 0.4)', border: '#94a3b8' }, // Neutral
+        4: { bg: 'rgba(16, 185, 129, 0.4)', border: '#10b981' },  // Good
+        5: { bg: 'rgba(168, 85, 247, 0.4)', border: '#a855f7' }   // Great
     };
 
     const pointBgs = aggregatedData.map(score => palette[score].bg);
@@ -1544,7 +1687,7 @@ function renderMoodChart(data) {
                     callbacks: {
                         title: function(context) { return `📅 ${context[0].label}`; },
                         label: function(context) {
-                            const moodLabels = ['Angry', 'Anxious', 'Sad', 'Neutral', 'Happy', 'Excellent'];
+                            const moodLabels = ['Overwhelmed', 'Low', 'Stressed', 'Neutral', 'Good', 'Great'];
                             return ` Overall: ${moodLabels[context.raw]}`;
                         }
                     }
@@ -1560,7 +1703,7 @@ function renderMoodChart(data) {
                         padding: 15,
                         font: { size: 10, weight: 'bold' },
                         callback: function(value) {
-                            const moodMap = ['ANGRY', 'ANXIOUS', 'SAD', 'NEUTRAL', 'HAPPY', 'EXCELLENT'];
+                            const moodMap = ['OVERWHELMED', 'LOW', 'STRESSED', 'NEUTRAL', 'GOOD', 'GREAT'];
                             return moodMap[value] || ''; 
                         }
                     },
@@ -1583,7 +1726,74 @@ function renderMoodChart(data) {
     });
 }
 
-function renderAssessmentChart(data){
+function toggleAssessDataset(type) {
+    ASSESS_VISIBLE[type] = !ASSESS_VISIBLE[type];
+    renderAssessmentChart();
+}
+
+function renderCustomLegend() {
+    const legendContainer = document.getElementById('custom-legend');
+    const types = ["who5", "pss", "wemwbs", "isi"];
+    const names = { who5: "WHO-5", pss: "PSS", wemwbs: "WEMWBS", isi: "ISI" };
+    const colors = { who5: '#8b5cf6', pss: '#f43f5e', wemwbs: '#f59e0b', isi: '#10b981' };
+
+    let html = '';
+    types.forEach(type => {
+        const isChecked = ASSESS_VISIBLE[type];
+        const color = colors[type];
+        
+        html += `
+            <label class="flex items-center gap-2.5 cursor-pointer group bg-white dark:bg-slate-800 border ${isChecked ? 'border-slate-300 dark:border-slate-600' : 'border-slate-100 dark:border-slate-700'} px-3.5 py-2 rounded-xl shadow-sm hover:shadow-md transition-all select-none active:scale-95">
+                <div class="relative flex items-center justify-center w-5 h-5 rounded-md border-2 transition-all duration-300" 
+                     style="border-color: ${isChecked ? color : '#cbd5e1'}; background-color: ${isChecked ? color : 'transparent'}">
+                    ${isChecked ? `<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` : ''}
+                </div>
+                <input type="checkbox" class="sr-only" ${isChecked ? 'checked' : ''} onchange="toggleAssessDataset('${type}')">
+                <span class="text-xs font-black tracking-wide ${isChecked ? 'text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500'} transition-colors">${names[type]}</span>
+            </label>
+        `;
+    });
+    legendContainer.innerHTML = html;
+}
+
+function setAssessMode(mode, dateStr = null) {
+    const btnAll = document.getElementById('btn-assess-all');
+    const btnDate = document.getElementById('btn-assess-date');
+    const dateLabel = document.getElementById('assess-date-label');
+    const subtitle = document.getElementById('assess-subtitle');
+
+    ASSESS_CHART_MODE = mode;
+
+    if (mode === 'all') {
+        btnAll.className = "bg-emerald-500 text-white px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-md active:scale-95";
+        btnDate.className = "relative z-10 text-slate-500 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 active:scale-95";
+        dateLabel.innerText = "Pick Date";
+        subtitle.innerText = "Click any data point to view daily breakdown";
+        document.getElementById('assess-date-picker').value = ""; 
+    } else if (mode === 'date') {
+        if (!dateStr) return; 
+        
+        // Safely parse the YYYY-MM-DD string into integers
+        const parts = dateStr.split('-');
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // JS Months are 0-indexed
+        const day = parseInt(parts[2], 10);
+        
+        const selectedDate = new Date(year, month, day);
+        ASSESS_SELECTED_DATE = selectedDate.toDateString();
+        
+        btnAll.className = "text-slate-500 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 px-4 py-2 text-xs font-bold rounded-xl transition-all active:scale-95";
+        btnDate.className = "relative z-10 bg-emerald-500 text-white px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2 active:scale-95";
+        dateLabel.innerText = selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        subtitle.innerText = "24-Hour detailed timeline";
+    }
+
+    renderAssessmentChart();
+}
+
+function renderAssessmentChart() {
+    renderCustomLegend(); // Render our beautiful checkboxes
+
     const canvas = document.getElementById("assessmentChart");
     const ctx = canvas.getContext('2d');
     const theme = getChartThemeColors();
@@ -1592,72 +1802,104 @@ function renderAssessmentChart(data){
         assessmentChartInstance.destroy();
     }
 
-    // Sort oldest to newest chronologically
-    const chartData = [...data].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at));
-
-    // --- SMART DATES: Format nicely (e.g., "May 4") instead of "5/4" ---
-    const labels = [...new Set(chartData.map(d => {
-        const dt = new Date(d.created_at);
-        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); 
-    }))];
-
-    // Defining distinct, high-contrast "neon" colors for each test
+    const chartData = [...GLOBAL_ASSESS_DATA].sort((a,b)=> new Date(a.created_at)-new Date(b.created_at));
+    const types = ["who5", "pss", "wemwbs", "isi"];
+    
     const lineConfig = {
-        who5:   { color: '#8b5cf6', shadow: 'rgba(139, 92, 246, 0.5)' },  // Purple
-        pss:    { color: '#f43f5e', shadow: 'rgba(244, 63, 94, 0.5)' },   // Rose/Red
-        wemwbs: { color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.5)' },  // Amber
-        isi:    { color: '#10b981', shadow: 'rgba(16, 185, 129, 0.5)' },  // Emerald
+        who5:   { color: '#8b5cf6' }, 
+        pss:    { color: '#f43f5e' }, 
+        wemwbs: { color: '#f59e0b' }, 
+        isi:    { color: '#10b981' }  
     };
 
-    const types = ["who5","pss","wemwbs","isi"];
+    let labels = [];
+    let datasets = [];
 
-    const datasets = types.map(type => {
-        const typeData = labels.map(labelDate => {
-             // Find the *latest* entry for this specific formatted date
-             const matchingData = [...chartData].reverse().find(d => {
-                 const dt = new Date(d.created_at);
-                 const formattedDate = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                 return formattedDate === labelDate && d.assessment_type === type;
-             });
-             return matchingData ? matchingData.score : null;
-        });
+    if (ASSESS_CHART_MODE === 'all') {
+        labels = [...new Set(chartData.map(d => {
+            return new Date(d.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }))];
 
-        // Check if this dataset actually has any data points to avoid drawing empty lines
-        const hasData = typeData.some(val => val !== null);
-        if (!hasData) return null;
+        datasets = types.map(type => {
+            const typeData = labels.map(labelDate => {
+                 const matchingTests = chartData.filter(d => {
+                     const formattedDate = new Date(d.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                     return formattedDate === labelDate && d.assessment_type === type;
+                 });
+                 if (matchingTests.length === 0) return null;
+                 const sum = matchingTests.reduce((acc, curr) => acc + curr.score, 0);
+                 return Math.round(sum / matchingTests.length);
+            });
 
-        return {
-            label: type.toUpperCase(),
-            data: typeData,
-            borderColor: lineConfig[type].color,
-            borderWidth: 3,
-            tension: 0.4, // Smooth curves
-            fill: false,
-            spanGaps: true, // Connects the line even if a day is skipped
-            pointBackgroundColor: theme.pointBg,
-            pointBorderColor: lineConfig[type].color,
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 7,
-            pointHoverBackgroundColor: lineConfig[type].color,
-            pointHoverBorderColor: '#fff',
-        };
-    }).filter(dataset => dataset !== null); // Remove empty datasets
+            if (!typeData.some(val => val !== null)) return null;
 
-    // --- Adding CSS Drop Shadows to Canvas Lines ---
+            return {
+                label: type.toUpperCase(),
+                data: typeData,
+                hidden: !ASSESS_VISIBLE[type], // Connect to checkboxes
+                borderColor: lineConfig[type].color,
+                borderWidth: 3,
+                tension: 0.4, 
+                fill: false,
+                spanGaps: true, 
+                pointBackgroundColor: theme.pointBg,
+                pointBorderColor: lineConfig[type].color,
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: lineConfig[type].color,
+                pointHoverBorderColor: '#fff',
+            };
+        }).filter(Boolean);
+    } 
+    else {
+        const dayData = chartData.filter(d => new Date(d.created_at).toDateString() === ASSESS_SELECTED_DATE);
+        
+        labels = [...new Set(dayData.map(d => {
+            return new Date(d.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }))];
+
+        datasets = types.map(type => {
+            const typeData = labels.map(labelTime => {
+                 const matching = dayData.find(d => {
+                     const testTime = new Date(d.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                     return testTime === labelTime && d.assessment_type === type;
+                 });
+                 return matching ? matching.score : null;
+            });
+
+            if (!typeData.some(val => val !== null)) return null;
+
+            return {
+                label: type.toUpperCase(),
+                data: typeData,
+                hidden: !ASSESS_VISIBLE[type], // Connect to checkboxes
+                borderColor: lineConfig[type].color,
+                borderWidth: 3,
+                tension: 0.4, 
+                fill: false,
+                spanGaps: true, 
+                pointBackgroundColor: theme.pointBg,
+                pointBorderColor: lineConfig[type].color,
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 9,
+                pointHoverBackgroundColor: lineConfig[type].color,
+                pointHoverBorderColor: '#fff',
+            };
+        }).filter(Boolean);
+    }
+
     const glowPlugin = {
         id: 'glowPlugin',
-        beforeDatasetDraw: (chart, args, options) => {
+        beforeDatasetDraw: (chart, args) => {
             const ctx = chart.ctx;
             ctx.save();
             ctx.shadowColor = args.meta.dataset.borderColor; 
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 4;
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetY = 5;
         },
-        afterDatasetDraw: (chart, args, options) => {
-            chart.ctx.restore();
-        }
+        afterDatasetDraw: (chart) => chart.ctx.restore()
     };
 
     assessmentChartInstance = new Chart(ctx, {
@@ -1671,67 +1913,70 @@ function renderAssessmentChart(data){
                 mode: 'index',
                 intersect: false,
             },
+            
+            // UPGRADED DRILL-DOWN LOGIC
+            onClick: function(e, activeElements, chart) {
+                const chartInstance = chart || this; 
+                if (ASSESS_CHART_MODE !== 'all') return;
+
+                let dataIndex = -1;
+
+                // Scenario A: They clicked the chart area / data points
+                if (activeElements && activeElements.length > 0) {
+                    dataIndex = activeElements[0].index;
+                } 
+                // Scenario B: They clicked the actual X-Axis labels at the bottom
+                else {
+                    const xAxis = chartInstance.scales.x;
+                    // Check if the click coordinates fall within the X-axis bounding box
+                    if (e.x >= xAxis.left && e.x <= xAxis.right && e.y >= xAxis.top && e.y <= xAxis.bottom) {
+                        dataIndex = xAxis.getValueForPixel(e.x);
+                    }
+                }
+
+                // If we successfully found an index (from either method)
+                if (dataIndex !== -1) {
+                    const labelDate = chartInstance.data.labels[dataIndex]; 
+                    
+                    // Find a raw date that matches this label
+                    const match = chartData.find(d => new Date(d.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === labelDate);
+                    
+                    if (match) {
+                        const d = new Date(match.created_at);
+                        const yyyy = d.getFullYear();
+                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                        const dd = String(d.getDate()).padStart(2, '0');
+                        const formattedDateStr = `${yyyy}-${mm}-${dd}`;
+                        
+                        // Set the input, then trigger the function
+                        document.getElementById('assess-date-picker').value = formattedDateStr;
+                        setAssessMode('date', formattedDateStr);
+                    }
+                }
+            },
+            onHover: (event, chartElement) => {
+                // Turn cursor to pointer when hovering over a clickable drill-down point
+                event.native.target.style.cursor = (ASSESS_CHART_MODE === 'all' && chartElement[0]) ? 'pointer' : 'default';
+            },
+            
             plugins: {
                 legend: {
-                    position: 'top',
-                    align: 'end',
-                    labels: {
-                        color: theme.text,
-                        usePointStyle: true, 
-                        boxWidth: 14,  
-                        boxHeight: 14,
-                        padding: 20,
-                        font: { weight: '800', size: 11 },
-                        generateLabels: function(chart) {
-                            const datasets = chart.data.datasets;
-                            const isDark = document.documentElement.classList.contains('dark');
-                            
-                            return datasets.map((dataset, i) => {
-                                const isVisible = chart.isDatasetVisible(i);
-                                
-                                return {
-                                    text: ` ${dataset.label}`, 
-                                    fillStyle: isVisible ? dataset.borderColor : 'transparent',
-                                    strokeStyle: isVisible ? dataset.borderColor : (isDark ? '#475569' : '#cbd5e1'),
-                                    lineWidth: 2,
-                                    hidden: false, 
-                                    pointStyle: 'rectRounded', 
-                                    datasetIndex: i,
-                                    fontColor: isVisible ? theme.text : (isDark ? '#64748b' : '#94a3b8') 
-                                };
-                            });
-                        }
-                    },
-                    onClick: function(e, legendItem, legend) {
-                        const index = legendItem.datasetIndex;
-                        const ci = legend.chart;
-                        
-                        if (ci.isDatasetVisible(index)) {
-                            ci.hide(index);
-                        } else {
-                            ci.show(index);
-                        }
-                    }
+                    display: false // Hide default legend! We have custom checkboxes now.
                 },
-                // --- SMART TOOLTIPS ---
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)', // Sleeker dark background
-                    titleColor: '#94a3b8', // Subtle grey for the date
-                    titleFont: { size: 12, weight: 'normal' },
-                    bodyColor: '#ffffff', // Bright white for the score
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleColor: '#94a3b8',
+                    bodyColor: '#ffffff',
                     bodyFont: { size: 14, weight: 'bold' },
-                    bodySpacing: 8,
                     padding: 14,
                     cornerRadius: 16,
                     usePointStyle: true,
-                    boxPadding: 6,
                     callbacks: {
                         title: function(context) {
-                            // Adds a calendar icon and the nicely formatted date
-                            return `📅 ${context[0].label}`;
+                            const icon = ASSESS_CHART_MODE === 'all' ? '📅' : '⏰';
+                            return `${icon} ${context[0].label}`;
                         },
                         label: function(context) {
-                            // Cleans up the score presentation
                             return ` ${context.dataset.label}: ${context.raw} Points`;
                         }
                     }
@@ -1740,27 +1985,16 @@ function renderAssessmentChart(data){
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { 
-                        color: theme.text,
-                        font: { size: 11, weight: '600' },
-                        padding: 10
-                    },
+                    ticks: { color: theme.text, font: { size: 11, weight: '600' } },
                     border: { display: false },
-                    grid: { 
-                        color: theme.grid,
-                        drawBorder: false,
-                        tickLength: 0
-                    }
+                    grid: { color: theme.grid, drawBorder: false, tickLength: 0 }
                 },
                 x: {
-                    // --- SMART AXIS CULLING ---
                     ticks: { 
                         color: theme.text,
                         font: { size: 11, weight: 'bold' },
-                        padding: 10,
-                        maxTicksLimit: 6, // FORCES the chart to only show a maximum of 6 dates
-                        maxRotation: 0,   // Stops the dates from tilting diagonally
-                        autoSkip: true    // Automatically hides dates in between
+                        maxTicksLimit: ASSESS_CHART_MODE === 'all' ? 6 : 12, 
+                        autoSkip: true
                     },
                     border: { display: false },
                     grid: { display: false }
@@ -1781,10 +2015,6 @@ function generateInsights(summary){
 
     if (latest.who5?.risk === "low_wellbeing"){
         insights.push("Your wellbeing is low. Consider rest and recovery.");
-    }
-
-    if (latest.wemwbs?.risk === "wemwbs_low"){
-        insights.push("Your mental wellbeing score is low. You might need to take a break.");
     }
 
     return insights;
