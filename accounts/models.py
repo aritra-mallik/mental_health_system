@@ -60,6 +60,8 @@ class User(AbstractUser):
     journal_salt = models.CharField(max_length=255, blank=True, null=True)
 
     is_onboarded = models.BooleanField(default=False)
+    
+    latest_smera_alert = models.JSONField(blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

@@ -20,9 +20,16 @@ def generate_alert(global_state, trigger_context=None):
     # NO DATA STATE
     # ---------------------------------
     if mood is None and risk is None:
+        import random
+        empty_state_messages = [
+            "Take a moment to pause and check in with yourself today.",
+            "How are you feeling right now? Smera is here to listen.",
+            "Your dashboard is ready when you want to reflect on your day.",
+            "Whenever you are ready, let's take a quick emotional pulse."
+        ]
         return {
             "level": "gray",
-            "msg": "No emotional data available yet.",
+            "msg": random.choice(empty_state_messages),
             "risk": None,
             "mood": None,
             "score": None

@@ -2,7 +2,7 @@
 from datetime import timedelta
 from django.utils import timezone
 from .models import MentalSignal
-
+from collections import Counter
 
 RISK_SCORE = {
     "less": 1,
@@ -20,9 +20,6 @@ MOOD_SCORE = {
 }
 
 SOURCE_WEIGHT = {
-    # realtime emotional intent
-    "mood": 1.6,
-
     # conversational emotional state
     "chat": 1.3,
 
@@ -54,7 +51,9 @@ def compute_state(user,reference_time=None,days=1,mode="realtime"):
     total_risk = 0
     total_mood = 0
     total_weight = 0
-
+    mood_counter = Counter(
+        s.mood for s in signals
+    )
     for s in signals:
         base_weight = SOURCE_WEIGHT.get(s.source, 0.5)
 
@@ -81,15 +80,11 @@ def compute_state(user,reference_time=None,days=1,mode="realtime"):
         # ---------------------------------
         elif mode == "historical":
 
-            # Historical mode should represent
-            # true emotional averages inside
-            # the selected time window.
-
-            # No recency decay.
-            # No realtime emotional bias.
+            # Historical mode:
+            # equal source weighting
+            # + emotional frequency awareness
 
             historical_weights = {
-                "mood": 1.0,
                 "chat": 1.0,
                 "journal": 1.0,
                 "assessment": 1.0,
@@ -100,6 +95,15 @@ def compute_state(user,reference_time=None,days=1,mode="realtime"):
                 1.0
             )
 
+            # frequency amplification
+            # repeated moods gain slightly
+            # more influence historically
+
+            frequency_multiplier = 1 + (
+                (mood_counter[s.mood] - 1) * 0.08
+            )
+
+            weight *= frequency_multiplier
         # ---------------------------------
         # FALLBACK
         # ---------------------------------

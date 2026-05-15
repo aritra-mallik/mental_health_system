@@ -11,6 +11,18 @@
     if (localStorage.getItem("access")) {
       document.documentElement.classList.add("user-ready");
     }
+
+    try {
+      const cachedStr = localStorage.getItem("user_settings");
+      if (cachedStr) {
+        const settings = JSON.parse(cachedStr);
+        if (settings.dark_mode) {
+          document.documentElement.classList.add("dark");
+        }
+      }
+    } catch (e) {
+      console.warn("Theme parse failed", e);
+    }
   </script>
   <!-- Tailwind -->
   <link rel="stylesheet" href="{% static 'css/main.css' %}">

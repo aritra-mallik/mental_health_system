@@ -299,7 +299,7 @@ async function initChat(){
 
         sessionId = data.session_id;
 
-        // 🔥 persist session
+        //  persist session
         sessionStorage.setItem("chat_session_id", sessionId);
 
     } catch (e) { 
@@ -335,7 +335,7 @@ async function sendMessage(){
             message: msg
         });
         if (data.reply) {
-            appendMessage("bot", data.reply);
+            appendMessage("bot", data.reply, data.action_card);
         } else {
             showDefaultGreeting();  // ✅ clean UI greeting
         }
@@ -403,14 +403,12 @@ function fillInput(text) {
     input.dispatchEvent(new Event('input'));
 }
 
-function appendMessage(role, text) {
+function appendMessage(role, text, actionCard = null) {
     const box = document.getElementById("chatBox");
     const div = document.createElement("div");
     
-    // Adjusted row padding for the new bubble design
     div.className = "w-full msg-animate flex justify-center py-4 px-4";
 
-    // Smera's Avatar (with dark mode support)
     const SmeraIcon = `
         <div class="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center shrink-0 mt-1 overflow-hidden shadow-sm">
             <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -422,18 +420,28 @@ function appendMessage(role, text) {
         </div>
     `;
 
-    // Format text to handle basic line breaks
     const formattedText = text.replace(/\n/g, '<br>');
+    
+    // --- NEW: Convert JSON Action Cards back into UI ---
+    let actionHTML = "";
+    if (actionCard) {
+        if (actionCard.type === "consultation") {
+            actionHTML = `<div class='mt-4'><a href='${actionCard.url}' class='inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 transition-colors'>${actionCard.title}</a></div>`;
+        } 
+        else if (actionCard.type === "critical_support") {
+            let helplinesHTML = actionCard.helplines.map(line => 
+                `<div class='flex justify-between'><span>${line.name}</span><span class='font-bold'>${line.phone}</span></div>`
+            ).join('');
+
+            actionHTML = `<div class='mt-5 flex flex-col gap-3'><div class='rounded-xl bg-white/40 dark:bg-transparent border border-black/5 dark:border-transparent p-4'><h4 class='font-bold text-red-700 dark:text-red-400 mb-3'>${actionCard.title}</h4><div class='space-y-2 text-sm font-normal opacity-90'>${helplinesHTML}</div></div><div class='rounded-xl bg-white/40 dark:bg-transparent border border-black/5 dark:border-transparent p-4'><h4 class='font-bold text-blue-700 dark:text-blue-400 mb-2'>Clinical Care</h4><p class='text-sm font-normal opacity-75 mb-4'>${actionCard.description}</p><a href='${actionCard.consultation_url}' class='flex w-full justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 transition-colors'>Book a Consultation</a></div></div>`;
+        }
+    }
 
     if (role === "user") {
         div.innerHTML = `
             <div class="max-w-4xl w-full flex justify-end">
-                <!-- 3D Ocean Blue User Bubble -->
                 <div class="bg-blue-500 dark:bg-blue-600 border border-blue-400 dark:border-blue-500 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[80%] text-[15px] leading-relaxed shadow-[0_4px_0_#1d4ed8] dark:shadow-[0_4px_0_#1e3a8a] relative overflow-hidden group transform transition-transform hover:-translate-y-0.5">
-                    
-                    <!-- Subtle top highlight for the 3D bevel effect -->
                     <div class="absolute top-0 left-0 right-0 h-1 bg-white opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                    
                     ${formattedText}
                 </div>
             </div>
@@ -442,13 +450,10 @@ function appendMessage(role, text) {
         div.innerHTML = `
             <div class="max-w-4xl w-full flex gap-4 md:gap-6">
                 ${SmeraIcon}
-                <!-- 3D Warm Cream/Deep Amber Bot Bubble -->
                 <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700/50 text-yellow-950 dark:text-yellow-50 font-medium px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[80%] text-[15px] leading-relaxed shadow-[0_4px_0_#ca8a04] dark:shadow-[0_4px_0_#713f12] relative overflow-hidden group transform transition-transform hover:-translate-y-0.5 mt-1">
-                    
-                    <!-- Subtle top highlight -->
                     <div class="absolute top-0 left-0 right-0 h-1 bg-white opacity-40 dark:opacity-10 group-hover:opacity-50 dark:group-hover:opacity-20 transition-opacity"></div>
-                    
                     ${formattedText}
+                    ${actionHTML}
                 </div>
             </div>
         `;
@@ -593,15 +598,18 @@ async function deleteChat(event, chatId) {
             sessionId = null;
 
             sessionStorage.removeItem("chat_session_id");
+            
+            showDefaultGreeting(); 
         }
         loadChatHistory();
     } catch (e) {
         console.error("Delete failed", e);
     }
 }
+
 async function loadInitialMessage() {
     try {
-        // 🚫 HARD STOP: no invalid calls
+        //  HARD STOP: no invalid calls
         if (!sessionId || isNaN(sessionId)) {
             showDefaultGreeting();
             return;
@@ -625,13 +633,36 @@ async function loadInitialMessage() {
         showDefaultGreeting();
     }
 }
+
 async function initPage() {
     await loadChatHistory();
 
     if (sessionId && !isNaN(sessionId)) {
-        await loadInitialMessage();
+        try {
+            // 1. Fetch the actual messages for the saved session
+            const { data } = await apiRequest(`/api/core/chat/session/${sessionId}/`, "GET");
+            const box = document.getElementById("chatBox");
+            box.innerHTML = "";
 
-      
+            if (data && data.length > 0) {
+                // 2. If the chat has history, render the messages!
+                data.forEach(msg => { appendMessage(msg.role, msg.content); });
+                
+                // Refresh sidebar to ensure the active chat is highlighted
+                loadChatHistory(); 
+            } else {
+                // 3. If the session is totally empty, check for a contextual greeting
+                await loadInitialMessage();
+            }
+
+        } catch (e) {
+            console.error("Failed to restore session on reload", e);
+            
+            // Fallback if the session was deleted on another device or is invalid
+            sessionId = null;
+            sessionStorage.removeItem("chat_session_id");
+            showDefaultGreeting();
+        }
     } else {
         showDefaultGreeting();
     }

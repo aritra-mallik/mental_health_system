@@ -49,7 +49,7 @@ textarea:focus {
         </h1>
         <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium border border-green-200 dark:border-green-800 shadow-sm">
             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-            Zero-Knowledge E2EE
+            Private Encrypted Journal
         </span>
     </div>
 
@@ -237,44 +237,83 @@ async function decrypt(payload) {
 }
 
 /* =========================
-   🔓 UNLOCK / LOCK
+    UNLOCK / LOCK
 ========================= */
 
 async function unlockJournal() {
+
     const password = document.getElementById("passwordInput").value;
 
-    if (!password) return alert("Enter password");
-
-    const salt = await getSalt();
-    journalKey = await deriveKey(password, salt);
-
-    const res = await apiRequest("/api/core/journal/", "GET");
-    entries = res.data;
-
-    if (entries.length > 0) {
-        try {
-            await decrypt(entries[0].content);
-        } catch (err) {
-        
-            journalKey = null; 
-            alert("Incorrect vault password.");
-            return; 
-        }
+    if (!password) {
+        alert("Enter your account password");
+        return;
     }
 
-    document.getElementById("lockScreen").classList.add("hidden");
-    document.getElementById("journalApp").classList.remove("hidden");
+    // STEP 1: ULTRA-STRICT PASSWORD VERIFICATION
+    let isPasswordValid = false;
+    
+    try {
+        const verify = await apiRequest(
+            "/api/core/journal/verify-password/",
+            "POST",
+            { password }
+        );
+
+        // This checks if your wrapper returns { res, data } or just the raw JSON
+        const payload = verify?.data ? verify.data : verify;
+
+        // Strictly demand that the server explicitly confirms the password is true
+        if (payload && payload.valid === true) {
+            isPasswordValid = true;
+        }
+    } catch (err) {
+        console.error("Verification network request failed:", err);
+    }
+
+    // If it is anything other than explicitly true, LOCK THEM OUT.
+    if (!isPasswordValid) {
+        journalKey = null;
+        alert("Incorrect account password. Access Denied.");
+        return;
+    }
+
+    // STEP 2: ONLY NOW derive encryption key
+    const salt = await getSalt();
+
+    journalKey = await deriveKey(password, salt);
+
+    // STEP 3: LOAD ENTRIES
+    const res = await apiRequest("/api/core/journal/", "GET");
+
+    entries = res.data || [];
+
+    document.getElementById("lockScreen")
+        .classList.add("hidden");
+
+    document.getElementById("journalApp")
+        .classList.remove("hidden");
 
     renderList();
 }
 
 function lockJournal() {
+    // 1. Destroy the encryption key and data in memory
     journalKey = null;
-    location.reload();
-}
+    entries = [];
+    currentId = null;
 
+    // 2. Clear all sensitive text from the UI
+    document.getElementById("entryList").innerHTML = "";
+    document.getElementById("blocksContainer").innerHTML = "";
+    document.getElementById("entryTitle").value = "";
+    document.getElementById("passwordInput").value = "";
+
+    // 3. Instantly swap back to the lock screen
+    document.getElementById("journalApp").classList.add("hidden");
+    document.getElementById("lockScreen").classList.remove("hidden");
+}
 /* =========================
-   📦 API
+    API
 ========================= */
 
 async function loadEntries() {

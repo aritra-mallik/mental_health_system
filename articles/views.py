@@ -61,7 +61,7 @@ def articles(request):
     # ---------------------------------
     state = compute_state(
         request.user,
-        days=2
+        days=0.5
     )
 
     mood = (

@@ -1,12 +1,11 @@
 from django.urls import path
-from .views import(JournalPinView, MoodView, JournalView, AssessmentView,
-                   AssessmentHistoryView, app_dashboard, app_assessment, app_chatbot, ChatSessionCreateView, 
+from .views import(JournalPinView, JournalView, AssessmentView,
+                   AssessmentHistoryView, VerifyJournalPasswordView, app_dashboard, app_assessment, app_chatbot, ChatSessionCreateView, 
                    ChatMessageView, ChatSessionCloseView, journal, 
                    AssessmentRecommendationView, AssessmentSummaryView,ChatSessionDetailView,ChatSessionListView,
                    ChatSessionDeleteView, ChatSessionPinView, LiveAlertView,ChatInitialMessageView,
                    ChatSessionWithContextView,MoodTrendView,RawMoodEventsView,CurrentMoodView) 
 urlpatterns = [
-    path("mood/", MoodView.as_view()),
     path("current-mood/", CurrentMoodView.as_view()),
     path("journal/", JournalView.as_view()),
     path("journal/<int:entry_id>/pin/", JournalPinView.as_view()),
@@ -21,6 +20,7 @@ urlpatterns = [
     path("journal-page/", journal, name="journal_page"),
     path("journal/update/", JournalView.as_view()),
     path("journal/delete/", JournalView.as_view()),
+    path("journal/verify-password/", VerifyJournalPasswordView.as_view()),
 
     # Chat API
     path("chat/session/", ChatSessionCreateView.as_view()),

@@ -2,19 +2,18 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import  JournalEntry, Assessment,MentalSignal
-import re
+from .models import  JournalEntry, Assessment, MentalSignal
+import re, pytz
 from datetime import timedelta
 from django.utils import timezone
 from collections import defaultdict
 from .assessment_engine import AssessmentEngine
-# from django.contrib.auth.decorators import login_required
 from .models import ChatSession, ChatMessage
 from ChatBot.chatbot.llm_client import generate_response
 from ChatBot.chatbot.prompt_builder import build_prompt
 from .sentiment import analyze_text
 from .aggregator import compute_state
-from .alerts import generate_alert
+from .alerts import generate_alert 
 
 MAX_MESSAGES = 8
 def normalize_risk(risk):
@@ -140,87 +139,14 @@ class AssessmentView(APIView):
             }
         )
 
-        request.session["Smera_alert"] = alert
-        request.session["last_mood_context"] = {
-            "mood": derived_mood,
-            "risk": normalized_risk,
-            "source": "assessment"
-        }
-        request.session.modified = True
+        request.user.latest_smera_alert = alert
+        request.user.save()
         # -------------------------
         # RESPONSE
         # -------------------------
         return Response({
             "message": "Assessment completed",
             "data": result
-        })
-
-
-class MoodView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-
-        moods = MentalSignal.objects.filter(
-            user=request.user,
-            source="mood"
-        ).order_by("-created_at")
-
-        return Response([
-            {
-                "id": m.id,
-                "mood": m.mood,
-                "created_at": m.created_at
-            }
-            for m in moods
-        ])
-
-    def post(self, request):
-
-        mood = request.data.get("mood")
-
-        if not mood:
-            return Response({
-                "error": "Mood is required"
-            }, status=400)
-
-        signal = MentalSignal.objects.create(
-            user=request.user,
-            source="mood",
-            mood=mood,
-            risk="less",
-            metadata={}
-        )
-
-        state = compute_state(
-            request.user,
-            days=0.5,
-            mode="realtime"
-        )
-
-        alert = generate_alert(
-            global_state=state,
-            trigger_context={
-                "source": "mood",
-                "mood": mood,
-                "risk": "less"
-            }
-        )
-
-        request.session["Smera_alert"] = alert
-
-        request.session["last_mood_context"] = {
-            "mood": mood,
-            "risk": "less",
-            "source": "mood"
-        }
-
-        request.session.modified = True
-
-        return Response({
-            "id": signal.id,
-            "mood": signal.mood,
-            "created_at": signal.created_at
         })
         
 class CurrentMoodView(APIView):
@@ -379,8 +305,8 @@ class JournalView(APIView):
             }
         )
 
-        request.session["Smera_alert"] = alert
-        request.session.modified = True
+        request.user.latest_smera_alert = alert
+        request.user.save()
 
         return Response({
             "message": "Journal deleted successfully"
@@ -448,15 +374,8 @@ class JournalView(APIView):
             }
         )
 
-        request.session["Smera_alert"] = alert
-
-        request.session["last_mood_context"] = {
-            "mood": mood,
-            "risk": risk,
-            "source": "journal"
-        }
-
-        request.session.modified = True
+        request.user.latest_smera_alert = alert
+        request.user.save()
         
 class JournalPinView(APIView):
     permission_classes = [IsAuthenticated]
@@ -469,6 +388,29 @@ class JournalPinView(APIView):
             return Response({"message": "Pin toggled", "is_pinned": entry.is_pinned})
         except JournalEntry.DoesNotExist:
             return Response({"error": "Not found"}, status=404)
+        
+
+class VerifyJournalPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        password = request.data.get("password")
+
+        if not password:
+            return Response({
+                "valid": False,
+                "message": "Password required"
+            }, status=400)
+
+        if request.user.check_password(password):
+            return Response({
+                "valid": True
+            })
+
+        return Response({
+            "valid": False,
+            "message": "Incorrect password"
+        })
         
     
 class ExportDataView(APIView):
@@ -584,28 +526,21 @@ class LiveAlertView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        user = request.user
+        
+        if user.latest_smera_alert:
+            return Response({"alert": user.latest_smera_alert})
 
-        state = compute_state(
-            request.user,
-            days=0.5,
-            mode="realtime"
-        )
+        state = compute_state(user, days=0.5, mode="realtime")
+        alert = generate_alert(global_state=state)
 
-        alert = generate_alert(
-            global_state=state
-        )
-
-        request.session["Smera_alert"] = alert
-        request.session.modified = True
+        user.latest_smera_alert = alert
+        user.save()
 
         return Response({
             "alert": alert
-        })     
-def app_dashboard(request): return render(request, "core/dashboard.html")
-def journal(request): return render(request, "core/journal.html")
-def app_assessment(request): return render(request, "core/assessment.html")
-
-
+        })
+          
 def trim_messages(session, max_messages=MAX_MESSAGES):
 
     messages = ChatMessage.objects.filter(
@@ -643,6 +578,7 @@ class ChatSessionCreateView(APIView):
         return Response({
             "session_id": session.id
         })
+        
 CONSULTATION_PATTERNS = [
     r"\btherapist\b",
     r"\bpsychiatrist\b",
@@ -650,9 +586,7 @@ CONSULTATION_PATTERNS = [
     r"\bprofessional help\b",
     r"\bclinical care\b",
     r"\bconsultation\b",
-    r"\bappointment\b",
     r"\bbook.*session\b",
-    r"\bneed help\b",
     r"\btalk to someone professionally\b",
 ]
 
@@ -662,7 +596,8 @@ def wants_consultation(text):
     return any(
         re.search(pattern, text)
         for pattern in CONSULTATION_PATTERNS
-    )      
+    )    
+      
 class ChatMessageView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -731,8 +666,8 @@ class ChatMessageView(APIView):
             }
         )
 
-        request.session["Smera_alert"] = alert
-        request.session.modified = True
+        request.user.latest_smera_alert = alert
+        request.user.save()
 
         # -------------------------
         # 1. Save user message
@@ -792,85 +727,42 @@ class ChatMessageView(APIView):
             suggest_consultation=should_suggest_consultation
         )
         
-        # -------------------------
-        # 6. Generate response
-        # -------------------------
+        bot_reply = ""
+        action_card = None # Initialize empty action card
+
         if wants_consultation(user_message):
-
-            bot_reply = """
-        I think speaking with a professional could genuinely help here.
-
-        You can request a consultation here:
-        <a href="/api/consultation/" class="text-blue-500 underline font-semibold">
-        Clinical Care & Consultation
-        </a>
-        """
+            bot_reply = "I think speaking with a professional could genuinely help here."
+            # JSON instead of HTML:
+            action_card = {
+                "type": "consultation",
+                "title": "Explore Clinical Care",
+                "url": "/api/consultation/"
+            }
 
         else:
             bot_reply = generate_response(prompt)
 
-            # -------------------------
-            # Critical support block
-            # -------------------------
             if is_critical:
+                # JSON instead of HTML:
+                action_card = {
+                    "type": "critical_support",
+                    "title": "Immediate Support",
+                    "description": "If you would prefer to speak with a professional directly, you can explore available consultation services.",
+                    "helplines": [
+                        {"name": "Kiran Helpline", "phone": "1800-599-0019"},
+                        {"name": "AASRA", "phone": "+91-9820466726"},
+                        {"name": "iCALL", "phone": "+91-9152987821"}
+                    ],
+                    "consultation_url": "/api/consultation/"
+                }
 
-                bot_reply = f"""
-                {bot_reply}
+        # Save to database
+        ChatMessage.objects.create(session=session, role="bot", content=bot_reply)
 
-                <br><br>
-
-                <div class="mt-3 p-4 rounded-2xl bg-red-50 border border-red-200">
-                    <div class="font-semibold text-red-800 mb-2">
-                        Immediate Support
-                    </div>
-
-                    <div class="text-sm text-red-700 space-y-1">
-                        <div>Kiran Mental Health Helpline: 1800-599-0019</div>
-                        <div>AASRA: +91-9820466726</div>
-                        <div>iCALL: +91-9152987821</div>
-                    </div>
-                </div>
-
-                <br>
-
-                <div class="mt-3 p-4 rounded-2xl bg-blue-50 border border-blue-200">
-                    <div class="font-semibold text-blue-800 mb-1">
-                        Professional Consultation
-                    </div>
-
-                    <div class="text-sm text-blue-700 mb-3">
-                        If you'd prefer talking to a mental health professional directly, you can explore consultation services here.
-                    </div>
-
-                    <a href="/api/consultation/" class="inline-flex items-center px-4 py-2 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
-                        Clinical Care & Consultation
-                    </a>
-                </div>
-                """
-        
-
-
-        # -------------------------
-        # 7. Save bot reply
-        # -------------------------
-        ChatMessage.objects.create(
-            session=session,
-            role="bot",
-            content=bot_reply
-        )
-
-        # =========================
-        # MEMORY CLEANUP FIX
-        # =========================
-
-        trim_messages(session)
-
-        # # refresh session timestamp
-        # session.updated_at = timezone.now()
-        # session.save(update_fields=["updated_at"])
-
+        # Return strictly typed JSON
         return Response({
-            "reply": bot_reply
+            "reply": bot_reply,
+            "action_card": action_card
         })
 
 
@@ -908,8 +800,8 @@ class ChatSessionCloseView(APIView):
                 }
             )
 
-            request.session["Smera_alert"] = alert
-            request.session.modified = True
+            request.user.latest_smera_alert = alert
+            request.user.save()
 
             return Response({
                 "message": "Session closed"
@@ -1005,8 +897,8 @@ class ChatSessionDeleteView(APIView):
                 }
             )
 
-            request.session["Smera_alert"] = alert
-            request.session.modified = True
+            request.user.latest_smera_alert = alert
+            request.user.save()
 
             return Response({
                 "message": "Session and linked signals deleted"
@@ -1014,10 +906,6 @@ class ChatSessionDeleteView(APIView):
             
         except ChatSession.DoesNotExist:
             return Response({"error": "Not found"}, status=404)
-        
-         
-def app_chatbot(request):
-    return render(request, "core/chatbot.html")
 
 class ChatInitialMessageView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1043,7 +931,7 @@ class ChatInitialMessageView(APIView):
             except (ChatSession.DoesNotExist, ValueError):
                 pass
 
-        # ✅ CRITICAL FIX
+        # CRITICAL FIX
         if not mood_context:
             return Response({
                 "reply": None 
@@ -1083,58 +971,57 @@ class ChatSessionWithContextView(APIView):
             "session_id": session.id
         })
 
-
 class MoodTrendView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # 1. Explicitly define IST and force the current time into it
+        ist_tz = pytz.timezone('Asia/Kolkata')
+        local_now = timezone.now().astimezone(ist_tz)
 
-        range_type = request.query_params.get("range", "7d")
-
-        now = timezone.now()
-
-        if range_type == "24h":
-            start_time = now - timedelta(hours=24)
-            bucket_hours = 2
-        else:
-            start_time = now - timedelta(days=7)
-            bucket_hours = 12
+        # Grab the user's very first check-in
+        first_signal = MentalSignal.objects.filter(user=request.user).order_by("created_at").first()
+        
+        if not first_signal:
+            return Response([])
+            
+        # 2. Force the first signal into IST before snapping to midnight
+        first_signal_local = first_signal.created_at.astimezone(ist_tz)
+        start_time = first_signal_local.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # Always use 24-hour buckets for daily averages
+        bucket_hours = 24
 
         signals = MentalSignal.objects.filter(
             user=request.user,
             created_at__gte=start_time,
-            created_at__lte=now
+            created_at__lte=local_now
         ).order_by("created_at")
 
         if not signals.exists():
             return Response([])
 
         points = []
-
         current = start_time
 
-        while current < now:
-
+        while current < local_now:
             bucket_end = current + timedelta(hours=bucket_hours)
+            
+            if bucket_end > local_now:
+                bucket_end = local_now
 
-            # prevent future timestamps
-            if bucket_end > now:
-                bucket_end = now
-
-            #  THE FIX: Calculate exactly how long this bucket is in days
-            # (e.g., 12 hours / 24 hours = 0.5 days)
             exact_bucket_days = (bucket_end - current).total_seconds() / 86400.0
 
             state = compute_state(
                 request.user,
                 reference_time=bucket_end,
-                days=exact_bucket_days, # Use the exact bucket length instead of 1
+                days=exact_bucket_days, 
                 mode="historical"
             )
 
             if state["overall_mood"] is not None:
                 points.append({
-                    "date": bucket_end.isoformat(),
+                    "date": current.strftime('%Y-%m-%d'), 
                     "score": state["score"],
                     "mood": state["overall_mood"],
                     "risk": state["overall_risk"]
@@ -1175,3 +1062,8 @@ class RawMoodEventsView(APIView):
             }
             for s in signals
         ])
+        
+def app_dashboard(request): return render(request, "core/dashboard.html")
+def journal(request): return render(request, "core/journal.html")
+def app_assessment(request): return render(request, "core/assessment.html")       
+def app_chatbot(request): return render(request, "core/chatbot.html")

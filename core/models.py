@@ -82,7 +82,6 @@ class ChatMessage(models.Model):
     
 class MentalSignal(models.Model):
     SOURCE_CHOICES = [
-        ("mood", "Mood"),
         ("journal", "Journal"),
         ("chat", "Chat"),
         ("assessment", "Assessment"),

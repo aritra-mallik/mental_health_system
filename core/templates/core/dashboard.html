@@ -255,7 +255,7 @@
                 </div>
                 <div>
                     <p id="card-mood-status" class="text-3xl font-black text-slate-900 dark:text-white tracking-tight capitalize">--</p>
-                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mt-1">Mood Status</h4>
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mt-1">Recent Mood Status</h4>
                 </div>
             </div>
 
@@ -592,22 +592,31 @@ let ASSESS_SELECTED_DATE = null;
 let ASSESS_VISIBLE = { 'who5': true, 'pss': true, 'wemwbs': true, 'isi': true }; 
 
 async function setEventRange(range){
-
     EVENT_RANGE = range;
 
+    // Update UI buttons
     document.querySelectorAll(".range-btn").forEach(btn => {
         btn.classList.remove("active");
     });
 
     const btn = document.getElementById(`range-${range}`);
-
     if (btn) {
         btn.classList.add("active");
     }
 
-    moodEventsCache = null;
-
-    await loadDashboard();
+    // FIX: Instead of calling loadDashboard(), ONLY fetch and render the raw events
+    try {
+        const rawMoodRes = await apiRequest(`/api/core/mood-events/?range=${EVENT_RANGE}`);
+        
+        if (rawMoodRes.res?.ok) {
+            // Update cache and re-render JUST the bottom chart
+            moodEventsCache = rawMoodRes.data;
+            moodEventsCacheTime = Date.now();
+            renderEventMoodChart(rawMoodRes.data);
+        }
+    } catch (e) {
+        console.error("Failed to update raw events chart:", e);
+    }
 }
 
 async function safeDashboardRefresh() {
@@ -1031,16 +1040,12 @@ async function loadDashboard() {
             journalRes
         ] = await Promise.all([
 
-            apiRequest(`/api/core/mood-trends/?range=${EVENT_RANGE}`),
+            apiRequest("/api/core/mood-trends/?range=all"), 
 
             apiRequest("/api/core/current-mood/"),
-
             apiRequest("/api/core/assessment-history/"),
-
             apiRequest("/api/core/assessment-summary/"),
-
             apiRequest("/api/core/assessment-recommendations/"),
-
             apiRequest("/api/core/journal/", "GET")
         ]);
 
@@ -1229,61 +1234,52 @@ async function loadDashboard() {
         dashboardRequestInFlight = false;
     }
 }
-// Update the parameters to accept journalData
+
 function updateSummaryCards(currentMoodData, assessData, journalData) {
     try {
-    const lastAssessDateEl = document.getElementById("card-last-checkin");
-    const moodStatusEl = document.getElementById("card-mood-status");
-    const lastAssessNameEl = document.getElementById("card-assessments");
-    const journalEntriesEl = document.getElementById("card-journal-entries");
+        const lastAssessDateEl = document.getElementById("card-last-checkin");
+        const moodStatusEl = document.getElementById("card-mood-status");
+        const lastAssessNameEl = document.getElementById("card-assessments");
+        const journalEntriesEl = document.getElementById("card-journal-entries");
 
-    // Helper map to display pretty names instead of raw backend keys
-    const ASSESS_TITLES = {
-        who5: "WHO-5",
-        pss: "PSS",
-        wemwbs: "WEMWBS",
-        isi: "ISI"
-    };
+        const ASSESS_TITLES = { who5: "WHO-5", pss: "PSS", wemwbs: "WEMWBS", isi: "ISI" };
 
-    // Current Mood Status
-    if (currentMoodData?.mood) {
+        // 1. SMART MOOD STATUS
+        if (currentMoodData?.mood) {
+            const mood = currentMoodData.mood;
+            moodStatusEl.innerText = mood.charAt(0).toUpperCase() + mood.slice(1);
+        } else {
+            // Check if they have ANY history in the app at all
+            const hasHistory = (assessData && assessData.length > 0) || (journalData && journalData.length > 0);
+            
+            if (hasHistory) {
+                moodStatusEl.innerText = "Catch Up"; 
+            } else {
+                moodStatusEl.innerText = "Let's Begin"; 
+            }
+        }
 
-        const mood =
-            currentMoodData.mood;
+        // 2. Process Assessment Data (Date & Name)
+        if (assessData && assessData.length > 0) {
+            const sortedAssess = [...assessData].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            const latestAssess = sortedAssess[0];
+            
+            const dateObj = new Date(latestAssess.created_at);
+            lastAssessDateEl.innerText = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+            
+            const typeKey = latestAssess.assessment_type;
+            lastAssessNameEl.innerText = ASSESS_TITLES[typeKey] || typeKey.toUpperCase();
+        } else {
+            lastAssessDateEl.innerText = "--";
+            lastAssessNameEl.innerText = "None";
+        }
 
-        moodStatusEl.innerText =
-            mood.charAt(0).toUpperCase() +
-            mood.slice(1);
-
-    } else {
-
-        moodStatusEl.innerText = "No Data";
-    }
-
-    // 2. Process Assessment Data (Date & Name)
-    if (assessData && assessData.length > 0) {
-        // Sort descending to get the newest entry first
-        const sortedAssess = [...assessData].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        const latestAssess = sortedAssess[0];
-        
-        // Format the date (e.g., 28/4/2026)
-        const dateObj = new Date(latestAssess.created_at);
-        lastAssessDateEl.innerText = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
-        
-        // Map the backend key to the readable title
-        const typeKey = latestAssess.assessment_type;
-        lastAssessNameEl.innerText = ASSESS_TITLES[typeKey] || typeKey.toUpperCase();
-    } else {
-        lastAssessDateEl.innerText = "--";
-        lastAssessNameEl.innerText = "None";
-    }
-
-    // 3. Process Journal Data
-    if (journalData && journalData.length > 0) {
-        journalEntriesEl.innerText = journalData.length;
-    } else {
-        journalEntriesEl.innerText = "0";
-    }
+        // 3. Process Journal Data
+        if (journalData && journalData.length > 0) {
+            journalEntriesEl.innerText = journalData.length;
+        } else {
+            journalEntriesEl.innerText = "0";
+        }
 
     } catch (error) {
         console.error("Error updating summary cards:", error);
