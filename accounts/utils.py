@@ -23,10 +23,6 @@ def send_email_otp(user, otp):
         fail_silently=False,
     )
     
-def send_phone_otp(user, otp):
-    print(f"Phone OTP for {user.phone}: {otp}")
-    
-    
 def validate_password_strength(password):
     import re
 
@@ -44,19 +40,3 @@ def validate_password_strength(password):
 
     return None
     
-# import requests
-
-# def send_phone_otp(user, otp):
-#     url = "https://www.fast2sms.com/dev/bulkV2"
-
-#     payload = {
-#         "variables_values": otp,
-#         "route": "otp",
-#         "numbers": str(user.phone)
-#     }
-
-#     headers = {
-#         "authorization": "YOUR_API_KEY",
-#     }
-
-#     requests.post(url, data=payload, headers=headers)

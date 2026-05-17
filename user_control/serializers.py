@@ -11,8 +11,6 @@ class ProfileViewSerializer(serializers.ModelSerializer):
             "last_name",
             "display_name",
             "email",
-            "phone",
-            "is_phone_verified",
             "is_email_verified",
             "date_of_birth",  # view only
             "gender"  ,        # view only

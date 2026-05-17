@@ -69,14 +69,6 @@
                             </label>
                             <input name="email" disabled class="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl text-gray-500 cursor-not-allowed">
                         </div>
-
-                        <div class="space-y-1 relative">
-                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex justify-between items-center">
-                                Phone Number
-                                <span id="phone_verified" class="hidden"></span>
-                            </label>
-                            <input name="phone" disabled class="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl text-gray-500 cursor-not-allowed">
-                        </div>
                     </div>
 
                     <div class="space-y-4">
@@ -172,7 +164,6 @@ function updateDisplayName() {
     document.getElementById("gender").value = data.gender || '';
 
     setVerification("email_verified", data.is_email_verified);
-    setVerification("phone_verified", data.is_phone_verified);
   }
 })();
 

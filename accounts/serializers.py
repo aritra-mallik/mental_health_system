@@ -13,7 +13,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "first_name", "middle_name", "last_name", "email", "phone",
+            "first_name", "middle_name", "last_name", "email",
             "password", "confirm_password",
             "date_of_birth", "gender"
         ]
@@ -30,7 +30,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         if password != confirm_password:
             raise serializers.ValidationError("Passwords do not match")
 
-        # 🔥 ADD THIS
+        #  ADD THIS
         error = validate_password_strength(password)
         if error:
             raise serializers.ValidationError(error)
@@ -40,7 +40,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not dob:
             raise serializers.ValidationError("Date of birth is required")
 
-        # 🔥 Handle string input like "18-02-1998"
+        #  Handle string input like "18-02-1998"
         if isinstance(dob, str):
             try:
                 dob = datetime.strptime(dob, "%d-%m-%Y").date()
@@ -54,33 +54,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Minimum age is 16")
 
         return data
-    
-    def validate_phone(self, value):
-        phone = value.strip().replace(" ", "")
-
-        # Remove leading +
-        if phone.startswith("+"):
-            phone = phone[1:]
-
-        # Remove leading 0 (common Indian format)
-        if phone.startswith("0"):
-            phone = phone[1:]
-
-        # If 10 digits → assume India
-        if len(phone) == 10:
-            phone = "91" + phone
-
-        # Final validation
-        if not phone.isdigit() or len(phone) != 12 or not phone.startswith("91"):
-            raise serializers.ValidationError("Enter valid Indian phone number")
-
-        phone = "+" + phone
-
-        # ✅ DUPLICATE CHECK (THIS WAS MISSING EFFECTIVELY)
-        if User.objects.filter(phone=phone).exists():
-            raise serializers.ValidationError("Phone number already registered")
-
-        return phone
 
     def create(self, validated_data):
         validated_data.pop("confirm_password")
@@ -124,54 +97,3 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField()
     new_password = serializers.CharField()
-
-# class RegisterSerializer(serializers.ModelSerializer):
-#     password = serializers.CharField(write_only=True)
-#     confirm_password = serializers.CharField(write_only=True)
-
-#     class Meta:
-#         model = User
-#         fields = "__all__"
-
-#     def validate(self, data):
-#         if data["password"] != data["confirm_password"]:
-#             raise serializers.ValidationError("Passwords do not match")
-#         return data
-
-#     def create(self, validated_data):
-#         validated_data.pop("confirm_password")
-#         password = validated_data.pop("password")
-
-#         user = User.objects.create_user(password=password, **validated_data)
-#         return user
-
-# class RegisterSerializer(serializers.ModelSerializer):
-#     password = serializers.CharField(write_only=True)
-#     confirm_password = serializers.CharField(write_only=True)
-
-#     class Meta:
-#         model = User
-#         fields = "__all__"
-
-#     def validate(self, data):
-
-#         # password check
-#         if data["password"] != data["confirm_password"]:
-#             raise serializers.ValidationError("Passwords do not match")
-
-#         # AGE VALIDATION
-#         dob = data.get("date_of_birth")
-#         if dob:
-#             today = date.today()
-#             age = today.year - dob.year - (
-#                 (today.month, today.day) < (dob.month, dob.day)
-#             )
-
-#             if age < 16:
-#                 raise serializers.ValidationError("You must be at least 16 years old")
-
-#         # GENDER REQUIRED (extra safety)
-#         if not data.get("gender"):
-#             raise serializers.ValidationError("Gender is required")
-
-#         return data

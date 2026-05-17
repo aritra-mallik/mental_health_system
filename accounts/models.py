@@ -27,7 +27,6 @@ class User(AbstractUser):
     username = None
 
     email = models.EmailField(("email address"), unique=True)
-    phone = models.CharField(max_length=15, unique=True)
 
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
@@ -49,7 +48,6 @@ class User(AbstractUser):
     dark_mode = models.BooleanField(default=False)
     font_size = models.CharField(max_length=10, default="medium")
 
-    is_phone_verified = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
 
     consent_data_policy = models.BooleanField(default=False)
@@ -83,7 +81,6 @@ class User(AbstractUser):
 class OTP(models.Model):
     OTP_TYPE = [
         ("email", "Email"),
-        ("phone", "Phone"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

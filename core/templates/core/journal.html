@@ -35,11 +35,6 @@ textarea:focus {
 .group:hover .cursor-move::before {
     opacity: 1;
 }
-
-/* Slash menu styling */
-.slash-item { padding: 10px 14px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
-.slash-item.active, .slash-item:hover { background: #f3f4f6; }
-.dark .slash-item.active, .dark .slash-item:hover { background: #374151; }
 </style>
 
 <div class="flex justify-between items-center mb-6">
@@ -123,8 +118,6 @@ textarea:focus {
             <span id="entryDate" class="text-xs text-gray-400 font-medium"></span>
         </div>
 
-            
-
         <div id="blocksContainer" class="flex-1 space-y-3 text-gray-800 dark:text-gray-200"></div>
 
         <button onclick="addBlock()" 
@@ -141,9 +134,7 @@ textarea:focus {
 
     </div>
     
-    <div id="slashMenu"
-        class="hidden absolute z-50 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow-xl w-56 text-sm text-gray-700 dark:text-gray-200 overflow-hidden">
-    </div>
+    
 
 </div>
 
@@ -203,7 +194,7 @@ async function deriveKey(password, salt) {
 }
 
 /* =========================
-   🔐 ENCRYPT / DECRYPT
+    ENCRYPT / DECRYPT
 ========================= */
 
 async function encrypt(text) {
@@ -521,14 +512,6 @@ async function exportJournal() {
     a.click();
 }
 
-const COMMANDS = [
-  { key: "text",   label: "Text",        icon: "📝", type: "text" },
-  { key: "h1",     label: "Heading",     icon: "🔠", type: "h1" },
-  { key: "bullet", label: "Bullet List", icon: "•",  type: "bullet" },
-  { key: "toggle", label: "Toggle",      icon: "▸",  type: "toggle" },
-  { key: "check",  label: "Checklist",   icon: "☑️", type: "check" }
-];
-
 let dragged = null;
 
 document.addEventListener("dragstart", (e) => {
@@ -587,17 +570,33 @@ function addBlock(content = "", type = "text") {
         }, 0);
     }
 
-    // ENTER → new block
+    // KEYBOARD CONTROLS
     textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             const newDiv = addBlock("", "text");
             newDiv.querySelector("textarea").focus();
         }
-    });
 
-    // SLASH trigger + menu control
-    attachSlashBehavior(textarea, div);
+        if (e.key === "Backspace" && textarea.value === "") {
+            e.preventDefault();
+            
+            const previousBlock = div.previousElementSibling;
+            const allBlocks = document.querySelectorAll("#blocksContainer > div");
+
+            if (allBlocks.length > 1) {
+                div.remove();
+                if (previousBlock) {
+                    const prevTextarea = previousBlock.querySelector("textarea");
+                    if (prevTextarea) {
+                        prevTextarea.focus();
+                        const len = prevTextarea.value.length;
+                        prevTextarea.setSelectionRange(len, len);
+                    }
+                }
+            }
+        }
+    });
 
     container.appendChild(div);
     return div;
@@ -626,91 +625,8 @@ function renderBlockHTML(type, content) {
                 <textarea class="w-full bg-transparent outline-none" rows="1">${content}</textarea>
             </div>`;
         default:
-            return `<textarea class="w-full bg-transparent outline-none" rows="1" placeholder="Press '/' for commands...">${content}</textarea>`;
+            return `<textarea class="w-full bg-transparent outline-none" rows="1" placeholder="Write your thoughts here...">${content}</textarea>`;
     }
-}
-
-function attachSlashBehavior(textarea, blockDiv) {
-    const menu = document.getElementById("slashMenu");
-    let activeIndex = 0;
-
-    function openMenu() {
-        menu.innerHTML = COMMANDS.map((c, i) => `
-            <div class="slash-item ${i===0?'active':''}" data-index="${i}">
-                <span class="w-6 text-center">${c.icon}</span> 
-                <span class="font-medium">${c.label}</span>
-            </div>
-        `).join("");
-
-        activeIndex = 0;
-        positionMenu(textarea, menu);
-        menu.classList.remove("hidden");
-    }
-
-    function closeMenu() {
-        menu.classList.add("hidden");
-    }
-
-    function applyCommand(cmd) {
-        // replace current block with new type
-        const content = textarea.value.replace(/^\/.*/, ""); // remove slash
-        blockDiv.innerHTML = renderBlockHTML(cmd.type, content);
-        blockDiv.dataset.type = cmd.type;
-
-        const newTA = blockDiv.querySelector("textarea");
-        attachSlashBehavior(newTA, blockDiv);
-        newTA.focus();
-    }
-
-    textarea.addEventListener("input", () => {
-        const val = textarea.value;
-        if (val === "/") openMenu();
-        else if (!val.startsWith("/")) closeMenu();
-    });
-
-    textarea.addEventListener("keydown", (e) => {
-        if (menu.classList.contains("hidden")) return;
-
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            activeIndex = (activeIndex + 1) % COMMANDS.length;
-            updateActive(menu, activeIndex);
-        }
-        if (e.key === "ArrowUp") {
-            e.preventDefault();
-            activeIndex = (activeIndex - 1 + COMMANDS.length) % COMMANDS.length;
-            updateActive(menu, activeIndex);
-        }
-        if (e.key === "Enter") {
-            e.preventDefault();
-            applyCommand(COMMANDS[activeIndex]);
-            closeMenu();
-        }
-        if (e.key === "Escape") {
-            closeMenu();
-        }
-    });
-
-    // click selection
-    menu.onclick = (e) => {
-        const item = e.target.closest(".slash-item");
-        if (!item) return;
-        const idx = Number(item.dataset.index);
-        applyCommand(COMMANDS[idx]);
-        closeMenu();
-    };
-}
-
-function updateActive(menu, idx) {
-    [...menu.children].forEach((el, i) => {
-        el.classList.toggle("active", i === idx);
-    });
-}
-
-function positionMenu(textarea, menu) {
-    const rect = textarea.getBoundingClientRect();
-    menu.style.top = `${window.scrollY + rect.bottom + 6}px`;
-    menu.style.left = `${window.scrollX + rect.left}px`;
 }
 
 async function saveEntry() {

@@ -25,15 +25,10 @@ class RegisterView(APIView):
             user = serializer.save()
 
             email_otp = generate_otp()
-            phone_otp = generate_otp()
-
             OTP.objects.create(user=user, otp=email_otp, otp_type="email")
-            OTP.objects.create(user=user, otp=phone_otp, otp_type="phone")
-
             send_email_otp(user, email_otp)
-            print("Phone OTP:", phone_otp)
 
-            return Response({"status": "success", "message": "OTP sent", "phone": user.phone}, status=201)
+            return Response({"status": "success", "message": "OTP sent"}, status=201)
 
         return Response({"status": "error", "message": "Validation failed", "errors": serializer.errors}, status=400)
 
@@ -46,63 +41,30 @@ class VerifyOTPView(APIView):
     def post(self, request):
         email = request.data.get("email")
         email_otp = request.data.get("email_otp")
-        phone_otp = request.data.get("phone_otp")
 
         try:
             user = User.objects.get(email=email)
-
-            # GET EMAIL OTP
-            email_obj = OTP.objects.filter(
-                user=user,
-                otp_type="email",
-                is_used=False
-            ).last()
-
-            # GET PHONE OTP
-            phone_obj = OTP.objects.filter(
-                user=user,
-                otp_type="phone",
-                is_used=False
-            ).last()
-
-            # --- VALIDATION START ---
+            email_obj = OTP.objects.filter(user=user, otp_type="email", is_used=False).last()
 
             if not email_obj:
-                return Response({"status": "error", "message": "No email OTP found"}, status=400)
-
-            if not phone_obj:
-                return Response({"status": "error", "message": "No phone OTP found"}, status=400)
-
-            if email_obj.is_blocked() or phone_obj.is_blocked():
+                return Response({"status": "error", "message": "No OTP found"}, status=400)
+            if email_obj.is_blocked():
                 return Response({"status": "error", "message": "Too many attempts"}, status=403)
-
-            if email_obj.is_expired() or phone_obj.is_expired():
+            if email_obj.is_expired():
                 return Response({"status": "error", "message": "OTP expired"}, status=400)
-
+            
             if email_obj.otp != email_otp:
                 email_obj.attempts += 1
                 email_obj.save()
-                return Response({"status": "error", "message": "Invalid email OTP"}, status=400)
-
-            if phone_obj.otp != phone_otp:
-                phone_obj.attempts += 1
-                phone_obj.save()
-                return Response({"status": "error", "message": "Invalid phone OTP"}, status=400)
-
-            # --- SUCCESS ---
+                return Response({"status": "error", "message": "Invalid OTP"}, status=400)
 
             email_obj.is_used = True
-            phone_obj.is_used = True
             email_obj.save()
-            phone_obj.save()
-
             user.is_email_verified = True
-            user.is_phone_verified = True
             user.save()
 
             tokens = get_tokens_for_user(user)
-
-            return Response({"status": "success", "message": "Both OTPs verified", "data": {"tokens": tokens}})
+            return Response({"status": "success", "message": "Email verified", "data": {"tokens": tokens}})
 
         except User.DoesNotExist:
             return Response({"status": "error", "message": "User not found"}, status=404)
@@ -123,7 +85,8 @@ class LoginView(APIView):
         return Response({"status": "error", "message": "Invalid credentials", "error": serializer.errors}, status=400)
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
 
@@ -145,14 +108,8 @@ class ResendOTPView(APIView):
             user = User.objects.get(email=email)
 
             email_otp = generate_otp()
-            phone_otp = generate_otp()
-
             OTP.objects.create(user=user, otp=email_otp, otp_type="email")
-            OTP.objects.create(user=user, otp=phone_otp, otp_type="phone")
-
             send_email_otp(user, email_otp)
-            print("Resent Phone OTP:", phone_otp)
-
             return Response({"status": "success", "message": "OTP resent"})
 
         except User.DoesNotExist:
@@ -277,5 +234,6 @@ def verify_page(request): return render(request,"accounts/verify.html")
 def login_page(request): return render(request,"accounts/login.html")
 def forgot_page(request): return render(request,"accounts/forgot_password.html")
 def reset_page(request): return render(request,"accounts/reset_password.html")
-def dashboard(request): return render(request,"accounts/dashboard.html")
+
+
 def landing_page(request): return render(request, "accounts/landing_page.html")

@@ -6,7 +6,7 @@ urlpatterns = [
     path('consent/', ConsentView.as_view()),
     path('export/', ExportDataView.as_view()),
     path('delete/', DeleteAccountView.as_view()),
-    path('journal-salt/',JournalSaltView.as_view()),
+    path('journal-salt/', JournalSaltView.as_view()),
     
     
     path('profile-page/', profile_page, name='profile-page'),

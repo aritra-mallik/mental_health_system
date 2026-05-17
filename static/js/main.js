@@ -103,7 +103,7 @@ async function refreshAccessToken() {
 
 async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
 
-    // 🔥 STEP 1: PRE-REFRESH (ADD THIS HERE)
+    // STEP 1: PRE-REFRESH (ADD THIS HERE)
     const exp = localStorage.getItem("access_exp");
     if (exp) {
         const now = Math.floor(Date.now() / 1000);
@@ -112,7 +112,7 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
         }
     }
 
-    // 🔥 STEP 2: LOADER START
+    // STEP 2: LOADER START
     const token = localStorage.getItem("access");
 
     const PUBLIC_ENDPOINTS = [
@@ -121,7 +121,8 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
         "/api/accounts/verify-otp/",
         "/api/accounts/resend-otp/",
         "/api/accounts/password-reset/",
-        "/api/accounts/password-reset-confirm/"
+        "/api/accounts/password-reset-confirm/",
+        "/api/accounts/logout/"
     ];
 
     function isPublicEndpoint(url) {
@@ -150,7 +151,7 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
     try {
         const res = await fetch(url, options);
 
-        // 🔥 STEP 3: LOADER STOP (VERY IMPORTANT)
+        //  STEP 3: LOADER STOP (VERY IMPORTANT)
         clearTimeout(loaderTimeout);
         hideLoader();
 
@@ -186,7 +187,7 @@ async function apiRequest(url, method="GET", body=null, extraHeaders={}) {
 
     } catch (err) {
 
-        // 🔥 STEP 4: LOADER STOP ON ERROR
+        //  STEP 4: LOADER STOP ON ERROR
         clearTimeout(loaderTimeout);
         hideLoader();
 
@@ -228,7 +229,7 @@ async function deleteAccount() {
   const { res, data } = await apiRequest("/api/user/delete/", "DELETE");
 
   if (res && res.ok) {
-    localStorage.setItem("logout", Date.now()); // 🔥 sync all tabs
+    localStorage.setItem("logout", Date.now()); //  sync all tabs
     localStorage.clear();
     window.location.href = "/api/accounts/login-page/";
   } else {
@@ -237,33 +238,26 @@ async function deleteAccount() {
 }
 
 async function logoutUser() {
-
   const refresh = localStorage.getItem("refresh");
+  
+  // Trigger cross-tab sync to log out all open tabs
   localStorage.setItem("logout", Date.now());
 
-  if (!refresh) {
-    // fallback: just clear session
-    localStorage.clear();
-    window.location.href = "/api/accounts/login-page/";
-    return;
+  if (refresh) {
+    try {
+      // Use your custom apiRequest wrapper so the Bearer token is automatically attached!
+      await apiRequest(
+        "/api/accounts/logout/", 
+        "POST", 
+        { refresh: refresh }
+      );
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   }
 
-  try {
-    await fetch("/api/accounts/logout/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ refresh: refresh })
-    });
-
-  } catch (err) {
-    console.error("Logout error:", err);
-  }
-
-  // ALWAYS clear tokens (even if API fails)
+  // ALWAYS clear tokens locally, even if the server is offline
   localStorage.clear();
-
   window.location.href = "/api/accounts/login-page/";
 }
 

@@ -396,9 +396,6 @@ function renderResult() {
             
             <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
                 <button onclick="state.step = 6; render();" class="${BTN_PRIMARY} hover:-translate-y-1">View Full Report</button>
-                <button onclick="goToChatWithContext()" class="${BTN_SECONDARY}">
-                    Discuss with Smera
-                </button>
                 <button onclick="window.location.href='/api/core/dashboard-page/'" class="mt-4 text-sm font-bold text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">Return to Dashboard</button>
             </div>
         </div>`;
@@ -463,6 +460,15 @@ function renderReport() {
                     `).join('')}
                 </ul>
             </div>
+
+            <div class="mb-8">
+                <button onclick="goToChatWithContext()" class="w-full mt-3 bg-gradient-to-r from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-3 border border-indigo-400/30 group">
+                    <svg class="w-6 h-6 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span class="text-base tracking-wide">Discuss with Smera</span>
+                </button>
+            </div>    
 
             <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row gap-4 sm:justify-end">
                 <button onclick="window.location.href='/api/core/dashboard-page/'" class="${BTN_SECONDARY} w-full sm:w-auto">Dashboard</button>
