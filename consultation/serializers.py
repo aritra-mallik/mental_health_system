@@ -1,231 +1,73 @@
 from rest_framework import serializers
+from .models import Counselor, Slot, Booking
+from django.utils import timezone
+from datetime import datetime, timedelta
+import pytz
 
-from .models import (
-    Counselor,
-    AvailabilitySlot,
-    MentalHealthCategory,
-    ConsultationType,
-    Booking,
-    Review
-)
+IST = pytz.timezone('Asia/Kolkata')
 
-
-# =========================================
-# CATEGORY
-# =========================================
-class CategorySerializer(serializers.ModelSerializer):
-
+class SlotSerializer(serializers.ModelSerializer):
     class Meta:
+        model = Slot
+        fields = ["id", "date", "time", "mode"]
 
-        model = MentalHealthCategory
-
-        fields = [
-            'id',
-            'name'
-        ]
-
-
-# =========================================
-# CONSULTATION TYPE
-# =========================================
-class ConsultationTypeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-
-        model = ConsultationType
-
-        fields = [
-            'id',
-            'name',
-            'description'
-        ]
-
-
-# =========================================
-# AVAILABILITY SLOT
-# =========================================
-class AvailabilitySerializer(serializers.ModelSerializer):
-
-    formatted_time = serializers.SerializerMethodField()
-
-    class Meta:
-
-        model = AvailabilitySlot
-
-        fields = [
-            'id',
-
-            'date',
-            'time',
-            'formatted_time',
-
-            'duration',
-
-            'mode',
-
-            'chamber_name',
-            'location',
-
-            'latitude',
-            'longitude',
-
-            'is_booked'
-        ]
-
-    def get_formatted_time(self, obj):
-
-        return obj.time.strftime('%I:%M %p')
-
-
-# =========================================
-# REVIEW
-# =========================================
-class ReviewSerializer(serializers.ModelSerializer):
-
-    class Meta:
-
-        model = Review
-
-        fields = [
-            'id',
-            'user',
-            'rating',
-            'comment',
-            'created_at'
-        ]
-
-
-# =========================================
-# COUNSELOR
-# =========================================
 class CounselorSerializer(serializers.ModelSerializer):
-
-    categories = CategorySerializer(
-        many=True,
-        read_only=True
-    )
-
-    consultation_types = ConsultationTypeSerializer(
-        many=True,
-        read_only=True
-    )
-
-    slots = AvailabilitySerializer(
-        many=True,
-        read_only=True
-    )
-
-    reviews = ReviewSerializer(
-        many=True,
-        read_only=True
-    )
+    slots = serializers.SerializerMethodField()
 
     class Meta:
-
         model = Counselor
-
         fields = [
-
-            'id',
-
-            'name',
-            'designation',
-            'bio',
-
-            'education',
-            'university',
-
-            'experience_years',
-            'patients_treated',
-            'success_rate',
-
-            'rating',
-            'review_count',
-
-            'consultation_fee',
-            'session_duration',
-
-            'hospitals',
-            'achievements',
-            'research_work',
-            'innovations',
-
-            'is_verified',
-
-            'categories',
-            'consultation_types',
-
-            'slots',
-            'reviews'
+            "id", "name", "email", "designation", "specialization", "experience", "consultation_fee", 
+            "rating", "total_sessions", "mode", "office_address", "google_map_link", "slots"
         ]
 
+    def get_slots(self, obj):
+        # Enforce IST time
+        current = timezone.now().astimezone(IST)
+        booking_buffer = current + timedelta(hours=2)
 
-# =========================================
-# BOOKING
-# =========================================
+        slots = obj.slots.filter(booked=False).order_by("date", "time")
+        valid_slots = []
+
+        for slot in slots:
+            slot_date_time = IST.localize(datetime.combine(slot.date, slot.time))
+            if slot_date_time >= booking_buffer:
+                valid_slots.append(slot)
+
+        return SlotSerializer(valid_slots, many=True).data
+
 class BookingSerializer(serializers.ModelSerializer):
-
-    counselor_name = serializers.CharField(
-        source='counselor.name',
-        read_only=True
-    )
-
-    counselor_designation = serializers.CharField(
-        source='counselor.designation',
-        read_only=True
-    )
-
-    slot_date = serializers.CharField(
-        source='slot.date',
-        read_only=True
-    )
-
-    slot_mode = serializers.CharField(
-        source='slot.mode',
-        read_only=True
-    )
-
-    slot_time = serializers.SerializerMethodField()
-
-    chamber_name = serializers.CharField(
-        source='slot.chamber_name',
-        read_only=True
-    )
-
-    location = serializers.CharField(
-        source='slot.location',
-        read_only=True
-    )
+    counselor = CounselorSerializer(read_only=True)
+    slot = SlotSerializer(read_only=True)
+    
+    consultation_fee = serializers.DecimalField(source="counselor.consultation_fee", max_digits=8, decimal_places=2, read_only=True)
+    platform_fee = serializers.SerializerMethodField()
+    total_fee = serializers.SerializerMethodField()
+    can_modify = serializers.SerializerMethodField()
+    can_join = serializers.SerializerMethodField()
 
     class Meta:
-
         model = Booking
-
         fields = [
-
-            'id',
-
-            'user',
-
-            'counselor',
-            'counselor_name',
-            'counselor_designation',
-
-            'slot',
-
-            'slot_date',
-            'slot_time',
-            'slot_mode',
-
-            'chamber_name',
-            'location',
-
-            'status',
-
-            'created_at',
-            'updated_at'
+            "id", "counselor", "slot", "status", "meeting_link", "access_key", "consultation_fee", 
+            "platform_fee", "total_fee", "created_at", "can_modify", "can_join"
         ]
 
-    def get_slot_time(self, obj):
+    def get_platform_fee(self, obj):
+        return 50
 
-        return obj.slot.time.strftime('%I:%M %p')
+    def get_total_fee(self, obj):
+        return float(obj.counselor.consultation_fee) + 50
+    
+    def get_can_modify(self, obj):
+        current = timezone.now().astimezone(IST)
+        appointment = IST.localize(datetime.combine(obj.slot.date, obj.slot.time))
+        cutoff = appointment - timedelta(minutes=30)
+        return obj.status == "booked" and current < cutoff
+
+    def get_can_join(self, obj):
+        current = timezone.now().astimezone(IST)
+        appointment = IST.localize(datetime.combine(obj.slot.date, obj.slot.time))
+        join_start = appointment - timedelta(minutes=30)
+        join_end = appointment + timedelta(minutes=45)
+        return obj.status == "booked" and join_start <= current <= join_end

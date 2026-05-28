@@ -48,7 +48,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             except ValueError:
                 raise serializers.ValidationError("Date must be DD-MM-YYYY")
 
-        age = date.today().year - dob.year
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
         if age < 16:
             raise serializers.ValidationError("Minimum age is 16")

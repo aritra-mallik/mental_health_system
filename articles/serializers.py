@@ -1,11 +1,24 @@
 from rest_framework import serializers
+from .models import Article
 
-class ArticleSerializer(serializers.Serializer):
-    title = serializers.CharField()
-    short = serializers.CharField()
-    full = serializers.CharField()
-    link = serializers.CharField()
-    mood = serializers.CharField()
-    read_time = serializers.CharField()
-    author = serializers.CharField()
-    date = serializers.CharField()
+class ArticleSerializer(
+    serializers.ModelSerializer
+):
+
+    short = serializers.SerializerMethodField()
+
+    full = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = Article
+
+        fields = "__all__"
+
+    def get_short(self,obj):
+
+        return obj.content[:100]+"..."
+
+    def get_full(self,obj):
+
+        return obj.content

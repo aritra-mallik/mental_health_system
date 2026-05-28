@@ -1,91 +1,224 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Consultation{% endblock %}
+
 {% block content %}
+  <div class="max-w-7xl mx-auto space-y-8">
+    
+    <div class="relative overflow-hidden bg-gradient-to-br from-slate-100 via-white to-rose-50 dark:from-[#281524] dark:via-[#131520] dark:to-[#1a1525] border-[4px] border-white dark:border-slate-800/50 rounded-[3.5rem] p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] group/hero">
+      
+      <div class="absolute -top-10 -right-10 w-64 h-64 bg-rose-500/20 dark:bg-pink-500/20 rounded-full blur-[80px] pointer-events-none group-hover/hero:scale-110 transition-transform duration-1000"></div>
+      <div class="absolute -bottom-10 -left-10 w-64 h-64 bg-pink-500/20 dark:bg-rose-500/15 rounded-full blur-[80px] pointer-events-none group-hover/hero:scale-110 transition-transform duration-1000"></div>
+      
+      <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/60 rounded-full mb-4 backdrop-blur-sm shadow-sm">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+            </span>
+            <span class="text-xs uppercase tracking-widest text-rose-600 dark:text-rose-400 font-bold">Clinical Care</span>
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-slate-800 dark:text-white leading-tight tracking-tight">
+            Mental Health <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500">Consultation</span>
+          </h1>
+          <p class="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">
+            Consult securely with licensed specialists to evaluate and manage your mental wellbeing.
+          </p>
+        </div>
+        
+        <div class="flex flex-wrap gap-3 shrink-0">
+          <a href="/api/consultation/booking-history/" class="group relative bg-gradient-to-r from-rose-600 to-pink-500 text-white px-6 py-4 rounded-2xl font-bold text-base shadow-[0_10px_25px_-5px_rgba(225,29,72,0.4)] transition-all hover:shadow-[0_15px_30px_-5px_rgba(225,29,72,0.6)] hover:-translate-y-1 active:translate-y-0 flex items-center gap-2 border border-white/10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            My Bookings
+          </a>
+          <a href="/api/core/dashboard-page/" class="px-6 py-4 rounded-2xl bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 font-bold text-base border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-500/50 shadow-sm hover:shadow-xl hover:shadow-rose-500/10 hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm">
+            ← Dashboard
+          </a>
+        </div>
+      </div>
 
-<div class="max-w-7xl mx-auto p-6">
+      <div class="relative z-10 mt-10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-[2rem] p-3 shadow-lg">
+        <div class="flex flex-col md:flex-row gap-3">
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+              <svg class="h-6 w-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Search by name or specialization..."
+              class="w-full py-4 pl-14 pr-6 rounded-2xl bg-white dark:bg-slate-800/80 border-none text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-sm transition-all text-base font-medium backdrop-blur-sm"
+            />
+          </div>
+          <div class="flex gap-2">
+            <button id="allBtn" onclick="setMode('')" class="mode-btn active px-6 py-4 rounded-xl font-bold text-base transition-all shadow-md hover:scale-105 active:scale-95 bg-gradient-to-r from-rose-600 to-pink-500 text-white border border-rose-500/50">
+              All
+            </button>
+            <button id="onlineBtn" onclick="setMode('online')" class="mode-btn px-6 py-4 rounded-xl font-bold text-base transition-all shadow-sm hover:scale-105 active:scale-95 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50">
+              💻 Online
+            </button>
+            <button id="offlineBtn" onclick="setMode('offline')" class="mode-btn px-6 py-4 rounded-xl font-bold text-base transition-all shadow-sm hover:scale-105 active:scale-95 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50">
+              🏥 Offline
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-```
-<!-- Header -->
-<div class="mb-6">
-    <h1 class="text-3xl font-bold">Consultation</h1>
-    <p class="text-gray-500">Choose a counselor and book your session</p>
-</div>
+    <div id="counselorList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 relative z-10"></div>
+  </div>
+{% endblock %}
 
-<!-- Counselor List -->
-<div id="counselorList" class="grid md:grid-cols-2 gap-6"></div>
-```
-
-</div>
-
+{% block extra_js %}
 <script>
+  let allCounselors = [];
+  let selectedMode = "";
 
-/* =========================
-   LOAD COUNSELORS FROM API
-========================= */
-async function loadCounselors() {
+  async function loadCounselors() {
+    if (!localStorage.getItem("access")) {
+      location.href = "/api/core/login-page/";
+      return;
+    }
 
     try {
-        const res = await fetch("/api/consultation/counselors/");
-        const data = await res.json();
-
-        renderCounselors(data);
-
-    } catch (err) {
-        console.error("Error:", err);
+      const { res, data } = await apiRequest("/api/consultation/counselors/");
+      if (!res.ok) throw new Error();
+      allCounselors = data;
+      renderCounselors(data);
+    } catch {
+      document.getElementById("counselorList").innerHTML = `
+        <div class="col-span-full">
+          <div class="bg-white dark:bg-[#151828] p-12 rounded-[2.5rem] text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-800">
+            <div class="text-6xl mb-4 text-slate-300 dark:text-slate-700 animate-pulse">⚠</div>
+            <h2 class="font-black text-2xl text-slate-800 dark:text-white">Failed loading counselors</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-base">Please refresh the page and try again.</p>
+          </div>
+        </div>`;
     }
-}
+  }
 
-/* =========================
-   RENDER COUNSELORS
-========================= */
-function renderCounselors(data) {
+  function setMode(mode) {
+    selectedMode = mode;
+    
+    const inactiveClasses = "mode-btn px-6 py-4 rounded-xl font-bold text-base transition-all shadow-sm hover:scale-105 active:scale-95 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50".split(" ");
+    const activeClasses = "mode-btn active px-6 py-4 rounded-xl font-bold text-base transition-all shadow-md hover:scale-105 active:scale-95 bg-gradient-to-r from-rose-600 to-pink-500 text-white border border-rose-500/50".split(" ");
 
-    const container = document.getElementById("counselorList");
-    container.innerHTML = "";
-
-    if (!data.length) {
-        container.innerHTML = "<p>No counselors available</p>";
-        return;
-    }
-
-    data.forEach(c => {
-
-        container.innerHTML += `
-        <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
-
-            <h2 class="text-xl font-bold">${c.name}</h2>
-            <p class="text-sm text-gray-500">${c.designation}</p>
-
-            <p class="mt-2 text-sm">${c.bio || ""}</p>
-
-            <p class="mt-2"><b>Experience:</b> ${c.experience_years} yrs</p>
-            <p><b>Patients:</b> ${c.patients_treated}</p>
-
-            <p class="mt-2 text-green-600 font-bold">
-                ₹${c.consultation_fee}
-            </p>
-
-            <button onclick="goToDetail(${c.id})"
-                class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
-                View Profile & Book
-            </button>
-
-        </div>
-        `;
+    document.querySelectorAll(".mode-btn").forEach(btn => {
+      btn.className = ""; 
+      btn.classList.add(...inactiveClasses);
     });
-}
 
-/* =========================
-   NAVIGATE TO DETAIL PAGE
-========================= */
-function goToDetail(id){
-    window.location.href = `/consultation/${id}/`;
-}
+    let activeId = mode === "online" ? "onlineBtn" : (mode === "offline" ? "offlineBtn" : "allBtn");
+    const activeBtn = document.getElementById(activeId);
+    
+    activeBtn.className = "";
+    activeBtn.classList.add(...activeClasses);
 
-/* =========================
-   INIT
-========================= */
-loadCounselors();
+    filterCounselors();
+  }
 
+  function filterCounselors() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const filtered = allCounselors.filter(c => {
+      const matchesSearch = (c.name || "").toLowerCase().includes(search) || 
+                            (c.specialization || "").toLowerCase().includes(search);
+      const matchesMode = selectedMode === "" || c.mode === selectedMode;
+      return matchesSearch && matchesMode;
+    });
+    
+    renderCounselors(filtered);
+  }
+
+  function renderCounselors(data) {
+    const list = document.getElementById("counselorList");
+    
+    if (!data.length) {
+      list.innerHTML = `
+        <div class="col-span-full">
+          <div class="bg-white dark:bg-[#151828] rounded-[2.5rem] p-16 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-800">
+            <div class="w-24 h-24 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 dark:border-slate-700">
+               <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white mt-2">No Counselors Found</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2 text-base font-medium">Adjust your filters or try another search.</p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = data.map((c) => {
+      return `
+      <div class="relative overflow-hidden bg-white dark:bg-[#151828] p-6 md:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-500 hover:shadow-2xl hover:shadow-pink-500/10 hover:-translate-y-1 group flex flex-col h-full">
+        
+        <div class="absolute -top-16 -right-16 w-48 h-48 bg-rose-500/10 dark:bg-pink-500/10 rounded-full blur-[60px] pointer-events-none transition-transform duration-1000 group-hover:scale-125 z-0"></div>
+
+        <div class="absolute top-6 right-6 flex items-center gap-1.5 bg-amber-50/90 dark:bg-amber-900/40 backdrop-blur-md border border-amber-200/80 dark:border-amber-800/50 px-3 py-1.5 rounded-2xl shadow-sm z-20 transition-transform duration-300 group-hover:scale-105">
+            <span class="text-xs font-black text-amber-500 dark:text-amber-400">⭐ ${c.rating || '0.0'}</span>
+            <span class="text-[10px] font-bold text-amber-600/60 dark:text-amber-500/60">(${c.total_sessions || '0'})</span>
+        </div>
+
+        <div class="relative z-10 flex-1 flex flex-col mt-2">
+          <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-md border border-white/20 group-hover:scale-110 transition-transform duration-500 text-4xl relative overflow-hidden group/avatar">
+            <div class="absolute inset-0 bg-gradient-to-br from-rose-600 to-pink-500 opacity-20 dark:opacity-100"></div>
+            <div class="relative z-10">👨‍⚕️</div>
+          </div>
+
+          <h2 class="text-2xl font-black tracking-tight text-slate-800 dark:text-white leading-tight">${c.name}</h2>
+          <p class="text-sm font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mt-1">${c.designation}</p>
+          
+          <div class="flex flex-wrap gap-3 mt-4 mb-6">
+             <span class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest border ${c.mode==='online' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50' : 'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800/50'}">
+                ${c.mode==='online' ? '💻' : '🏥'} ${c.mode || 'N/A'}
+             </span>
+             ${c.email ? `
+             <span class="px-3 py-1.5 rounded-xl text-xs font-bold tracking-widest border bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700 lowercase flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                ${c.email}
+             </span>` : ''}
+          </div>
+
+          ${c.office_address ? `
+          <div class="mt-4 p-4 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800/50">
+              <div class="text-[10px] uppercase font-bold tracking-widest text-cyan-600">
+                  📍 Doctor Office
+              </div>
+              <div class="mt-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  ${c.office_address}
+              </div>
+          </div>
+          ` : ""}
+
+          <div class="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Experience</p>
+              <h3 class="font-black text-slate-800 dark:text-white text-xl mt-1">${c.experience}+ Yrs</h3>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Fee</p>
+              <h3 class="font-black text-slate-800 dark:text-white text-xl mt-1">₹${c.consultation_fee}</h3>
+            </div>
+          </div>
+          
+          <button 
+            onclick="location.href='/api/consultation/booking-page/?counselor=${c.id}'"
+            class="w-full relative overflow-hidden bg-gradient-to-r from-rose-600 to-pink-500 text-white font-black text-base px-6 py-4 rounded-xl shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all hover:shadow-[0_12px_25px_-6px_rgba(225,29,72,0.6)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/btn border border-rose-400/30 mt-8 z-10">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
+            <span class="relative z-10 tracking-wide uppercase">Request Appointment</span>
+            <svg class="w-5 h-5 relative z-10 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+    }).join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadCounselors();
+    document.getElementById("searchInput").addEventListener("input", filterCounselors);
+  });
 </script>
-
 {% endblock %}

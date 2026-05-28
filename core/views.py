@@ -14,6 +14,50 @@ from ChatBot.chatbot.prompt_builder import build_prompt
 from .sentiment import analyze_text
 from .aggregator import compute_state
 from .alerts import generate_alert 
+from groq import Groq
+from django.conf import settings
+from .tts import generate_voice_sync
+
+client = Groq(api_key=settings.GROQ_API_KEY)
+
+class SpeechToTextView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        audio = request.FILES.get("audio")
+
+        if not audio:
+            return Response({"error": "No audio uploaded"}, status=400)
+
+        try:
+            transcription = client.audio.transcriptions.create(file=(audio.name, audio.read()), model="whisper-large-v3")
+
+            return Response({"text": transcription.text})
+
+        except Exception as e:
+
+            return Response({"error": str(e)}, status=500)
+        
+class TextToSpeechView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        text = request.data.get("text")
+        if not text:
+            return Response({"error": "No text provided"}, status=400)
+
+        try:
+            # Generate the audio file using the sync wrapper
+            audio_url = generate_voice_sync(text)
+            
+            # Returns the path, e.g., "/media/tts/1234-abcd.mp3"
+            return Response({"audio_url": audio_url})
+        
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+            
+            
 
 MAX_MESSAGES = 8
 def normalize_risk(risk):
@@ -277,15 +321,6 @@ class JournalView(APIView):
             source_id=entry.id
         ).delete()
 
-        # optional mood cleanup
-        # time_lower = entry.created_at - timedelta(minutes=2)
-        # time_upper = entry.created_at + timedelta(minutes=2)
-
-        # MoodEntry.objects.filter(
-        #     user=request.user,
-        #     created_at__range=(time_lower, time_upper)
-        # ).delete()
-
         # delete journal
         entry.delete()
 
@@ -341,25 +376,6 @@ class JournalView(APIView):
                 "score": result["score"]
             }
         )
-
-        # # PREVENT DUPLICATE MoodEntry
-        # exists_today = MoodEntry.objects.filter(
-        #     user=user,
-        #     mood=mood,
-        #     created_at__date=timezone.now().date()
-        # ).exists()
-
-        # if not exists_today:
-        #     if not MoodEntry.objects.filter(
-        #         user=user,
-        #         mood=mood,
-        #         created_at__date=timezone.now().date()
-        #     ).exists():
-
-        #         MoodEntry.objects.create(
-        #             user=user,
-        #             mood=mood
-        #         )
 
         # recompute dashboard state
         state = compute_state(user)
@@ -434,7 +450,7 @@ class AssessmentRecommendationView(APIView):
     permission_classes = [IsAuthenticated]
 
     TEST_FREQUENCY = {
-        "who5": 7,
+        "who5": 1,
         "pss": 7,
         "isi": 7,
         "wemwbs": 14,
@@ -444,7 +460,12 @@ class AssessmentRecommendationView(APIView):
 
     def get(self, request):
         user = request.user
-        today = timezone.now()
+        
+        # Set the local timezone
+        local_tz = pytz.timezone('Asia/Kolkata')
+        
+        # Get the current date strictly in the local timezone
+        local_today_date = timezone.now().astimezone(local_tz).date()
 
         history = Assessment.objects.filter(user=user)
 
@@ -468,7 +489,11 @@ class AssessmentRecommendationView(APIView):
                 recommendations.append(test)
                 continue
 
-            gap = (today - last.created_at).days
+            # Convert the last taken timestamp to the local timezone, then extract the date
+            local_last_date = last.created_at.astimezone(local_tz).date()
+
+            # Calculate the gap based on calendar days, not 24-hour clock cycles
+            gap = (local_today_date - local_last_date).days
 
             if gap >= days:
                 recommendations.append(test)
@@ -672,20 +697,12 @@ class ChatMessageView(APIView):
         # -------------------------
         # 1. Save user message
         # -------------------------
-        ChatMessage.objects.create(
-            session=session,
-            role="user",
-            content=user_message
-        )
-
+        ChatMessage.objects.create(session=session, role="user", content=user_message)
+        
         # -------------------------
         # 3. Get context (max 8)
         # -------------------------
-        messages = get_context_messages(session).only(
-            "role",
-            "content",
-            "created_at"
-        )
+        messages = get_context_messages(session).only("role", "content", "created_at")
 
 
         from ChatBot.rules.safety import check_critical

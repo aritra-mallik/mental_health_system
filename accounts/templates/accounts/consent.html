@@ -98,9 +98,9 @@
                     </label>
 
                     <label class="flex items-start space-x-5 group cursor-pointer">
-                        <input type="checkbox" id="encryption_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
+                        <input type="checkbox" id="secure_storage_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
                         <span class="text-[#344e41] leading-relaxed text-base">
-                            I consent to <b class="text-[#3a5a40]">Encrypted Storage</b>, ensuring my words stay only between us.
+                            I consent to <b class="text-[#3a5a40]">secure storage</b> of my information, protected securely by our care.
                         </span>
                     </label>
 
@@ -108,6 +108,12 @@
                         <input type="checkbox" id="terms_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
                         <span class="text-[#344e41] leading-relaxed text-base">
                             I agree to the <b class="text-[#3a5a40]">Terms of Service</b> for this supportive space.
+                        </span>
+                    </label>
+                    <label class="flex items-start space-x-5 group cursor-pointer">
+                        <input type="checkbox" id="age_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
+                        <span class="text-[#344e41] leading-relaxed text-base">
+                            I confirm that I am <b class="text-[#3a5a40]">16 years of age or older</b>.
                         </span>
                     </label>
                 </div>
@@ -135,14 +141,15 @@ e.preventDefault()
 
 const dataPolicy = document.getElementById("data_policy").checked
 const aiPolicy = document.getElementById("ai_policy").checked
-const encryptionPolicy = document.getElementById("encryption_policy").checked
+const storagePolicy = document.getElementById("secure_storage_policy").checked
 const termsPolicy = document.getElementById("terms_policy").checked
+const agePolicy = document.getElementById("age_policy").checked
 
-if(!dataPolicy || !aiPolicy || !encryptionPolicy || !termsPolicy){
+if(!dataPolicy || !aiPolicy || !storagePolicy || !termsPolicy || !agePolicy){
 
-showToast("error", "You must accept all policies before continuing.")
+    showToast("error", "You must accept all policies before continuing.")
 
-return
+    return;
 
 }
 localStorage.setItem("toast", JSON.stringify({
@@ -156,8 +163,9 @@ const { res } = await apiRequest(
   {
     consent_data_policy: dataPolicy,
     consent_ai_policy: aiPolicy,
-    consent_encryption: encryptionPolicy,
-    consent_terms: termsPolicy
+    consent_secure_storage: storagePolicy,
+    consent_terms: termsPolicy,
+    consent_age: agePolicy
   }
 );
 

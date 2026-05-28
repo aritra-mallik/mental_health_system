@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Booking History{% endblock %}
+
+{% block content %}
+<div class="fixed top-0 right-[-10%] w-[40rem] h-[40rem] bg-[radial-gradient(circle,rgba(225,29,72,0.12)_0%,transparent_70%)] pointer-events-none z-[-1]"></div>
+<div class="fixed bottom-0 left-[-10%] w-[40rem] h-[40rem] bg-[radial-gradient(circle,rgba(236,72,153,0.12)_0%,transparent_70%)] pointer-events-none z-[-1]"></div>
+
+<div class="max-w-6xl mx-auto px-6 py-8 relative z-10">
+  <div class="flex justify-between items-center mb-10 flex-wrap gap-4">
+    <h1 class="text-4xl font-black text-slate-800 dark:text-white tracking-tight">
+      My <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500">Bookings</span>
+    </h1>
+    <a href="/api/consultation/" class="inline-flex items-center px-6 py-3.5 rounded-2xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-md shadow-sm hover:shadow-lg border border-slate-200/50 dark:border-slate-700/50 font-bold text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 transition-all hover:-translate-y-0.5">
+      ← Back to Consultation
+    </a>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-8">
+    <button data-type="all" onclick="filterBookings(this,'all')" class="filter-btn active px-6 py-3.5 rounded-xl font-bold transition-all shadow-md hover:scale-105 active:scale-95 bg-gradient-to-r from-rose-600 to-pink-500 text-white border border-rose-500/50">
+      All
+    </button>
+    <button data-type="booked" onclick="filterBookings(this,'booked')" class="filter-btn px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm hover:scale-105 active:scale-95 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50 backdrop-blur-sm">
+      Booked
+    </button>
+    <button data-type="completed" onclick="filterBookings(this,'completed')" class="filter-btn px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm hover:scale-105 active:scale-95 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50 backdrop-blur-sm">
+      Completed
+    </button>
+    <button data-type="cancelled" onclick="filterBookings(this,'cancelled')" class="filter-btn px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm hover:scale-105 active:scale-95 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50 backdrop-blur-sm">
+      Cancelled
+    </button>
+  </div>
+
+  <div id="bookingContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</div>
+
+<div id="confirmModal" class="fixed inset-0 hidden items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 transition-all">
+  <div class="bg-white/90 dark:bg-[#151828]/90 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-8 max-w-md w-full mx-4 shadow-2xl relative overflow-hidden text-center">
+    <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/20 dark:bg-pink-500/20 rounded-full blur-[40px] pointer-events-none z-[-1]"></div>
+    <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl border border-rose-200 dark:border-rose-800/50">⚠️</div>
+    <h2 id="modalTitle" class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Confirm Action</h2>
+    <p id="modalMessage" class="mt-4 text-slate-500 dark:text-slate-400 font-medium text-lg"></p>
+    <div class="flex gap-4 mt-8">
+      <button onclick="closeModal()" class="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">No, wait</button>
+      <button id="confirmBtn" class="flex-1 py-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5">Yes, Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="messagePopup" class="hidden"><span id="popupText"></span></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+if (!localStorage.getItem("access")) location.href = "/api/core/login-page/";
+
+let bookingData = [];
+
+async function loadBookings() {
+  try {
+    const {res, data} = await apiRequest("/api/consultation/my-bookings/");
+    if (!res.ok) throw new Error();
+    bookingData = data || [];
+    renderBookings(bookingData);
+  } catch {
+    showPopup("Failed loading bookings", "error");
+  }
+}
+
+function filterBookings(btn, type) {
+  const inactiveClasses = "filter-btn px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm hover:scale-105 active:scale-95 bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50 backdrop-blur-sm".split(" ");
+  const activeClasses = "filter-btn active px-6 py-3.5 rounded-xl font-bold transition-all shadow-md hover:scale-105 active:scale-95 bg-gradient-to-r from-rose-600 to-pink-500 text-white border border-rose-500/50".split(" ");
+
+  document.querySelectorAll(".filter-btn").forEach(b => {
+    b.className = "";
+    b.classList.add(...inactiveClasses);
+  });
+  btn.className = "";
+  btn.classList.add(...activeClasses);
+  renderBookings(type === "all" ? bookingData : bookingData.filter(b => b.status === type));
+}
+
+function renderBookings(data) {
+  const container = document.getElementById("bookingContainer");
+  container.innerHTML = !data.length ? `
+    <div class="col-span-full">
+      <div class="bg-white/60 dark:bg-[#151828]/60 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-16 text-center shadow-lg">
+        <div class="w-24 h-24 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 dark:border-slate-700">
+           <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        </div>
+        <h2 class="text-2xl font-black text-slate-800 dark:text-white mt-2">No bookings found</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 font-medium">You don't have any matching sessions.</p>
+      </div>
+    </div>
+  ` : data.map(item => `
+    <div class="bg-white/60 dark:bg-[#151828]/60 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-6 md:p-8 shadow-lg relative overflow-hidden group flex flex-col hover:-translate-y-1 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10">
+      <div class="absolute -top-16 -right-16 w-48 h-48 bg-rose-500/10 dark:bg-pink-500/10 rounded-full blur-[60px] pointer-events-none transition-transform duration-1000 group-hover:scale-125 z-0"></div>
+      <div class="relative z-10 flex justify-between items-start mb-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-md border border-white/20 relative overflow-hidden shrink-0">
+            <div class="absolute inset-0 bg-gradient-to-br from-rose-600 to-pink-500 opacity-20 dark:opacity-100"></div>
+            <div class="relative z-10">👨‍⚕️</div>
+          </div>
+          <h2 class="font-black text-xl text-slate-800 dark:text-white leading-tight">${item.counselor.name}</h2>
+        </div>
+        <span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider shadow-sm border shrink-0 ${item.status==="booked" ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50" : item.status==="completed" ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50" : "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50"}">${item.status}</span>
+      </div>
+      <div class="relative z-10 space-y-2.5 mb-6 flex-1">
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">📅 Date</span>
+          <b class="text-slate-800 dark:text-white text-sm font-black">${item.slot.date}</b>
+        </div>
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">🕒 Time</span>
+          <b class="text-slate-800 dark:text-white text-sm font-black">${item.slot.time}</b>
+        </div>
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">Mode</span>
+          <b class="text-slate-800 dark:text-white text-sm font-black uppercase">${item.slot.mode==="online"?"💻":"🏥"} ${item.slot.mode}</b>
+        </div>
+        <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60 px-1">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">Total Fee</span>
+          <span class="font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500">₹${item.total_fee}</span>
+        </div>
+      </div>
+      ${item.status==="booked" ? `
+      <div class="relative z-10 flex flex-col gap-3 mt-auto">
+          ${item.slot.mode==="online" ? `
+            ${item.can_join ? `
+            <a href="${item.meeting_link}" target="_blank" class="w-full flex justify-center relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-400 text-white font-black text-xs py-3.5 rounded-xl">🎥 Join Session</a>
+            ` : `<div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl text-center font-bold text-slate-500">Join available 30 minutes before session</div>`}
+          ` : `
+          <div class="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800/50 rounded-2xl p-4">
+              <div class="text-center font-black text-cyan-600 uppercase text-xs">🏥 Offline Session</div>
+              <div class="mt-4 p-4 rounded-xl bg-white/60 dark:bg-slate-800/50">
+                  <div class="text-[10px] uppercase font-bold tracking-widest">🔑 Clinic Access Key</div>
+                  <div class="font-black text-lg mt-2">${item.access_key}</div>
+              </div>
+              ${item.counselor.office_address ? `
+              <div class="mt-4 p-4 rounded-xl bg-white/60 dark:bg-slate-800/50">
+                  <div class="text-[10px] uppercase font-bold tracking-widest">📍 Clinic Address Direction</div>
+                  <a href="${item.counselor.google_map_link}" target="_blank" class="block text-center mt-4 py-3 rounded-xl bg-rose-600 text-white font-bold">Open in Google Maps</a>
+              </div>
+              ` : ""}
+          </div>
+          `}
+          ${item.can_modify ? `
+          <div class="flex gap-2">
+              <button onclick="showRescheduleConfirmation(${item.id})" class="flex-1 bg-white/80 dark:bg-slate-800/80 text-rose-600 border border-rose-200 py-3 rounded-xl font-bold text-xs">Reschedule</button>
+              <button onclick="showCancelConfirmation(${item.id})" class="flex-1 bg-rose-500 text-white py-3 rounded-xl font-bold text-xs">Cancel</button>
+          </div>
+          ` : ""}
+      </div>
+      ` : ""}
+    </div>
+  `).join("");
+}
+
+function openModal(title, msg, action) {
+  document.getElementById("modalTitle").innerText = title;
+  document.getElementById("modalMessage").innerText = msg;
+  document.getElementById("confirmBtn").onclick = action;
+  document.getElementById("confirmModal").classList.remove("hidden");
+  document.getElementById("confirmModal").classList.add("flex");
+}
+
+function closeModal() {
+  document.getElementById("confirmModal").classList.remove("flex");
+  document.getElementById("confirmModal").classList.add("hidden");
+}
+
+function showCancelConfirmation(id) {
+  openModal("Cancel Booking", "Are you sure you want to cancel this booking?", () => { closeModal(); cancelBooking(id); });
+}
+
+function showRescheduleConfirmation(id) {
+  openModal("Reschedule Booking", "Do you want to select another slot for this session?", () => { closeModal(); location.href = `/api/consultation/reschedule-page/?booking=${id}`; });
+}
+
+async function cancelBooking(id) {
+  const {res} = await apiRequest(`/api/consultation/cancel-booking/${id}/`, "POST");
+  if (res.ok) {
+    bookingData = bookingData.map(b => b.id === id ? {...b, status: "cancelled"} : b);
+    renderBookings(bookingData);
+    showPopup("Booking Cancelled");
+  }
+}
+
+async function checkIn(id) {
+  try {
+    const {res} = await apiRequest(`/api/consultation/check-in/${id}/`, "POST");
+    if (res.ok) { showPopup("Checked In Successfully"); loadBookings(); }
+  } catch {
+    showPopup("Check In Failed", "error");
+  }
+}
+
+function showPopup(text, type = "success") {
+  const p = document.getElementById("messagePopup");
+  p.className = `fixed top-8 left-1/2 -translate-x-1/2 px-8 py-4 rounded-2xl text-white font-bold shadow-2xl z-[999] transition-all transform border border-white/20 backdrop-blur-md ${type === "error" ? "bg-red-500/90" : "bg-rose-600/90"}`;
+  document.getElementById("popupText").innerText = text;
+  p.classList.remove("hidden");
+  setTimeout(() => p.classList.add("hidden"), 1800);
+}
+
+loadBookings();
+</script>
+{% endblock %}

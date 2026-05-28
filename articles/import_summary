@@ -1,0 +1,41 @@
+import os, re
+from datetime import datetime
+from django.conf import settings
+from articles.models import Article # Change 'articles' if your app is named differently
+
+def parse_date(date_str):
+    # Cleans up formats like "10th Apr 2026" or "Feb 14, 2022"
+    clean_date = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date_str).strip()
+    formats = ['%b %d, %Y', '%d %b %Y', '%d %B %Y', '%B %d, %Y', '%Y-%m-%d']
+    for fmt in formats:
+        try:
+            return datetime.strptime(clean_date, fmt).date()
+        except ValueError:
+            continue
+    return datetime.now().date() # Fallback
+
+file_path = os.path.join(settings.BASE_DIR, 'articles', 'summary.txt')
+
+with open(file_path, 'r', encoding='utf-8') as f:
+    blocks = f.read().strip().split("\n\n\n")
+
+success_count = 0
+for block in blocks:
+    lines = [x.strip() for x in block.split("\n") if x.strip()]
+    if len(lines) < 9:
+        continue
+        
+    Article.objects.create(
+        title=lines[0],
+        mood=lines[1].lower(),
+        read_time=lines[2],
+        author=lines[3],
+        date=parse_date(lines[4]),
+        link=lines[5],
+        video_link=lines[6],
+        music_link=lines[7],
+        content=" ".join(lines[8:])
+    )
+    success_count += 1
+
+print(f"Successfully migrated {success_count} articles into the database!")

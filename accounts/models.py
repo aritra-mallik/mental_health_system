@@ -52,8 +52,9 @@ class User(AbstractUser):
 
     consent_data_policy = models.BooleanField(default=False)
     consent_ai_policy = models.BooleanField(default=False)
-    consent_encryption = models.BooleanField(default=False)
+    consent_secure_storage = models.BooleanField(default=False)
     consent_terms = models.BooleanField(default=False)
+    consent_age = models.BooleanField(default=False)
 
     journal_salt = models.CharField(max_length=255, blank=True, null=True)
 
@@ -62,17 +63,17 @@ class User(AbstractUser):
     latest_smera_alert = models.JSONField(blank=True, null=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["first_name", "last_name", "date_of_birth", "gender"]
 
     objects = UserManager()
 
     def get_age(self):
         today = date.today()
-        return today.year - self.date_of_birth.year - (
-            (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
-        )
+        return today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
 
     def save(self, *args, **kwargs):
+        self.display_name = " ".join(filter(None, [self.first_name, self.middle_name, self.last_name]))
+
         if not self.journal_salt:
             self.journal_salt = base64.b64encode(os.urandom(16)).decode()
         super().save(*args, **kwargs)

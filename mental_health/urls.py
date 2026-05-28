@@ -16,19 +16,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.urls import path, include
 from accounts.views import landing_page
-from articles.views import (
-    about_page,
-)
+from articles.views import about_page
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', landing_page, name='landing_page'),
+    path('about/', about_page, name='about_page'),
+
+    path('admin/', admin.site.urls),
     path("api/accounts/", include("accounts.urls")),
     path("api/core/", include("core.urls")),
     path("api/user/", include("user_control.urls")),
     path("api/articles/", include("articles.urls")),
     path("api/consultation/", include("consultation.urls")),
-    path('about/', about_page, name='about'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

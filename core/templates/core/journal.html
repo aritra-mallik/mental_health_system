@@ -4,8 +4,6 @@
 {% block title %}Secure Journal{% endblock %}
 
 {% block content %}
-
-<div class="max-w-6xl mx-auto px-6 py-6 relative">
 <style>
 /* Clean up text areas */
 textarea {
@@ -36,6 +34,7 @@ textarea:focus {
     opacity: 1;
 }
 </style>
+<div class="max-w-6xl mx-auto px-6 py-6 relative">
 
 <div class="flex justify-between items-center mb-6">
     <div class="flex items-center gap-3">
@@ -48,8 +47,7 @@ textarea:focus {
         </span>
     </div>
 
-    <button onclick="lockJournal()" 
-        class="text-sm bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-xl hover:bg-gray-300 text-red-500 dark:hover:bg-gray-600 transition-colors font-medium">
+   <button onclick="lockJournal()" class="text-sm bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-xl hover:bg-gray-300 text-red-500 dark:hover:bg-gray-600 transition-colors font-medium">
         🔒Lock
     </button>
 </div>
@@ -120,10 +118,16 @@ textarea:focus {
 
         <div id="blocksContainer" class="flex-1 space-y-3 text-gray-800 dark:text-gray-200"></div>
 
-        <button onclick="addBlock()" 
-            class="text-left text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm mt-4 font-medium transition-colors w-fit">
-            + Add block
-        </button>
+        <div class="flex items-center gap-6 mt-4">
+            <button onclick="addBlock()" class="text-left text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm font-medium transition-colors w-fit">
+                + Add block
+            </button>
+            
+            <button id="dictateBtn" onclick="toggleDictation()" class="text-left text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 text-sm font-medium transition-colors w-fit flex items-center gap-1.5 focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                <span id="dictateLabel">Start Dictation</span>
+            </button>
+        </div>
 
         <div class="flex justify-between mt-8 pt-4 border-t dark:border-gray-700">
             <button onclick="deleteEntry()" class="text-red-500 hover:text-red-600 text-sm font-medium transition-colors">Delete Entry</button>
@@ -150,9 +154,93 @@ let entries = [];
 let currentId = null;
 let isSaving = false;
 
-/* =========================
-   🔐 KEY MANAGEMENT
-========================= */
+let isDictating = false;
+let dictationRecorder = null;
+let dictationChunks = [];
+
+//SPEECH TO TEXT (DICTATION)
+async function toggleDictation() {
+    const btn = document.getElementById("dictateBtn");
+    const label = document.getElementById("dictateLabel");
+
+    // If currently recording, stop and process
+    if (isDictating) {
+        if (dictationRecorder && dictationRecorder.state !== "inactive") {
+            dictationRecorder.stop();
+        }
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        dictationRecorder = new MediaRecorder(stream);
+        dictationChunks = [];
+
+        dictationRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) dictationChunks.push(event.data);
+        };
+
+        dictationRecorder.onstop = async () => {
+            const audioBlob = new Blob(dictationChunks, { type: 'audio/webm' });
+            stream.getTracks().forEach(track => track.stop()); // Turn off mic light
+            await processDictation(audioBlob);
+        };
+
+        // Start Recording
+        dictationRecorder.start();
+        isDictating = true;
+
+        // Update UI to show recording state
+        btn.classList.add("text-red-500", "animate-pulse");
+        btn.classList.remove("text-blue-500", "hover:text-blue-600", "dark:hover:text-blue-400");
+        label.innerText = "Listening... (Click to stop)";
+
+    } catch (err) {
+        console.error("Mic access denied", err);
+        alert("Please allow microphone access to use dictation.");
+    }
+}
+
+async function processDictation(blob) {
+    const btn = document.getElementById("dictateBtn");
+    const label = document.getElementById("dictateLabel");
+    
+    // Update UI to show processing state
+    btn.classList.remove("animate-pulse");
+    label.innerText = "Transcribing...";
+
+    const formData = new FormData();
+    formData.append('audio', blob, 'dictation.webm');
+
+    try {
+        // Send audio to your existing Groq Whisper endpoint
+        const response = await fetch('/api/core/chat/stt/', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` },
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.text && data.text.trim().length > 0) {
+            // Success! Create a new block and inject the transcribed text
+            const newDiv = addBlock(data.text.trim(), "text");
+            newDiv.querySelector("textarea").focus();
+            
+        } else {
+            alert("Couldn't quite hear that. Please try again.");
+        }
+    } catch (e) {
+        console.error("Dictation failed", e);
+        alert("Failed to process speech. Please check your connection.");
+    } finally {
+        // Reset UI back to default
+        isDictating = false;
+        btn.classList.remove("text-red-500");
+        btn.classList.add("text-blue-500", "hover:text-blue-600", "dark:hover:text-blue-400");
+        label.innerText = "Start Dictation";
+    }
+}
 
 async function getSalt() {
     const res = await apiRequest("/api/user/journal-salt/", "GET");
@@ -582,17 +670,15 @@ function addBlock(content = "", type = "text") {
             e.preventDefault();
             
             const previousBlock = div.previousElementSibling;
-            const allBlocks = document.querySelectorAll("#blocksContainer > div");
-
-            if (allBlocks.length > 1) {
-                div.remove();
-                if (previousBlock) {
-                    const prevTextarea = previousBlock.querySelector("textarea");
-                    if (prevTextarea) {
-                        prevTextarea.focus();
-                        const len = prevTextarea.value.length;
-                        prevTextarea.setSelectionRange(len, len);
-                    }
+            
+            div.remove();
+            
+            if (previousBlock) {
+                const prevTextarea = previousBlock.querySelector("textarea");
+                if (prevTextarea) {
+                    prevTextarea.focus();
+                    const len = prevTextarea.value.length;
+                    prevTextarea.setSelectionRange(len, len);
                 }
             }
         }

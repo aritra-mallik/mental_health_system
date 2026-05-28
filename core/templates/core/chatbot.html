@@ -184,6 +184,23 @@
                 
                 <textarea id="chatInput" rows="1" class="flex-1 max-h-32 bg-transparent text-gray-800 dark:text-gray-200 px-3 py-3 resize-none outline-none custom-scrollbar placeholder-gray-500 dark:placeholder-gray-400" placeholder="Message Smera..."></textarea>
                 
+                <button id="micBtn" onclick="toggleListening()" class="p-2.5 mb-1 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-all duration-150 shrink-0 flex items-center justify-center relative" aria-label="Voice input">
+    
+                    <svg id="micOffIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 relative z-10">
+                        <path d="M11.25 3v6.368l-3-3V4.5a3.75 3.75 0 1 1 7.5 0v3.75c0 .54-.114 1.053-.318 1.517l-1.58-1.58A2.246 2.246 0 0 0 14.25 7.5V4.5a2.25 2.25 0 0 0-4.5 0Z" />
+                        <path d="M2.28 2.28a.75.75 0 0 0 0 1.06l19.38 19.38a.75.75 0 0 0 1.06-1.06L3.34 2.28a.75.75 0 0 0-1.06 0Z" />
+                        <path d="M5.09 10.11a.75.75 0 0 0-1.46.34 6.752 6.752 0 0 0 4.16 5.34v2.8h-3a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-1.632v-2.176l-.426-.426a5.251 5.251 0 0 1-5.142-5.088Z" />
+                        <path d="M18.91 10.11a.75.75 0 0 1 1.46.34 6.745 6.745 0 0 1-2.148 4.675l-1.084-1.084a5.245 5.245 0 0 0 1.772-3.591Z" />
+                    </svg>
+
+                    <svg id="micOnIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 relative z-10 hidden">
+                        <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z" />
+                        <path d="M6 10.5a.75.75 0 01.75.75v1.5a5.25 5.25 0 1010.5 0v-1.5a.75.75 0 011.5 0v1.5a6.751 6.751 0 01-6 6.709v2.291h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.291a6.751 6.751 0 01-6-6.709v-1.5A.75.75 0 016 10.5z" />
+                    </svg>
+
+                    <span id="micPulse" class="absolute inset-0 rounded-xl bg-red-500 opacity-0 transition-opacity duration-300 pointer-events-none"></span>
+                </button>
+                
                 <button onclick="sendMessage()" class="p-2.5 mb-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-[0_4px_0_#1e40af] active:shadow-[0_0px_0_#1e40af] active:translate-y-1 transition-all duration-150 shrink-0 flex items-center justify-center group" aria-label="Send message">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
                         <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
@@ -199,8 +216,15 @@
 {% block extra_js %}
 <script>
 let rawSession = sessionStorage.getItem("chat_session_id");
-
 let sessionId = rawSession ? parseInt(rawSession) : null;
+
+// --- NEW: Audio State Variables ---
+let isVoiceMode = false;
+let mediaRecorder = null;
+let audioChunks = [];
+let isListening = false;
+let recordingInterval = null;
+// ----------------------------------
 
 if (isNaN(sessionId)) {
     sessionId = null;
@@ -290,6 +314,251 @@ function goDashboard(){
     window.location.href = "/api/core/dashboard-page/";
 }
 
+// PROFESSIONAL AUDIO QUEUE (Backend TTS)
+let audioQueue = [];
+let isPlayingAudio = false;
+let currentAudio = null;
+
+async function speak(text) {
+
+    try {
+        const response = await fetch('/api/core/chat/tts/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access')}` 
+            },
+            body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+        
+        if (data.audio_url) {
+            audioQueue.push(data.audio_url);
+            playNextAudio(); 
+        }
+    } catch (e) {
+        console.error("Backend TTS fetch failed:", e);
+    }
+}
+
+function playNextAudio() {
+    if (isPlayingAudio || audioQueue.length === 0) return;
+
+    isPlayingAudio = true;
+    const nextAudioUrl = audioQueue.shift(); 
+    
+    currentAudio = new Audio(nextAudioUrl);
+    
+    currentAudio.onended = () => {
+        isPlayingAudio = false;
+        playNextAudio(); 
+    };
+    
+    currentAudio.onerror = () => {
+        isPlayingAudio = false;
+        playNextAudio();
+    };
+
+    currentAudio.play().catch(e => {
+        console.error("Browser blocked audio autoplay", e);
+        isPlayingAudio = false;
+        playNextAudio();
+    });
+}
+
+function stopSpeaking() {
+    audioQueue = []; 
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+    isPlayingAudio = false;
+}
+
+// --- NEW: Speech-to-Text Recording Engine ---
+async function toggleListening() {
+    const micBtn = document.getElementById("micBtn");
+    const micPulse = document.getElementById("micPulse");
+    const micOffIcon = document.getElementById("micOffIcon");
+    const micOnIcon = document.getElementById("micOnIcon");
+    const chatInput = document.getElementById("chatInput");
+
+    if (isListening) {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+        }
+        resetMicUI();
+        return;
+    }
+
+    try {
+        stopSpeaking(); 
+
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            stream.getTracks().forEach(track => track.stop()); 
+            await processAudioRecording(audioBlob);
+        };
+
+        mediaRecorder.start();
+        isListening = true;
+        isVoiceMode = true; 
+
+        // Icon & Button UI Update
+        micBtn.classList.remove("bg-gray-100", "dark:bg-gray-700", "text-gray-600", "dark:text-gray-300");
+        micBtn.classList.add("text-white", "bg-red-500", "hover:bg-red-600");
+        micPulse.classList.remove("opacity-0");
+        micPulse.classList.add("animate-ping", "opacity-50");
+        micOffIcon.classList.add("hidden");
+        micOnIcon.classList.remove("hidden");
+
+        // Textarea "Listening..." Animation
+        chatInput.disabled = true;
+        let dots = ".";
+        chatInput.value = "Listening" + dots;
+        
+        recordingInterval = setInterval(() => {
+            dots += ".";
+            if (dots.length > 3) dots = "."; // Reset after 3 dots
+            chatInput.value = "Listening" + dots;
+        }, 400);
+
+    } catch (err) {
+        console.error("Mic access denied", err);
+        alert("Please allow microphone access to talk to Smera.");
+    }
+}
+
+async function processAudioRecording(blob) {
+    const chatInput = document.getElementById("chatInput");
+    
+    // Show transcribing state
+    chatInput.value = "Transcribing...";
+    chatInput.disabled = true;
+
+    const formData = new FormData();
+    formData.append('audio', blob, 'recording.webm');
+
+    try {
+        const response = await fetch('/api/core/chat/stt/', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` },
+            body: formData
+        });
+
+        const data = await response.json();
+        chatInput.disabled = false;
+
+        if (data.text && data.text.trim().length > 0) {
+            // Drop text into input for review, DO NOT AUTO-SEND!
+            chatInput.value = data.text;
+            chatInput.focus();
+            
+            // Adjust textarea height to fit the new text
+            chatInput.style.height = "auto";
+            chatInput.style.height = (chatInput.scrollHeight) + "px";
+        } else {
+            chatInput.value = "";
+            appendMessage("bot", "I couldn't quite hear that. Could you try again?");
+        }
+    } catch (e) {
+        chatInput.disabled = false;
+        chatInput.value = "";
+        console.error("STT failed", e);
+        appendMessage("bot", "I had trouble processing that audio. Please try again.");
+    }
+}
+
+function resetMicUI() {
+    isListening = false;
+    const micBtn = document.getElementById("micBtn");
+    const micPulse = document.getElementById("micPulse");
+    const micOffIcon = document.getElementById("micOffIcon");
+    const micOnIcon = document.getElementById("micOnIcon");
+    const chatInput = document.getElementById("chatInput");
+    
+    // Reset Icons & Button
+    micBtn.classList.remove("text-white", "bg-red-500", "hover:bg-red-600");
+    micBtn.classList.add("bg-gray-100", "dark:bg-gray-700", "text-gray-600", "dark:text-gray-300");
+    micPulse.classList.remove("animate-ping", "opacity-50");
+    micPulse.classList.add("opacity-0");
+    micOffIcon.classList.remove("hidden");
+    micOnIcon.classList.add("hidden");
+
+    // Clear Animation
+    clearInterval(recordingInterval);
+    chatInput.disabled = false;
+    chatInput.value = "";
+}
+// --------------------------------------------
+
+async function sendMessage() {
+    const input = document.getElementById("chatInput");
+    const msg = input.value.trim();
+    if(!msg) return;
+
+    const greeting = document.getElementById("defaultGreeting");
+    if (greeting) greeting.remove();
+
+    if (!sessionId || isNaN(sessionId)) {
+        await initChat();
+    }
+
+    // Capture the current voice mode state for this specific message
+    const useVoice = isVoiceMode;
+    // Reset it for the next message (so typing normally won't trigger voice)
+    isVoiceMode = false; 
+    stopSpeaking(); 
+
+    appendMessage("user", msg);
+    input.value = "";
+    input.style.height = "48px"; 
+    
+    showTyping(true);
+    // Pass the voice flag directly
+    await fetchBotReply(msg, useVoice);
+}
+
+// Helper function to hit the LLM and trigger TTS
+async function fetchBotReply(messageText, useVoice = false) {
+    if (!sessionId || isNaN(sessionId)) await initChat();
+
+    try {
+        const {data} = await apiRequest("/api/core/chat/message/", "POST", {
+            session_id: sessionId,
+            message: messageText
+        });
+        
+        if (data.reply) {
+            appendMessage("bot", data.reply, data.action_card);
+            
+            // Trigger TTS if this specific message was recorded via mic
+            if (useVoice) {
+                speak(data.reply); 
+            }
+        } else {
+            showDefaultGreeting(); 
+        }
+        
+        if (sessionId) await loadChatHistory();
+        
+    } catch (e) {
+        appendMessage("bot", "I encountered an error connecting. Let's try that again.");
+    } finally {
+        showTyping(false);
+    }
+}
+
 /* Chat Operations */
 async function initChat(){
     if (sessionId && !isNaN(sessionId)) return; 
@@ -307,47 +576,6 @@ async function initChat(){
     }
 }
 
-async function sendMessage(){
-    const input = document.getElementById("chatInput");
-    const msg = input.value.trim();
-    if(!msg) return;
-
-    // --- NEW: Remove the default greeting immediately when sending ---
-    const greeting = document.getElementById("defaultGreeting");
-    if (greeting) {
-        greeting.remove();
-    }
-    // -------------------------------------------------------------
-
-    if (!sessionId || isNaN(sessionId)) {
-        await initChat();
-    }
-
-    appendMessage("user", msg);
-    input.value = "";
-    input.style.height = "48px"; // reset height
-    
-    showTyping(true);
-
-    try {
-        const {data} = await apiRequest("/api/core/chat/message/", "POST", {
-            session_id: sessionId,
-            message: msg
-        });
-        if (data.reply) {
-            appendMessage("bot", data.reply, data.action_card);
-        } else {
-            showDefaultGreeting();  // ✅ clean UI greeting
-        }
-        if (sessionId) {
-            await loadChatHistory();
-        }
-    } catch (e) {
-        appendMessage("bot", "I encountered an error connecting. Let's try that again.");
-    } finally {
-        showTyping(false);
-    }
-}
 
 function showDefaultGreeting() {
     const box = document.getElementById("chatBox");
@@ -422,7 +650,10 @@ function appendMessage(role, text, actionCard = null) {
 
     const formattedText = text.replace(/\n/g, '<br>');
     
-    // --- NEW: Convert JSON Action Cards back into UI ---
+    // Convert text to a safe format so it doesn't break HTML attributes
+    const safeText = encodeURIComponent(text);
+
+    // ... (Keep your existing actionCard logic here) ...
     let actionHTML = "";
     if (actionCard) {
         if (actionCard.type === "consultation") {
@@ -447,13 +678,23 @@ function appendMessage(role, text, actionCard = null) {
             </div>
         `;
     } else {
+        // --- UPDATED BOT BUBBLE WITH SPEAKER ICON ---
         div.innerHTML = `
-            <div class="max-w-4xl w-full flex gap-4 md:gap-6">
+            <div class="max-w-4xl w-full flex gap-4 md:gap-6 group/msg">
                 ${SmeraIcon}
-                <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700/50 text-yellow-950 dark:text-yellow-50 font-medium px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[80%] text-[15px] leading-relaxed shadow-[0_4px_0_#ca8a04] dark:shadow-[0_4px_0_#713f12] relative overflow-hidden group transform transition-transform hover:-translate-y-0.5 mt-1">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-white opacity-40 dark:opacity-10 group-hover:opacity-50 dark:group-hover:opacity-20 transition-opacity"></div>
+                <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700/50 text-yellow-950 dark:text-yellow-50 font-medium px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[80%] text-[15px] leading-relaxed shadow-[0_4px_0_#ca8a04] dark:shadow-[0_4px_0_#713f12] relative overflow-hidden transform transition-transform hover:-translate-y-0.5 mt-1">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-white opacity-40 dark:opacity-10 transition-opacity"></div>
                     ${formattedText}
                     ${actionHTML}
+                </div>
+                
+                <div class="flex items-end pb-1 pl-1">
+                    <button onclick="speakTTS(this)" data-text="${safeText}" class="p-2 bg-gray-50 hover:bg-blue-50 dark:bg-gray-800/50 dark:hover:bg-blue-900/30 text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400 rounded-full transition-all shadow-sm active:scale-95" title="Read aloud">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                            <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 0 0 1.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06ZM18.584 5.106a.75.75 0 0 1 1.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 0 1-1.06-1.06 8.25 8.25 0 0 0 0-11.668.75.75 0 0 1 0-1.06Z" />
+                            <path d="M15.932 7.757a.75.75 0 0 1 1.061 0 4.5 4.5 0 0 1 0 6.364.75.75 0 0 1-1.06-1.06 3 3 0 0 0 0-4.243.75.75 0 0 1 0-1.061Z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         `;
@@ -521,6 +762,12 @@ async function togglePin(event, chatId) {
     } catch (e) {
         console.error("Pin failed", e);
     }
+}
+
+function speakTTS(buttonElement) {
+    stopSpeaking(); 
+    const text = decodeURIComponent(buttonElement.getAttribute("data-text"));
+    speak(text);
 }
 
 async function loadChatHistory(){
@@ -671,3 +918,46 @@ async function initPage() {
 initPage();
 </script>
 {% endblock %}
+
+
+{% comment %} async function sendMessage(){
+    const input = document.getElementById("chatInput");
+    const msg = input.value.trim();
+    if(!msg) return;
+
+    // --- NEW: Remove the default greeting immediately when sending ---
+    const greeting = document.getElementById("defaultGreeting");
+    if (greeting) {
+        greeting.remove();
+    }
+    // -------------------------------------------------------------
+
+    if (!sessionId || isNaN(sessionId)) {
+        await initChat();
+    }
+
+    appendMessage("user", msg);
+    input.value = "";
+    input.style.height = "48px"; // reset height
+    
+    showTyping(true);
+
+    try {
+        const {data} = await apiRequest("/api/core/chat/message/", "POST", {
+            session_id: sessionId,
+            message: msg
+        });
+        if (data.reply) {
+            appendMessage("bot", data.reply, data.action_card);
+        } else {
+            showDefaultGreeting();  // ✅ clean UI greeting
+        }
+        if (sessionId) {
+            await loadChatHistory();
+        }
+    } catch (e) {
+        appendMessage("bot", "I encountered an error connecting. Let's try that again.");
+    } finally {
+        showTyping(false);
+    }
+} {% endcomment %}

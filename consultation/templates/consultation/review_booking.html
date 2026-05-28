@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Review Booking{% endblock %}
+
+{% block content %}
+  <div class="fixed top-0 right-[-10%] w-[40rem] h-[40rem] bg-[radial-gradient(circle,rgba(225,29,72,0.12)_0%,transparent_70%)] pointer-events-none z-[-1]"></div>
+  <div class="fixed bottom-0 left-[-10%] w-[40rem] h-[40rem] bg-[radial-gradient(circle,rgba(236,72,153,0.12)_0%,transparent_70%)] pointer-events-none z-[-1]"></div>
+
+  <div class="max-w-3xl w-full mx-auto relative z-10">
+    
+    <div class="mb-8">
+      <button onclick="history.back()" class="inline-flex items-center px-6 py-3.5 rounded-2xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-md shadow-sm hover:shadow-lg border border-slate-200/50 dark:border-slate-700/50 font-bold text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 transition-all hover:-translate-y-0.5">
+        ← Back to Slots
+      </button>
+    </div>
+
+    <div class="bg-white/60 dark:bg-[#151828]/60 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-8 md:p-12 shadow-lg relative">
+      
+      <div class="flex items-center gap-4 mb-10">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-md border border-white/20 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-rose-600 to-pink-500 opacity-20 dark:opacity-100"></div>
+          <div class="relative z-10">📝</div>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-800 dark:text-white tracking-tight">
+          Review Booking
+        </h1>
+      </div>
+
+      <div class="space-y-6">
+        
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+            👨‍⚕️ Doctor
+          </span>
+          <b id="doctorName" class="text-slate-800 dark:text-white text-lg font-black">Loading...</b>
+        </div>
+
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest">
+            Designation
+          </span>
+          <b id="designation" class="text-slate-800 dark:text-white text-lg font-black"></b>
+        </div>
+
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+            📅 Date
+          </span>
+          <b id="slotDate" class="text-slate-800 dark:text-white text-lg font-black"></b>
+        </div>
+
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+            🕒 Time
+          </span>
+          <b id="slotTime" class="text-slate-800 dark:text-white text-lg font-black"></b>
+        </div>
+
+        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest">
+            Mode
+          </span>
+          <b id="slotMode" class="text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-4 py-1.5 rounded-xl border border-rose-100 dark:border-rose-800/50 text-sm font-black uppercase tracking-wider"></b>
+        </div>
+
+        <hr class="my-8 border-slate-200/60 dark:border-slate-700/60">
+
+        <div class="flex justify-between items-center">
+          <span class="text-slate-600 dark:text-slate-300 font-medium text-lg">Consultation Fee</span>
+          <b id="consultationFee" class="text-slate-800 dark:text-white text-xl"></b>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <span class="text-slate-600 dark:text-slate-300 font-medium text-lg">Platform Fee</span>
+          <b class="text-slate-800 dark:text-white text-xl">₹50</b>
+        </div>
+
+        <div class="flex justify-between items-center mt-6 p-6 bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/30 rounded-3xl">
+          <span class="text-2xl font-black text-slate-800 dark:text-white">Total</span>
+          <span id="totalFee" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500"></span>
+        </div>
+
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4 mt-10">
+        
+        <button onclick="history.back()" class="flex-1 py-5 rounded-2xl bg-white/80 dark:bg-slate-800 text-rose-500 font-black border border-rose-100 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all shadow-sm hover:-translate-y-0.5 active:translate-y-0 text-lg">
+          Cancel
+        </button>
+
+        <button onclick="openConfirmModal()" class="flex-[2] relative overflow-hidden bg-gradient-to-r from-rose-600 to-pink-500 text-white font-black text-lg py-5 rounded-2xl shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all hover:shadow-[0_12px_25px_-6px_rgba(225,29,72,0.6)] hover:-translate-y-0.5 active:translate-y-0 group/btn border border-rose-400/30">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
+          <span class="relative z-10 tracking-wide uppercase">Confirm Booking</span>
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+<div id="confirmModal" class="fixed inset-0 hidden items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 transition-all">
+  <div class="bg-white/90 dark:bg-[#151828]/90 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-8 max-w-md w-full mx-4 shadow-2xl relative overflow-hidden text-center">
+    
+    <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/20 dark:bg-pink-500/20 rounded-full blur-[40px] pointer-events-none z-[-1]"></div>
+
+    <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl border border-rose-200 dark:border-rose-800/50">
+      ❓
+    </div>
+
+    <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">
+      Confirm Booking
+    </h2>
+    
+    <p class="mt-4 text-slate-500 dark:text-slate-400 font-medium text-lg">
+      Do you want to confirm and finalize this booking?
+    </p>
+
+    <div class="flex gap-4 mt-8">
+      <button onclick="closeModal()" class="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+        No, wait
+      </button>
+
+      <button onclick="confirmBooking()" class="flex-1 py-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5">
+        Yes, Confirm
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div id="messagePopup" class="hidden">
+  <span id="popupText"></span>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+if(!localStorage.getItem("access")){
+  location.href="/api/core/login-page/";
+}
+
+const params = new URLSearchParams(window.location.search);
+const counselorId = params.get("counselor");
+const slotId = params.get("slot");
+
+let counselor = {};
+let selectedSlot = {};
+
+async function loadReview(){
+  try{
+    const {res,data} = await apiRequest(`/api/consultation/counselors/${counselorId}/`);
+    
+    if(!res.ok){
+      throw new Error();
+    }
+    
+    counselor = data;
+    selectedSlot = data.slots.find(s => String(s.id) === String(slotId));
+
+    if(!selectedSlot){
+      showPopup("Slot not found", "error");
+      return;
+    }
+
+    document.getElementById("doctorName").innerText = counselor.name;
+    document.getElementById("designation").innerText = counselor.designation;
+    document.getElementById("slotDate").innerText = selectedSlot.date;
+    document.getElementById("slotTime").innerText = selectedSlot.time;
+    document.getElementById("slotMode").innerText = selectedSlot.mode;
+    document.getElementById("consultationFee").innerText = `₹${counselor.consultation_fee}`;
+    document.getElementById("totalFee").innerText = `₹${parseFloat(counselor.consultation_fee) + 50}`;
+
+  } catch {
+    showPopup("Failed loading booking", "error");
+  }
+}
+
+function openConfirmModal(){
+  document.getElementById("confirmModal").classList.remove("hidden");
+  document.getElementById("confirmModal").classList.add("flex");
+}
+
+function closeModal(){
+  document.getElementById("confirmModal").classList.remove("flex");
+  document.getElementById("confirmModal").classList.add("hidden");
+}
+
+async function confirmBooking(){
+  const {res,data} = await apiRequest(
+    "/api/consultation/book/",
+    "POST",
+    { counselor: counselorId, slot: slotId }
+  );
+
+  closeModal();
+
+  if(res.ok){
+    showPopup("Booking Confirmed 🎉");
+    setTimeout(()=>{
+      location.href = "/api/consultation/booking-history/";
+    }, 1200);
+  } else {
+    showPopup(data.error || "Booking failed", "error");
+  }
+}
+
+function showPopup(text, type="success"){
+  const popup = document.getElementById("messagePopup");
+  
+  // Updated popup styling to match the rose/pink theme for success states
+  popup.className = `fixed top-8 left-1/2 -translate-x-1/2 px-8 py-4 rounded-2xl text-white font-bold shadow-2xl z-[999] transition-all transform border border-white/20 backdrop-blur-md ${type === "error" ? "bg-red-500/90" : "bg-rose-600/90"}`;
+  
+  document.getElementById("popupText").innerText = text;
+  popup.classList.remove("hidden");
+
+  setTimeout(()=>{
+    popup.classList.add("hidden");
+  }, 1800);
+}
+
+loadReview();
+</script>
+{% endblock %}

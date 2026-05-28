@@ -33,7 +33,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -124,6 +124,7 @@ AUTH_USER_MODEL = 'accounts.User'
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
+# TIME_ZONE= 'Asia/Kolkata'
 
 USE_I18N= False
 
@@ -140,6 +141,10 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"  # for production collectstatic
+
+# AUDIO FILES STORAGE
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 #email settings
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

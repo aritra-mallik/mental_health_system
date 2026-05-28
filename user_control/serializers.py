@@ -45,6 +45,7 @@ class ConsentSerializer(serializers.ModelSerializer):
         fields = [
             "consent_data_policy",
             "consent_ai_policy",
-            "consent_encryption",
+            "consent_secure_storage",
             "consent_terms",
+            "consent_age",
         ]

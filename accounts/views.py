@@ -1,19 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-
 from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer, PasswordResetConfirmSerializer, ChangePasswordSerializer
-from django.contrib.auth import authenticate
 from .models import OTP, User
 from .utils import generate_otp, send_email_otp, validate_password_strength
 from django.shortcuts import render
 from .tokens import get_tokens_for_user
 from .throttles import OTPThrottle
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth import update_session_auth_hash
 
 class RegisterView(APIView):
-    authentication_classes = []
     permission_classes = [AllowAny]
     
     throttle_classes = [OTPThrottle]
@@ -33,7 +28,6 @@ class RegisterView(APIView):
         return Response({"status": "error", "message": "Validation failed", "errors": serializer.errors}, status=400)
 
 class VerifyOTPView(APIView):
-    authentication_classes = []
     permission_classes = [AllowAny]
     
     throttle_classes = [OTPThrottle]
@@ -70,7 +64,6 @@ class VerifyOTPView(APIView):
             return Response({"status": "error", "message": "User not found"}, status=404)
 
 class LoginView(APIView):
-    authentication_classes = []  
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -85,7 +78,6 @@ class LoginView(APIView):
         return Response({"status": "error", "message": "Invalid credentials", "error": serializer.errors}, status=400)
 
 class LogoutView(APIView):
-    authentication_classes = []
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
@@ -95,8 +87,7 @@ class LogoutView(APIView):
 
         return Response({"status": "error", "message": "Logout failed", "error": serializer.errors}, status=400)
 
-class ResendOTPView(APIView):
-    authentication_classes = []      
+class ResendOTPView(APIView):   
     permission_classes = [AllowAny]
     
     throttle_classes = [OTPThrottle]
@@ -116,7 +107,6 @@ class ResendOTPView(APIView):
             return Response({"status": "error", "message": "User not found"}, status=404)
 
 class PasswordResetRequestView(APIView):
-    authentication_classes = []      
     permission_classes = [AllowAny]
     
     throttle_classes = [OTPThrottle]
@@ -137,8 +127,7 @@ class PasswordResetRequestView(APIView):
         except User.DoesNotExist:
             return Response({"status": "error", "message": "User not found"}, status=404)
         
-class PasswordResetConfirmView(APIView):
-    authentication_classes = []      
+class PasswordResetConfirmView(APIView):  
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -151,9 +140,7 @@ class PasswordResetConfirmView(APIView):
 
             try:
                 user = User.objects.get(email=email)
-                otp_obj = OTP.objects.filter(
-                    user=user, is_used=False
-                ).last()
+                otp_obj = OTP.objects.filter(user=user, is_used=False).last()
 
                 if not otp_obj or otp_obj.otp != otp_code:
                     return Response({"status": "error", "message": "Invalid OTP"}, status=400)
@@ -218,9 +205,6 @@ class ChangePasswordView(APIView):
         # Save new password
         user.set_password(new_password)
         user.save()
-
-        # Keep user logged in (important)
-        update_session_auth_hash(request, user)
 
         return Response({
             "status": "success" ,

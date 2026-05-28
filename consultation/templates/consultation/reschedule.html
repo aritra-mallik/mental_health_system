@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Consultation Booking{% endblock %}
+{% block title %}Reschedule Booking{% endblock %}
 
-{% block content %} 
+{% block content %}
 <style>
   .slot-card { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; }
   .slot-card:hover { transform: translateY(-4px); }
   .slot-card.selected { 
     transform: scale(1.02); 
-    border-color: #e11d48; 
+    border-color: #e11d48;
     box-shadow: 0 15px 40px rgba(225, 29, 72, 0.15); 
     background: rgba(255, 255, 255, 0.9);
   }
@@ -24,8 +24,8 @@
 
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 relative z-10">
   <div class="mb-8">
-    <a href="/api/consultation/" class="inline-flex items-center px-6 py-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-lg border border-slate-200/50 dark:border-slate-700/50 font-bold text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 transition-all hover:-translate-y-0.5 text-base">
-      ← Back to Consultation
+    <a href="/api/consultation/booking-history/" class="inline-flex items-center px-6 py-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-lg border border-slate-200/50 dark:border-slate-700/50 font-bold text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 transition-all hover:-translate-y-0.5 text-base">
+      ← Back to Booking History
     </a>
   </div>
 
@@ -51,13 +51,27 @@
 
       <div class="w-full mt-6 bg-rose-50/50 dark:bg-[#1a1d2e] border border-rose-100 dark:border-rose-900/30 rounded-3xl p-6 shadow-inner">
         <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Consultation Fee</p>
-        <h2 id="counselorFee" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500 mt-2"></h2>
+        <h2 id="fee" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500 mt-2"></h2>
       </div>
     </div>
 
     <div class="space-y-8">
+      <div class="bg-gradient-to-br from-rose-100 via-pink-50 to-white dark:from-[#341322] dark:via-[#211327] dark:to-[#151828] rounded-[2.5rem] p-8 md:p-10 border border-rose-200/50 dark:border-rose-900/30 shadow-[0_10px_40px_rgba(225,29,72,0.12)] dark:shadow-[0_10px_40px_rgba(225,29,72,0.18)] relative overflow-hidden">
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Reschedule Session</h2>
+            <p class="text-sm font-bold text-slate-400 tracking-widest uppercase mt-2">Current Booking Details</p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <span id="oldDate" class="px-6 py-4 rounded-2xl bg-slate-50 dark:bg-[#1a1d2e] text-slate-700 dark:text-slate-300 font-bold text-base shadow-inner border border-slate-200/50 dark:border-slate-800/50"></span>
+            <span id="oldTime" class="px-6 py-4 rounded-2xl bg-slate-50 dark:bg-[#1a1d2e] text-slate-700 dark:text-slate-300 font-bold text-base shadow-inner border border-slate-200/50 dark:border-slate-800/50"></span>
+            <span id="oldMode" class="px-6 py-4 rounded-2xl bg-slate-50 dark:bg-[#1a1d2e] text-slate-700 dark:text-slate-300 font-bold text-base shadow-inner border border-slate-200/50 dark:border-slate-800/50 uppercase"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="bg-white dark:bg-[#151828] border border-slate-200/60 dark:border-slate-800 rounded-[2.5rem] p-8 md:p-10 shadow-xl">
-        <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Choose Available Slot</h2>
+        <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Choose New Slot</h2>
         
         <div class="grid md:grid-cols-3 gap-4 mt-8">
           <input id="manualDate" type="date" class="w-full h-14 px-5 rounded-2xl bg-slate-50 dark:bg-[#1a1d2e] border-none text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-inner transition-all text-base font-medium dark:[color-scheme:dark]">
@@ -71,7 +85,7 @@
 
         <div class="flex items-center justify-between mt-10 mb-6 border-b border-slate-200/50 dark:border-slate-800/50 pb-4">
           <h2 class="text-2xl font-black text-slate-800 dark:text-white">Available Slots</h2>
-          <span id="slotCounter" class="px-5 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-bold text-sm border border-rose-100 dark:border-rose-800/30 shadow-sm">0 Slots</span>
+          <span id="slotCounter" class="px-5 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-bold text-sm border border-rose-100 dark:border-slate-800/30 shadow-sm">0 Slots</span>
         </div>
 
         <div id="slotContainer" class="grid md:grid-cols-2 gap-5 mt-6"></div>
@@ -93,15 +107,14 @@
           <span id="totalFee" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500"></span>
         </div>
 
-        <button onclick="goBooking()" class="w-full relative overflow-hidden mt-10 py-5 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 text-white font-black text-lg shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all hover:shadow-[0_12px_25px_-6px_rgba(225,29,72,0.6)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/btn border border-rose-400/30">
+        <button onclick="confirmReschedule()" class="w-full relative overflow-hidden mt-10 py-5 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 text-white font-black text-lg shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all hover:shadow-[0_12px_25px_-6px_rgba(225,29,72,0.6)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group/btn border border-rose-400/30">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
-          <span class="relative z-10 tracking-wide uppercase">Continue Booking</span>
-          <svg class="w-6 h-6 relative z-10 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          <span class="relative z-10 tracking-wide uppercase">Confirm Reschedule</span>
+          <svg class="w-6 h-6 relative z-10 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
       </div>
     </div>
   </div>
-</div>
 
 <div id="messagePopup" class="hidden"><span id="popupText"></span></div>
 {% endblock %}
@@ -110,31 +123,25 @@
 <script>
 if (!localStorage.getItem("access")) location.href = "/api/core/login-page/";
 
-let selectedSlot = null, counselor = {}, slotData = [];
+let booking = {}, counselor = {}, slotData = [], selectedSlot = null;
 const params = new URLSearchParams(window.location.search);
-const counselorId = params.get("counselor");
+const bookingId = params.get("booking");
 const dateInput = document.getElementById("manualDate");
-const timeInput = document.getElementById("manualTime");
 const modeFilter = document.getElementById("modeFilter");
-
-const today = new Date();
-const maxDate = new Date();
-maxDate.setDate(today.getDate() + 60);
-
-dateInput.min = today.toISOString().split("T")[0];
-dateInput.max = maxDate.toISOString().split("T")[0];
-dateInput.value = today.toISOString().split("T")[0];
+const timeInput = document.getElementById("manualTime");
 
 async function loadBooking() {
   try {
-    const result = await apiRequest(`/api/consultation/counselors/${counselorId}/`);
-    const data = result?.data;
-    if (!data) throw new Error("No API data returned");
-
-    counselor = data || {};
-    slotData = Array.isArray(data.slots) ? data.slots : [];
-
-    document.getElementById("counselorName").innerText = counselor.name || "Unknown";
+    const {res, data} = await apiRequest("/api/consultation/my-bookings/");
+    if (!res.ok) throw new Error();
+    
+    booking = data.find(b => String(b.id) === String(bookingId));
+    if (!booking) return showPopup("Booking not found", "error");
+    
+    counselor = booking.counselor;
+    slotData = counselor.slots || [];
+    
+    document.getElementById("counselorName").innerText = counselor.name;
     document.getElementById("designation").innerHTML = `
       <p class="text-sm font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mt-1">${counselor.designation || ""}</p>
       <div class="flex flex-wrap items-center justify-center gap-3 mt-4">
@@ -154,13 +161,17 @@ async function loadBooking() {
       ${counselor.office_address ? `<div class="mt-6 p-4 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800/50"><div class="text-xs uppercase font-bold tracking-widest text-cyan-600">📍 Doctor Office</div><div class="mt-2 text-sm font-medium">${counselor.office_address}</div></div>` : ""}
     `;
 
-    document.getElementById("experience").innerText = `${counselor.experience || 0} yrs`;
-    document.getElementById("counselorFee").innerText = `₹${counselor.consultation_fee || 0}`;
-    document.getElementById("summaryFee").innerText = `₹${counselor.consultation_fee || 0}`;
-    document.getElementById("totalFee").innerText = `₹${parseFloat(counselor.consultation_fee || 0) + 50}`;
+    document.getElementById("experience").innerText = `${counselor.experience} yrs`;
+    document.getElementById("fee").innerText = `₹${counselor.consultation_fee}`;
+    document.getElementById("summaryFee").innerText = `₹${counselor.consultation_fee}`;
+    document.getElementById("totalFee").innerText = `₹${parseFloat(counselor.consultation_fee)+50}`;
+    document.getElementById("oldDate").innerText = `📅 ${booking.slot.date}`;
+    document.getElementById("oldTime").innerText = `🕒 ${booking.slot.time}`;
+    document.getElementById("oldMode").innerText = `${booking.slot.mode==="online"?"💻":"🏥"} ${booking.slot.mode}`;
+    
     renderSlots();
-  } catch (err) {
-    showPopup(err?.message || "Failed loading data", "error");
+  } catch {
+    showPopup("Failed loading booking", "error");
   }
 }
 
@@ -169,7 +180,6 @@ function renderSlots() {
   
   if (dateInput.value) slots = slots.filter(s => s.date === dateInput.value);
   if (modeFilter.value) slots = slots.filter(s => s.mode === modeFilter.value);
-  
   if (timeInput.value) {
     slots = slots.filter(s => s.time.substring(0, 5) === timeInput.value);
   }
@@ -204,9 +214,15 @@ function selectSlot(card, id) {
   selectedSlot = id;
 }
 
-function goBooking() {
+async function confirmReschedule() {
   if (!selectedSlot) return showPopup("Select a slot", "error");
-  location.href = `/api/consultation/review-booking/?counselor=${counselorId}&slot=${selectedSlot}`;
+  const {res, data} = await apiRequest(`/api/consultation/reschedule-booking/${bookingId}/`, "POST", {slot: selectedSlot});
+  if (res.ok) {
+    showPopup("Rescheduled Successfully");
+    setTimeout(() => { location.href = "/api/consultation/booking-history/"; }, 1200);
+  } else {
+    showPopup(data.error || "Reschedule failed", "error");
+  }
 }
 
 function showPopup(text, type = "success") {
@@ -216,6 +232,14 @@ function showPopup(text, type = "success") {
   p.classList.remove("hidden");
   setTimeout(() => p.classList.add("hidden"), 1800);
 }
+
+const today = new Date();
+const maxDate = new Date();
+maxDate.setDate(today.getDate() + 60);
+
+dateInput.min = today.toISOString().split("T")[0];
+dateInput.max = maxDate.toISOString().split("T")[0];
+dateInput.value = today.toISOString().split("T")[0];
 
 dateInput.addEventListener("change", renderSlots);
 timeInput.addEventListener("input", renderSlots);

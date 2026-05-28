@@ -27,13 +27,17 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
-                        <span class="text-sm text-black dark:text-white">I consent to the use of encrypted storage to ensure the confidentiality of all communications.</span>
-                        <span id="consent_encryption" class="font-medium whitespace-nowrap"></span>
+                        <span class="text-sm text-black dark:text-white">I consent to the use of secure storage for my information, protected securely by our care.</span>
+                        <span id="consent_secure_storage" class="font-medium whitespace-nowrap"></span>
                     </div>
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
                         <span class="text-sm text-black dark:text-white">I hereby accept the Terms of Service governing this support environment.</span>
                         <span id="consent_terms" class="font-medium whitespace-nowrap"></span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
+                        <span class="text-sm text-black dark:text-white">I confirm that I am 16 years of age or older.</span>
+                        <span id="consent_age" class="font-medium whitespace-nowrap"></span>
                     </div>
                 </div>
             </div>
@@ -73,8 +77,9 @@
 
   document.getElementById("consent_data_policy").innerHTML = renderStatus(data.consent_data_policy);
   document.getElementById("consent_ai_policy").innerHTML = renderStatus(data.consent_ai_policy);
-  document.getElementById("consent_encryption").innerHTML = renderStatus(data.consent_encryption);
+  document.getElementById("consent_secure_storage").innerHTML = renderStatus(data.consent_secure_storage);
   document.getElementById("consent_terms").innerHTML = renderStatus(data.consent_terms);
+  document.getElementById("consent_age").innerHTML = renderStatus(data.consent_age);
 
 })();
 </script>
