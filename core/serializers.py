@@ -1,10 +1,22 @@
 from rest_framework import serializers
-from .models import MoodEntry, JournalEntry, Assessment
+from .models import JournalEntry, Assessment, ChatSession, ChatMessage, MentalSignal
 
 
-class MoodSerializer(serializers.ModelSerializer):
+class MentalSignalSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MoodEntry
+        model = MentalSignal
+        fields = "__all__"
+        read_only_fields = ["user"]
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = "__all__"
+        read_only_fields = ["session", "role", "content"]
+        
+class ChatSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatSession
         fields = "__all__"
         read_only_fields = ["user"]
 

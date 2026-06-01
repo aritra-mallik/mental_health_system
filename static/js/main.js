@@ -4,10 +4,10 @@ let refreshPromise = null;
 function showToast(type, message) {
     // 1. Soft, modern color palettes for both light and dark modes
     const styles = {
-        success: "bg-green-50 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50",
-        error: "bg-red-50 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50",
-        info: "bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50",
-        warning: "bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/50"
+        success: "bg-green-200 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50",
+        error: "bg-red-200 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50",
+        info: "bg-blue-200 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50",
+        warning: "bg-amber-300 text-amber-900 border-amber-300 dark:bg-amber-600/40 dark:text-amber-400 dark:border-amber-700/50"
     };
 
     // 2. Clean SVG icons for each state
@@ -58,7 +58,7 @@ function hideLoader() {
 
 async function refreshAccessToken() {
 
-    // 🔒 If already refreshing → wait
+    //  If already refreshing → wait
     if (isRefreshing && refreshPromise) {
         return refreshPromise;
     }
@@ -94,7 +94,7 @@ async function refreshAccessToken() {
 
     const result = await refreshPromise;
 
-    // 🔓 reset lock
+    //  reset lock
     isRefreshing = false;
     refreshPromise = null;
 
@@ -219,8 +219,23 @@ function toggleMobileSidebar() {
   sidebar.classList.toggle("-translate-x-full");
   overlay.classList.toggle("hidden");
 }
-function exportData() {
-  window.location.href = "/api/user/export/";
+async function clearData() {
+    const isConfirmed = confirm(
+        "Are you sure you want to clear all your personal data? Your data will be permanently deleted. " +
+        "This will delete your journal entries, chat history, assessments, and cancel upcoming appointments. " +
+        "This action CANNOT be undone."
+    );
+
+    if (!isConfirmed) {
+        return; 
+    }
+    const { res, data } = await apiRequest("/api/user/clear-data/", "DELETE");
+
+    if (res && res.ok) {
+        setTimeout(() => {
+            window.location.reload(); 
+        }, 1500);
+    } 
 }
 
 async function deleteAccount() {
@@ -280,15 +295,13 @@ function applySettingsLocally(settings) {
     }
 
     /* ---------------- FONT SIZE ---------------- */
-    body.classList.remove("text-sm", "text-base", "text-lg");
-
-    const fontMap = {
-        small: "text-sm",
-        medium: "text-base",
-        large: "text-lg"
+    const rootFontMap = {
+        small: "15px",
+        medium: "16px",
+        large: "17px"
     };
 
-    body.classList.add(fontMap[settings.font_size] || "text-base");
+    root.style.fontSize = rootFontMap[settings.font_size] || "16px";
 
     /* ---------------- CACHE ---------------- */
     localStorage.setItem("user_settings", JSON.stringify(settings));
@@ -325,12 +338,12 @@ window.addEventListener("storage", function (event) {
         const body = document.getElementById("app-body");
         renderSettings(body, JSON.parse(event.newValue));
     }
-    // 🔴 LOGOUT SYNC
+    //  LOGOUT SYNC
     if (event.key === "logout") {
         window.location.href = "/api/accounts/login-page/";
     }
 
-    // 🟢 LOGIN SYNC (optional)
+    //  LOGIN SYNC (optional)
     if (event.key === "login") {
         window.location.reload();
     }
@@ -353,7 +366,7 @@ function monitorSessionExpiry() {
 
 function handleSessionExpired() {
 
-    // 🔒 DO NOT redirect if already on login page
+    //  DO NOT redirect if already on login page
     if (window.location.pathname.includes("/login-page")) {
         localStorage.clear();
         return;

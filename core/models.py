@@ -36,19 +36,6 @@ class Assessment(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
-
-class ActivityLog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    action = models.CharField(max_length=100)
-    metadata = models.JSONField(blank=True, null=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    
-# =========================
-# Chat Session
-# =========================
 class ChatSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -58,21 +45,13 @@ class ChatSession(models.Model):
     def __str__(self):
         return f"Session {self.id} - {self.user.username}"
 
-
-# =========================
-# Chat Messages (bounded memory)
-# =========================
 class ChatMessage(models.Model):
     ROLE_CHOICES = (
         ("user", "User"),
         ("bot", "Bot"),
     )
 
-    session = models.ForeignKey(
-        ChatSession,
-        on_delete=models.CASCADE,
-        related_name="messages"
-    )
+    session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name="messages")
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -125,3 +104,19 @@ class MentalSignal(models.Model):
 
     def __str__(self):
         return f"{self.user} | {self.source} | {self.mood} | {self.risk}"
+
+
+class UserVaultKey(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="vault_key")
+    
+    # SAFE A: Locked by the User's Login Password
+    password_encrypted_key = models.CharField(max_length=500)
+    password_iv = models.CharField(max_length=100)
+    
+    # SAFE B: Locked by the User's Recovery Password
+    recovery_encrypted_key = models.CharField(max_length=500)
+    recovery_iv = models.CharField(max_length=100)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    

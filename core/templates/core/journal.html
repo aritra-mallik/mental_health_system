@@ -9,7 +9,7 @@
 textarea {
     border: none;
     outline: none;
-    resize: none; /* Prevent manual resizing, let JS handle auto-grow */
+    resize: none; 
     line-height: 1.6;
 }
 
@@ -33,47 +33,58 @@ textarea:focus {
 .group:hover .cursor-move::before {
     opacity: 1;
 }
+
+/* Custom Scrollbar for inner containers */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
 </style>
-<div class="max-w-6xl mx-auto px-6 py-6 relative">
+
+<div class="max-w-7xl mx-auto px-4 md:px-6 py-6 relative">
 
 <div class="flex justify-between items-center mb-6">
     <div class="flex items-center gap-3">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             🔐 Private Journal
         </h1>
-        <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium border border-green-200 dark:border-green-800 shadow-sm">
+        <span class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium border border-green-200 dark:border-green-800 shadow-sm">
             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-            Private Encrypted Journal
+            Encrypted
         </span>
     </div>
 
-   <button onclick="lockJournal()" class="text-sm bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-xl hover:bg-gray-300 text-red-500 dark:hover:bg-gray-600 transition-colors font-medium">
-        🔒Lock
+   <button type="button" onclick="lockJournal()" class="text-sm bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-xl hover:bg-gray-300 text-red-500 dark:hover:bg-gray-600 transition-colors font-medium">
+        🔒 Lock
     </button>
 </div>
 
 <div id="lockScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-100/40 dark:bg-gray-900/40 backdrop-blur-md">
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-10 text-center shadow-2xl max-w-md w-full mx-4">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[2rem] p-10 text-center shadow-2xl max-w-md w-full mx-4">
         
-        <div class="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div class="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100 dark:border-blue-900/50">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Local Decryption</h2>
+        <h2 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white mb-2">Local Decryption</h2>
         <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm leading-relaxed">
-            Your journal is end-to-end encrypted. Your passphrase never leaves your device.
+            Your journal is securely encrypted. Your passphrase never leaves your device.
         </p>
 
-        <input id="passwordInput" type="password"
-            class="w-full block px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl mb-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-400 dark:placeholder-gray-600"
+        <input id="passwordInput" type="password" onkeydown="if(event.key === 'Enter') unlockJournal()"
+            class="w-full block px-4 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl mb-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-400 dark:placeholder-gray-600 shadow-inner"
             placeholder="Enter password" />
 
-        <button onclick="unlockJournal()"
-            class="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/30 dark:shadow-blue-900/20 mb-5">
+        <button type="button" onclick="unlockJournal()"
+            class="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/30 dark:shadow-blue-900/20 mb-4 active:scale-[0.98]">
             Unlock Vault
         </button>
 
-        <a href="/api/core/dashboard-page/" class="inline-flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors font-medium">
+        <button type="button" onclick="openRecoveryModal()" class="block w-full text-center text-sm font-medium text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 underline mb-6 transition-colors">
+            Changed Your Password? Recover Vault
+        </button>
+
+        <a href="/api/core/dashboard-page/" class="inline-flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors font-medium mt-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             Back to Dashboard
         </a>
@@ -81,72 +92,105 @@ textarea:focus {
     </div>
 </div>
 
-<div id="journalApp" class="hidden grid md:grid-cols-3 gap-6">
+<div id="journalApp" class="hidden flex-col md:grid md:grid-cols-3 gap-6 h-[80vh]">
 
-    <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-4 h-[70vh] overflow-y-auto shadow-sm">
+    <div id="entryListContainer" class="flex flex-col bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl h-full overflow-y-auto shadow-sm transition-all overflow-hidden">
 
-        <div class="flex flex-col gap-2 mb-4">
-
+        <div class="flex flex-col gap-2 p-4 pb-2 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 z-10 sticky top-0">
             <div class="flex justify-between items-center">
-                <h3 class="font-semibold text-gray-800 dark:text-gray-200">Entries</h3>
-                <button onclick="newEntry()" class="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">+ New</button>
+                <h3 class="font-bold text-gray-800 dark:text-gray-200 text-lg">Entries</h3>
+                <button type="button" onclick="newEntry()" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm transition-colors">+ New</button>
             </div>
 
             <input id="searchInput"
                 placeholder="Search encrypted entries..."
-                class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"/>
+                class="w-full mt-2 px-4 py-2.5 bg-gray-50 border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"/>
 
-            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span id="streak">0 days</span>
-                <button onclick="exportJournal()" class="hover:text-gray-800 dark:hover:text-gray-200">Export Decrypted</button>
+            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium px-1">
+                <span id="streak">0 days active</span>
+                <button type="button" onclick="exportJournal()" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Export
+                </button>
             </div>
-
         </div>
 
-        <div id="entryList" class="space-y-2"></div>
+        <div id="entryList" class="flex flex-col pb-4"></div>
     </div>
 
-    <div class="md:col-span-2 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-8 flex flex-col shadow-sm">
+    <div id="entryEditorContainer" class="hidden md:flex flex-col md:col-span-2 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-6 md:p-8 shadow-sm h-full overflow-y-auto relative">
+        
+        <button type="button" onclick="showMobileList()" class="md:hidden flex items-center gap-2 text-gray-500 hover:text-blue-600 mb-6 font-bold text-sm transition-colors w-fit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Entries
+        </button>
 
         <input id="entryTitle"
-            class="text-4xl font-bold mb-6 bg-transparent outline-none text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600"
+            class="text-3xl md:text-4xl font-black mb-4 bg-transparent outline-none text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 tracking-tight"
             placeholder="Untitled Note" />
 
-        <div class="flex items-center gap-4 mb-8">
-            <span id="entryDate" class="text-xs text-gray-400 font-medium"></span>
+        <div class="flex items-center gap-4 mb-8 border-b dark:border-gray-700 pb-4">
+            <span id="entryDate" class="text-xs text-gray-400 font-bold uppercase tracking-widest"></span>
         </div>
 
         <div id="blocksContainer" class="flex-1 space-y-3 text-gray-800 dark:text-gray-200"></div>
 
-        <div class="flex items-center gap-6 mt-4">
-            <button onclick="addBlock()" class="text-left text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm font-medium transition-colors w-fit">
-                + Add block
+        <div class="flex flex-wrap items-center gap-4 mt-6 pt-2">
+            <button type="button" onclick="addBlock()" class="flex items-center gap-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-bold transition-colors w-fit px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <span>+</span> Add block
             </button>
             
-            <button id="dictateBtn" onclick="toggleDictation()" class="text-left text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 text-sm font-medium transition-colors w-fit flex items-center gap-1.5 focus:outline-none">
+            <button type="button" id="dictateBtn" onclick="toggleDictation()" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-bold transition-colors w-fit px-3 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 focus:outline-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                 <span id="dictateLabel">Start Dictation</span>
             </button>
         </div>
 
-        <div class="flex justify-between mt-8 pt-4 border-t dark:border-gray-700">
-            <button onclick="deleteEntry()" class="text-red-500 hover:text-red-600 text-sm font-medium transition-colors">Delete Entry</button>
-            <button onclick="saveEntry()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-semibold transition-colors shadow-md">
+        <div class="flex justify-between items-center mt-6 pt-4 border-t dark:border-gray-700 gap-4">
+            <button type="button" onclick="deleteEntry()" class="text-red-500 hover:text-red-600 text-sm font-bold transition-colors">Delete</button>
+            <button type="button" onclick="saveEntry()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/30 active:scale-[0.98]">
                 Securely Save
             </button>
         </div>
 
     </div>
-    
-    
+</div>
 
+<div id="recoveryModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/80 backdrop-blur-md transition-opacity">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-[2rem] max-w-md w-full shadow-2xl border border-gray-200 dark:border-gray-700 mx-4 transform transition-all">
+        
+        <div class="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-amber-100 dark:border-amber-900/50">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+        </div>
+        
+        <h2 class="text-2xl font-black text-gray-900 dark:text-white mb-2 text-center tracking-tight">Vault Recovery</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-8 text-center leading-relaxed">Enter your 16-character recovery phrase to regain access and securely re-encrypt your journal.</p>
+        
+        <div class="space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-widest">Recovery Phrase</label>
+                <input id="recoveryPhraseInput" type="text" placeholder="XXXX-XXXX-XXXX-XXXX" class="w-full px-4 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-widest">Current Login Password</label>
+                <input id="newRecoveryPasswordInput" type="password" placeholder="Enter your valid account password" class="w-full px-4 py-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-inner">
+            </div>
+        </div>
+        
+        <div class="flex gap-3 mt-8">
+            <button type="button" onclick="closeRecoveryModal()" class="flex-1 py-3.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shadow-sm">Cancel</button>
+            <button type="button" id="recoverVaultBtn" onclick="executeRecovery()" class="flex-[2] py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/30 flex justify-center items-center gap-2 active:scale-[0.98]">
+                <span>Recover Access</span>
+            </button>
+        </div>
+    </div>
 </div>
 
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 let journalKey = null;
@@ -158,12 +202,45 @@ let isDictating = false;
 let dictationRecorder = null;
 let dictationChunks = [];
 
-//SPEECH TO TEXT (DICTATION)
+// =========================
+// RESPONSIVE LAYOUT TOGGLES
+// =========================
+function showMobileEditor() {
+    if (window.innerWidth < 768) {
+        document.getElementById("entryListContainer").classList.add("hidden");
+        document.getElementById("entryListContainer").classList.remove("flex");
+        document.getElementById("entryEditorContainer").classList.remove("hidden");
+        document.getElementById("entryEditorContainer").classList.add("flex");
+    }
+}
+
+function showMobileList() {
+    if (window.innerWidth < 768) {
+        document.getElementById("entryListContainer").classList.remove("hidden");
+        document.getElementById("entryListContainer").classList.add("flex");
+        document.getElementById("entryEditorContainer").classList.add("hidden");
+        document.getElementById("entryEditorContainer").classList.remove("flex");
+    }
+}
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+        document.getElementById("entryListContainer").classList.remove("hidden");
+        document.getElementById("entryListContainer").classList.add("flex");
+        document.getElementById("entryEditorContainer").classList.remove("hidden");
+        document.getElementById("entryEditorContainer").classList.add("flex");
+    } else {
+        showMobileList();
+    }
+});
+
+// =========================
+// SPEECH TO TEXT (DICTATION)
+// =========================
 async function toggleDictation() {
     const btn = document.getElementById("dictateBtn");
     const label = document.getElementById("dictateLabel");
 
-    // If currently recording, stop and process
     if (isDictating) {
         if (dictationRecorder && dictationRecorder.state !== "inactive") {
             dictationRecorder.stop();
@@ -182,17 +259,16 @@ async function toggleDictation() {
 
         dictationRecorder.onstop = async () => {
             const audioBlob = new Blob(dictationChunks, { type: 'audio/webm' });
-            stream.getTracks().forEach(track => track.stop()); // Turn off mic light
+            stream.getTracks().forEach(track => track.stop()); 
             await processDictation(audioBlob);
         };
 
-        // Start Recording
         dictationRecorder.start();
         isDictating = true;
 
-        // Update UI to show recording state
-        btn.classList.add("text-red-500", "animate-pulse");
-        btn.classList.remove("text-blue-500", "hover:text-blue-600", "dark:hover:text-blue-400");
+        // FIXED: Apply matching dark mode classes for the red recording state
+        btn.classList.add("text-red-500", "bg-red-50", "border-red-200", "dark:text-red-400", "dark:bg-red-900/30", "dark:border-red-800/50", "animate-pulse");
+        btn.classList.remove("text-blue-600", "bg-blue-50", "border-blue-200", "dark:text-blue-400", "dark:bg-blue-900/30", "dark:border-blue-800/50");
         label.innerText = "Listening... (Click to stop)";
 
     } catch (err) {
@@ -205,7 +281,6 @@ async function processDictation(blob) {
     const btn = document.getElementById("dictateBtn");
     const label = document.getElementById("dictateLabel");
     
-    // Update UI to show processing state
     btn.classList.remove("animate-pulse");
     label.innerText = "Transcribing...";
 
@@ -213,7 +288,6 @@ async function processDictation(blob) {
     formData.append('audio', blob, 'dictation.webm');
 
     try {
-        // Send audio to your existing Groq Whisper endpoint
         const response = await fetch('/api/core/chat/stt/', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('access')}` },
@@ -223,10 +297,8 @@ async function processDictation(blob) {
         const data = await response.json();
         
         if (data.text && data.text.trim().length > 0) {
-            // Success! Create a new block and inject the transcribed text
             const newDiv = addBlock(data.text.trim(), "text");
             newDiv.querySelector("textarea").focus();
-            
         } else {
             alert("Couldn't quite hear that. Please try again.");
         }
@@ -234,170 +306,232 @@ async function processDictation(blob) {
         console.error("Dictation failed", e);
         alert("Failed to process speech. Please check your connection.");
     } finally {
-        // Reset UI back to default
         isDictating = false;
-        btn.classList.remove("text-red-500");
-        btn.classList.add("text-blue-500", "hover:text-blue-600", "dark:hover:text-blue-400");
+        // FIXED: Restore the correct blue classes for both light and dark mode
+        btn.classList.remove("text-red-500", "bg-red-50", "border-red-200", "dark:text-red-400", "dark:bg-red-900/30", "dark:border-red-800/50");
+        btn.classList.add("text-blue-600", "bg-blue-50", "border-blue-200", "dark:text-blue-400", "dark:bg-blue-900/30", "dark:border-blue-800/50");
         label.innerText = "Start Dictation";
     }
 }
 
+// =========================
+// CRYPTOGRAPHY PRIMITIVES
+// =========================
 async function getSalt() {
     const res = await apiRequest("/api/user/journal-salt/", "GET");
-
-    if (!res || !res.data || !res.data.salt) {
-        throw new Error("Salt fetch failed");
-    }
-
-    return new Uint8Array(
-        atob(res.data.salt)
-            .split("")
-            .map(c => c.charCodeAt(0))
-    );
+    if (!res || !res.data || !res.data.salt) throw new Error("Salt fetch failed");
+    return new Uint8Array(atob(res.data.salt).split("").map(c => c.charCodeAt(0)));
 }
 
 async function deriveKey(password, salt) {
     const enc = new TextEncoder();
-
     const keyMaterial = await crypto.subtle.importKey(
-        "raw",
-        enc.encode(password),
-        { name: "PBKDF2" },
-        false,
-        ["deriveKey"]
+        "raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]
     );
-
     return crypto.subtle.deriveKey(
-        {
-            name: "PBKDF2",
-            salt: salt,
-            iterations: 150000,
-            hash: "SHA-256"
-        },
-        keyMaterial,
-        { name: "AES-GCM", length: 256 },
-        false,
-        ["encrypt", "decrypt"]
+        { name: "PBKDF2", salt: salt, iterations: 150000, hash: "SHA-256" },
+        keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
     );
 }
 
-/* =========================
-    ENCRYPT / DECRYPT
-========================= */
+function generateRecoveryPhrase() {
+    const array = new Uint8Array(8); 
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0'))
+                .join('').toUpperCase().match(/.{4}/g).join('-');
+}
 
 async function encrypt(text) {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encoded = new TextEncoder().encode(text);
-
-    const cipher = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
-        journalKey,
-        encoded
-    );
-
-    return JSON.stringify({
-        iv: Array.from(iv),
-        data: Array.from(new Uint8Array(cipher))
-    });
+    const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, journalKey, encoded);
+    return JSON.stringify({ iv: Array.from(iv), data: Array.from(new Uint8Array(cipher)) });
 }
 
 async function decrypt(payload) {
     const parsed = JSON.parse(payload);
     const iv = new Uint8Array(parsed.iv);
     const data = new Uint8Array(parsed.data);
-
-    const decrypted = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv },
-        journalKey,
-        data
-    );
-
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, journalKey, data);
     return new TextDecoder().decode(decrypted);
 }
 
-/* =========================
-    UNLOCK / LOCK
-========================= */
-
+// =========================
+// UNLOCK & INITIALIZE VAULT
+// =========================
 async function unlockJournal() {
-
     const password = document.getElementById("passwordInput").value;
+    if (!password) return alert("Enter your account password");
 
-    if (!password) {
-        alert("Enter your account password");
-        return;
-    }
-
-    // STEP 1: ULTRA-STRICT PASSWORD VERIFICATION
     let isPasswordValid = false;
-    
     try {
-        const verify = await apiRequest(
-            "/api/core/journal/verify-password/",
-            "POST",
-            { password }
-        );
-
-        // This checks if your wrapper returns { res, data } or just the raw JSON
+        const verify = await apiRequest("/api/core/journal/verify-password/", "POST", { password });
         const payload = verify?.data ? verify.data : verify;
+        if (payload && payload.valid === true) isPasswordValid = true;
+    } catch (err) { console.error(err); }
 
-        // Strictly demand that the server explicitly confirms the password is true
-        if (payload && payload.valid === true) {
-            isPasswordValid = true;
-        }
-    } catch (err) {
-        console.error("Verification network request failed:", err);
-    }
-
-    // If it is anything other than explicitly true, LOCK THEM OUT.
     if (!isPasswordValid) {
         journalKey = null;
-        alert("Incorrect account password. Access Denied.");
-        return;
+        return alert("Incorrect account password. Access Denied.");
     }
 
-    // STEP 2: ONLY NOW derive encryption key
     const salt = await getSalt();
+    const passwordKey = await deriveKey(password, salt);
+    const vaultRes = await apiRequest("/api/core/journal/vault-key/", "GET");
 
-    journalKey = await deriveKey(password, salt);
+    if (vaultRes && vaultRes.data && vaultRes.data.password_encrypted_key) {
+        try {
+            const encryptedBytes = new Uint8Array(atob(vaultRes.data.password_encrypted_key).split("").map(c => c.charCodeAt(0)));
+            const ivBytes = new Uint8Array(atob(vaultRes.data.password_iv).split("").map(c => c.charCodeAt(0)));
 
-    // STEP 3: LOAD ENTRIES
+            const rawMasterKey = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: ivBytes }, passwordKey, encryptedBytes
+            );
+
+            journalKey = await crypto.subtle.importKey(
+                "raw", rawMasterKey, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+            );
+        } catch (cryptoError) {
+            console.error("Decryption failed:", cryptoError);
+            alert("Decryption failed! Your vault is locked with a different password. If you recently changed your password, click 'Changed Your Password? Recover Vault' to resync it.");
+            journalKey = null;
+            return; 
+        }
+    } 
+    else {
+        const masterVaultKey = await crypto.subtle.generateKey(
+            { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
+        );
+        journalKey = masterVaultKey; 
+        const rawMasterKey = await crypto.subtle.exportKey("raw", masterVaultKey);
+
+        const passIv = crypto.getRandomValues(new Uint8Array(12));
+        const passEncrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: passIv }, passwordKey, rawMasterKey);
+
+        const recoveryPhrase = generateRecoveryPhrase();
+        const recoveryKey = await deriveKey(recoveryPhrase, salt); 
+        const recIv = crypto.getRandomValues(new Uint8Array(12));
+        const recEncrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: recIv }, recoveryKey, rawMasterKey);
+
+        await apiRequest("/api/core/journal/vault-key/", "POST", {
+            password_encrypted_key: btoa(String.fromCharCode(...new Uint8Array(passEncrypted))),
+            password_iv: btoa(String.fromCharCode(...passIv)),
+            recovery_encrypted_key: btoa(String.fromCharCode(...new Uint8Array(recEncrypted))),
+            recovery_iv: btoa(String.fromCharCode(...recIv))
+        });
+
+        alert(`URGENT: Your Recovery Phrase is:\n\n${recoveryPhrase}\n\nWrite this down immediately! If you lose your recovery phrase, you will not be able to recover your journal if you ever change or forget your password.`);
+    }
+
     const res = await apiRequest("/api/core/journal/", "GET");
-
     entries = res.data || [];
 
-    document.getElementById("lockScreen")
-        .classList.add("hidden");
-
-    document.getElementById("journalApp")
-        .classList.remove("hidden");
+    document.getElementById("lockScreen").classList.add("hidden");
+    
+    const appContainer = document.getElementById("journalApp");
+    appContainer.classList.remove("hidden");
+    appContainer.classList.add("flex");
+    
+    if (window.innerWidth >= 768) {
+        document.getElementById("entryListContainer").classList.add("flex");
+        document.getElementById("entryEditorContainer").classList.remove("hidden");
+        document.getElementById("entryEditorContainer").classList.add("flex");
+    } else {
+        showMobileList();
+    }
 
     renderList();
 }
 
 function lockJournal() {
-    // 1. Destroy the encryption key and data in memory
     journalKey = null;
     entries = [];
     currentId = null;
 
-    // 2. Clear all sensitive text from the UI
     document.getElementById("entryList").innerHTML = "";
     document.getElementById("blocksContainer").innerHTML = "";
     document.getElementById("entryTitle").value = "";
     document.getElementById("passwordInput").value = "";
 
-    // 3. Instantly swap back to the lock screen
-    document.getElementById("journalApp").classList.add("hidden");
+    const appContainer = document.getElementById("journalApp");
+    appContainer.classList.add("hidden");
+    appContainer.classList.remove("flex");
+
     document.getElementById("lockScreen").classList.remove("hidden");
 }
-/* =========================
-    API
-========================= */
 
+// =========================
+// RECOVERY UI & FUNCTIONS
+// =========================
+function openRecoveryModal() {
+    document.getElementById("recoveryModal").classList.remove("hidden");
+}
+
+function closeRecoveryModal() {
+    document.getElementById("recoveryModal").classList.add("hidden");
+}
+
+async function executeRecovery() {
+    const phrase = document.getElementById("recoveryPhraseInput").value.trim().toUpperCase();
+    const newPass = document.getElementById("newRecoveryPasswordInput").value;
+    const btn = document.getElementById("recoverVaultBtn");
+    
+    if (!phrase || !newPass) {
+        return alert("Please enter both your recovery phrase and your current login password.");
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Recovering...</span>`;
+
+    try {
+        // Validate password with Django so they don't break the sync!
+        const verify = await apiRequest("/api/core/journal/verify-password/", "POST", { password: newPass });
+        if (!verify?.data?.valid) {
+            throw new Error("The password you entered is incorrect. You MUST enter your current active account password to resync the vault.");
+        }
+
+        await recoverVaultFromForgot_Password(phrase, newPass);
+        
+        closeRecoveryModal();
+        document.getElementById("passwordInput").value = newPass; 
+        document.getElementById("recoveryPhraseInput").value = "";
+        document.getElementById("newRecoveryPasswordInput").value = "";
+        unlockJournal(); 
+        
+    } catch (error) {
+        alert(error.message || "Recovery Failed. Invalid Recovery Phrase.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Recover Access</span>`;
+    }
+}
+
+async function recoverVaultFromForgot_Password(recoveryPhrase, newPassword) {
+    const salt = await getSalt();
+    const { data: vault } = await apiRequest("/api/core/journal/vault-key/", "GET");
+
+    const recoveryKey = await deriveKey(recoveryPhrase, salt);
+    const recBytes = new Uint8Array(atob(vault.recovery_encrypted_key).split("").map(c => c.charCodeAt(0)));
+    const recIvBytes = new Uint8Array(atob(vault.recovery_iv).split("").map(c => c.charCodeAt(0)));
+    const rawMasterKey = await crypto.subtle.decrypt({ name: "AES-GCM", iv: recIvBytes }, recoveryKey, recBytes);
+
+    const newPasswordKey = await deriveKey(newPassword, salt);
+    const newPassIv = crypto.getRandomValues(new Uint8Array(12));
+    const newPassEncrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: newPassIv }, newPasswordKey, rawMasterKey);
+
+    await apiRequest("/api/core/journal/vault-key/", "POST", {
+        password_encrypted_key: btoa(String.fromCharCode(...new Uint8Array(newPassEncrypted))),
+        password_iv: btoa(String.fromCharCode(...newPassIv)),
+        recovery_encrypted_key: vault.recovery_encrypted_key,
+        recovery_iv: vault.recovery_iv
+    });
+}
+
+// =========================
+// API & RENDER LOGIC
+// =========================
 async function loadEntries() {
     if (!journalKey) return; 
-    
     const res = await apiRequest("/api/core/journal/", "GET");
     entries = res.data;
     renderList();
@@ -406,104 +540,88 @@ async function loadEntries() {
 async function renderList() {
     const container = document.getElementById("entryList");
     container.innerHTML = "";
-
     const query = document.getElementById("searchInput")?.value?.toLowerCase() || "";
     let activeDays = new Set();
 
-    // First pass: decrypt and filter everything
     let processedEntries = [];
     for (let e of entries) {
         let obj;
         try {
             const decrypted = await decrypt(e.content);
-            try {
-                obj = JSON.parse(decrypted);
-            } catch {
-                obj = { title: "Untitled", body: decrypted };
-            }
+            try { obj = JSON.parse(decrypted); } catch { obj = { title: "Untitled", body: decrypted }; }
             if (!obj.title && !obj.body) obj.title = "⚠️ Corrupted Entry";
-        } catch {
-            continue;
-        }
+        } catch { continue; }
 
-        if (query && !(
-            obj.title?.toLowerCase().includes(query) ||
-            obj.body?.toLowerCase().includes(query)
-        )) continue;
-
+        if (query && !(obj.title?.toLowerCase().includes(query) || obj.body?.toLowerCase().includes(query))) continue;
         activeDays.add(new Date(e.created_at).toDateString());
         processedEntries.push({ e, obj });
     }
 
-    // Helper to generate the HTML for a single entry card
     const createCardHTML = (e, obj) => {
         const dateObj = new Date(e.created_at);
+        const isActive = currentId === e.id;
         const div = document.createElement("div");
-        div.className = "group p-3 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm";
+        
+        // Restored old card style: rounded borders, padding, and margin-bottom (mb-3)
+        div.className = `group p-4 border dark:border-gray-700 rounded-xl cursor-pointer transition-colors shadow-sm mb-3 ${isActive ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800/60 border-gray-200'}`;
         
         div.innerHTML = `
-            <div class="flex justify-between items-start mb-1">
-                <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate flex-1 flex items-center gap-2">
+            <div class="flex justify-between items-start mb-2">
+                <p class="text-sm font-bold ${isActive ? 'text-blue-700 dark:text-blue-400' : 'text-gray-800 dark:text-gray-200'} truncate flex-1 pr-2">
                     ${formatInline(obj.title || "Untitled Note")}
                 </p>
-                
                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 bg-white dark:bg-gray-800 rounded-md shadow-sm border border-gray-100 dark:border-gray-700 p-0.5">
-                    <button onclick="togglePinList(event, ${e.id})" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-amber-500" title="${e.is_pinned ? 'Unpin' : 'Pin'}">
+                    <button type="button" onclick="togglePinList(event, ${e.id})" class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-amber-500" title="${e.is_pinned ? 'Unpin' : 'Pin'}">
                         <svg class="w-3.5 h-3.5" fill="${e.is_pinned ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
                     </button>
-                    <button onclick="deleteFromList(event, ${e.id})" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-red-500" title="Delete">
+                    <button type="button" onclick="deleteFromList(event, ${e.id})" class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-red-500" title="Delete">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
             </div>
-            <p class="text-xs text-gray-400">${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+            <p class="text-xs ${isActive ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400'} font-medium">${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
         `;
-        div.onclick = () => openEntry(e, obj);
+        div.onclick = () => {
+            openEntry(e, obj);
+            renderList(); // Re-render to update the active highlight
+        };
         return div;
     };
 
-    // Separate pinned and unpinned entries
     const pinned = processedEntries.filter(item => item.e.is_pinned);
     const unpinned = processedEntries.filter(item => !item.e.is_pinned);
 
-    // 1. Render Pinned Entries First
+    // Ensure list container has correct padding to accommodate the new card margins
+    container.className = "flex flex-col pb-4 px-1 mt-2";
+
     if (pinned.length > 0) {
         const pinHeader = document.createElement("div");
-        pinHeader.className = "flex items-center gap-1.5 text-[10px] font-bold text-amber-500 mt-4 mb-2 uppercase tracking-widest";
+        pinHeader.className = "flex items-center gap-1.5 text-xs font-bold text-amber-500 mt-2 mb-3 uppercase tracking-widest px-1";
         pinHeader.innerHTML = `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/></svg> Pinned`;
         container.appendChild(pinHeader);
-
         pinned.forEach(item => container.appendChild(createCardHTML(item.e, item.obj)));
     }
 
-    // 2. Render Unpinned Entries with Timeline Headers
     let lastDate = "";
     for (let item of unpinned) {
         const dateStr = new Date(item.e.created_at).toDateString();
         if (dateStr !== lastDate) {
             const header = document.createElement("div");
-            header.className = "text-xs font-semibold text-gray-400 mt-5 mb-2 uppercase tracking-wide border-b dark:border-gray-700 pb-1";
+            // Fixed margin spacing for the date headers
+            header.className = "text-xs font-bold text-gray-400 mt-5 mb-3 uppercase tracking-widest px-1";
             header.innerText = dateStr;
             container.appendChild(header);
             lastDate = dateStr;
         }
         container.appendChild(createCardHTML(item.e, item.obj));
     }
-
     document.getElementById("streak").innerText = activeDays.size + " days active";
 }
 
-
 function openEntry(e, obj) {
     currentId = e.id;
-
-    // basic fields
     document.getElementById("entryTitle").value = obj.title || "";
-    
-
-
-    document.getElementById("entryDate").innerText =
-        new Date(e.created_at).toLocaleString([], {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+    document.getElementById("entryDate").innerText = new Date(e.created_at).toLocaleString([], {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit'});
 
     const container = document.getElementById("blocksContainer");
     container.innerHTML = "";
@@ -511,101 +629,172 @@ function openEntry(e, obj) {
     if (obj.blocks && obj.blocks.length) {
         obj.blocks.forEach(b => {
             const el = addBlock(b.content, b.type);
-            // restore checklist state
             if (b.type === "check" && b.checked) {
                 const cb = el.querySelector("input[type='checkbox']");
                 if (cb) cb.checked = true;
             }
         });
     } else {
-        // fallback for old entries
         addBlock(obj.body || "", "text");
     }
+    showMobileEditor();
 }
 
 function newEntry() {
     currentId = null;
     document.getElementById("entryTitle").value = "";
-    
-   
-    
     document.getElementById("blocksContainer").innerHTML = "";
     document.getElementById("entryDate").innerText = "New Entry";
     addBlock("", "text");
+    showMobileEditor();
+    renderList(); // Clear active highlight
 }
-
 
 async function deleteEntry() {
-
     if (!currentId) return;
-
-    const confirmed = confirm(
-        "Are you sure you want to permanently delete this encrypted entry?"
-    );
-
-    if (!confirmed) return;
+    if (!confirm("Are you sure you want to permanently delete this encrypted entry?")) return;
 
     try {
-
-        await apiRequest(
-            "/api/core/journal/",
-            "DELETE",
-            {
-                id: currentId
-            }
-        );
-
-        entries = entries.filter(
-            e => e.id !== currentId
-        );
-
+        await apiRequest("/api/core/journal/", "DELETE", { id: currentId });
+        entries = entries.filter(e => e.id !== currentId);
         newEntry();
-
         await loadEntries();
-
-    }
-
-    catch (err) {
-
+        showMobileList();
+    } catch (err) {
         console.error(err);
-
-        alert(
-            "Failed to delete journal entry."
-        );
+        alert("Failed to delete journal entry.");
     }
 }
 
-
 async function exportJournal() {
-    const exported = [];
-
-    for (let e of entries) {
-        try {
-            const obj = JSON.parse(await decrypt(e.content));
-            exported.push({
-                ...obj,
-                created_at: e.created_at
-            });
-        } catch {}
+    const exportBtn = document.querySelector('button[onclick="exportJournal()"]');
+    const originalHtml = exportBtn.innerHTML;
+    
+    // 1. Open the window IMMEDIATELY to bypass popup blockers (this must happen synchronously)
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert("Please allow popups for this site to export your journal.");
+        return;
     }
 
-    const blob = new Blob([JSON.stringify(exported, null, 2)], {
-        type: "application/json"
-    });
+    // Show loading state on the button
+    exportBtn.innerHTML = `<svg class="animate-spin w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Preparing...`;
+    exportBtn.disabled = true;
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "secure_journal_export.json";
-    a.click();
+    // 2. Show a loading screen in the new tab while we decrypt
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Preparing Secure Export...</title></head>
+        <body style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; background: #f9fafb; color: #6b7280; text-align: center;">
+            <h2>Decrypting and formatting your private journal...</h2>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+
+    try {
+        // 3. Build the beautiful HTML content
+        let contentHtml = `
+            <div style="text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 40px;">
+                <h1 style="font-size: 28px; color: #1e3a8a; margin: 0 0 10px 0; font-family: 'Georgia', serif;">My Private Journal</h1>
+                <p style="color: #6b7280; font-size: 14px; font-family: 'Helvetica', sans-serif; margin: 0;">
+                    Securely exported on ${new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+            </div>
+        `;
+
+        for (let e of entries) {
+            try {
+                const decrypted = await decrypt(e.content);
+                let obj;
+                try { obj = JSON.parse(decrypted); } catch { obj = { title: "Untitled", body: decrypted }; }
+
+                const dateObj = new Date(e.created_at);
+                const dateString = dateObj.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const timeString = dateObj.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+
+                let textContent = "";
+                if (obj.blocks && obj.blocks.length) {
+                    textContent = obj.blocks.map(b => {
+                        // Strip accidental script tags to ensure absolute safety when writing to DOM
+                        const content = formatInline(b.content).replace(/<\/script>/gi, '<\\/script>');
+                        if (b.type === "h1") return `<h3 style="margin: 15px 0 5px 0; font-family: 'Helvetica', sans-serif; color: #111827;">${content}</h3>`;
+                        if (b.type === "bullet") return `<div style="margin-left: 20px; display: flex; gap: 8px; color: #374151;"><span>•</span><span>${content}</span></div>`;
+                        if (b.type === "check") return `<div style="margin-left: 20px; display: flex; gap: 8px; color: #374151;"><span style="color: ${b.checked ? '#2563eb' : '#9ca3af'}; font-weight: bold;">${b.checked ? '☑' : '☐'}</span><span>${content}</span></div>`;
+                        return `<p style="margin: 0 0 10px 0; color: #374151;">${content}</p>`;
+                    }).join("");
+                } else {
+                    textContent = `<p style="margin: 0; color: #374151;">${(obj.body || "").replace(/<\/script>/gi, '<\\/script>')}</p>`;
+                }
+
+                contentHtml += `
+                    <div style="margin-bottom: 50px; page-break-inside: avoid;">
+                        <h2 style="font-size: 22px; color: #111827; margin: 0 0 5px 0; font-family: 'Georgia', serif;">${obj.title || "Untitled Note"}</h2>
+                        <p style="font-size: 12px; color: #9ca3af; font-family: 'Helvetica', sans-serif; border-bottom: 1px solid #f3f4f6; padding-bottom: 12px; margin: 0 0 20px 0;">
+                            ${dateString} at ${timeString}
+                        </p>
+                        <div style="font-family: 'Helvetica', sans-serif; font-size: 14px; line-height: 1.7; color: #374151; white-space: pre-wrap;">
+                            ${textContent}
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Skipped corrupted entry during export");
+            }
+        }
+
+        // 4. Write the final print-ready document to the new tab
+        const finalHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>My_Secure_Journal</title>
+                <meta charset="utf-8">
+                <style>
+                    body { background: #ffffff; padding: 40px 80px; margin: 0; color: #000000; }
+                    mark { background-color: #fef08a; padding: 0 4px; border-radius: 2px; }
+                    
+                    /* This CSS block ensures it formats perfectly in the print dialog */
+                    @media print {
+                        body { padding: 0; }
+                        @page { margin: 1in; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${contentHtml}
+                <script>
+                    // Wait a split second for the browser to render the text, then trigger the print dialog
+                    setTimeout(() => {
+                        window.print();
+                    }, 500);
+                <\/script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.open();
+        printWindow.document.write(finalHtml);
+        printWindow.document.close();
+
+        // Restore the original button
+        exportBtn.innerHTML = originalHtml;
+        exportBtn.disabled = false;
+
+    } catch (error) {
+        console.error("Export failed:", error);
+        printWindow.close();
+        alert("Failed to prepare export. Your data remains secure.");
+        exportBtn.innerHTML = originalHtml;
+        exportBtn.disabled = false;
+    }
 }
 
 let dragged = null;
-
 document.addEventListener("dragstart", (e) => {
     const block = e.target.closest("#blocksContainer > div");
     if (!block) return;
-
     dragged = block;
     e.dataTransfer.effectAllowed = "move";
 });
@@ -613,12 +802,9 @@ document.addEventListener("dragstart", (e) => {
 document.addEventListener("dragover", (e) => {
     const target = e.target.closest("#blocksContainer > div");
     if (!target || target === dragged) return;
-
     e.preventDefault();
-
     const rect = target.getBoundingClientRect();
     const container = document.getElementById("blocksContainer");
-
     if (e.clientY < rect.top + rect.height / 2) {
         container.insertBefore(dragged, target);
     } else {
@@ -626,31 +812,22 @@ document.addEventListener("dragover", (e) => {
     }
 });
 
-document.addEventListener("dragend", () => {
-    dragged = null;
-});
+document.addEventListener("dragend", () => { dragged = null; });
 
 function addBlock(content = "", type = "text") {
     const container = document.getElementById("blocksContainer");
-
     const div = document.createElement("div");
-    div.className = "group relative";
+    div.className = "group relative cursor-move";
     div.dataset.type = type;
     div.draggable = true;
-    div.classList.add("cursor-move");
-
-    // render by type
     div.innerHTML = renderBlockHTML(type, content);
 
     const textarea = div.querySelector("textarea");
-
-    // auto-grow
     textarea.addEventListener("input", () => {
         textarea.style.height = "auto";
         textarea.style.height = textarea.scrollHeight + "px";
     });
 
-    // Initial resize if content exists
     if(content) {
         setTimeout(() => {
             textarea.style.height = "auto";
@@ -658,21 +835,16 @@ function addBlock(content = "", type = "text") {
         }, 0);
     }
 
-    // KEYBOARD CONTROLS
     textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             const newDiv = addBlock("", "text");
             newDiv.querySelector("textarea").focus();
         }
-
         if (e.key === "Backspace" && textarea.value === "") {
             e.preventDefault();
-            
             const previousBlock = div.previousElementSibling;
-            
             div.remove();
-            
             if (previousBlock) {
                 const prevTextarea = previousBlock.querySelector("textarea");
                 if (prevTextarea) {
@@ -690,72 +862,35 @@ function addBlock(content = "", type = "text") {
 
 function renderBlockHTML(type, content) {
     switch (type) {
-        case "h1":
-            return `<textarea class="w-full text-2xl font-bold bg-transparent outline-none" rows="1">${content}</textarea>`;
-        case "bullet":
-            return `
-              <div class="flex gap-3">
-                <span class="text-gray-400 font-bold mt-0.5">•</span>
-                <textarea class="w-full bg-transparent outline-none" rows="1">${content}</textarea>
-              </div>`;
-        case "toggle":
-            return `
-              <details class="w-full bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border dark:border-gray-700">
-                <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 outline-none">Toggle Section</summary>
-                <textarea class="w-full mt-3 bg-transparent outline-none text-sm" rows="1">${content}</textarea>
-              </details>`;
-        case "check":
-            return `
-            <div class="flex items-start gap-3">
-                <input type="checkbox" class="mt-1.5 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer">
-                <textarea class="w-full bg-transparent outline-none" rows="1">${content}</textarea>
-            </div>`;
-        default:
-            return `<textarea class="w-full bg-transparent outline-none" rows="1" placeholder="Write your thoughts here...">${content}</textarea>`;
+        case "h1": return `<textarea class="w-full text-2xl font-bold bg-transparent outline-none" rows="1">${content}</textarea>`;
+        case "bullet": return `<div class="flex gap-3"><span class="text-gray-400 font-bold mt-0.5">•</span><textarea class="w-full bg-transparent outline-none" rows="1">${content}</textarea></div>`;
+        case "toggle": return `<details class="w-full bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border dark:border-gray-700"><summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 outline-none">Toggle Section</summary><textarea class="w-full mt-3 bg-transparent outline-none text-sm" rows="1">${content}</textarea></details>`;
+        case "check": return `<div class="flex items-start gap-3"><input type="checkbox" class="mt-1.5 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"><textarea class="w-full bg-transparent outline-none" rows="1">${content}</textarea></div>`;
+        default: return `<textarea class="w-full bg-transparent outline-none" rows="1" placeholder="Write your thoughts here...">${content}</textarea>`;
     }
 }
 
 async function saveEntry() {
-
     try {
         if (isSaving) return; 
-            isSaving = true;
+        isSaving = true;
 
-        const saveBtn = document.querySelector(
-            'button[onclick="saveEntry()"]'
-        );
-
+        const saveBtn = document.querySelector('button[onclick="saveEntry()"]');
         saveBtn.disabled = true;
         saveBtn.innerText = "Saving...";
 
-        const titleValue =
-            document.getElementById("entryTitle")
-            .value
-            .trim();
-
-        const blocks = [
-            ...document.querySelectorAll("#blocksContainer > div")
-        ].map(div => {
-
+        const titleValue = document.getElementById("entryTitle").value.trim();
+        const blocks = [...document.querySelectorAll("#blocksContainer > div")].map(div => {
             const textarea = div.querySelector("textarea");
-            const checkbox = div.querySelector(
-                "input[type='checkbox']"
-            );
-
+            const checkbox = div.querySelector("input[type='checkbox']");
             return {
                 type: div.dataset.type || "text",
                 content: textarea?.value || "",
-                checked: checkbox
-                    ? checkbox.checked
-                    : undefined
+                checked: checkbox ? checkbox.checked : undefined
             };
         });
 
-        const hasContent = blocks.some(
-            b => b.content.trim() !== ""
-        );
-
-        if (!titleValue || !hasContent) {
+        if (!titleValue || !blocks.some(b => b.content.trim() !== "")) {
             alert("Please provide both title and content.");
             saveBtn.disabled = false;
             saveBtn.innerText = "Securely Save";
@@ -763,110 +898,54 @@ async function saveEntry() {
             return;
         }
 
-        const payload = {
-            title: titleValue,
-            blocks
-        };
+        const encrypted = await encrypt(JSON.stringify({ title: titleValue, blocks }));
+        const rawText = [titleValue, ...blocks.map(b => b.content)].join(" ");
 
-        const encrypted = await encrypt(
-            JSON.stringify(payload)
-        );
-
-        const rawText = [
-            titleValue,
-            ...blocks.map(b => b.content)
-        ].join(" ");
-
-        // UPDATE ENTRY
         if (currentId) {
-
-            await apiRequest(
-                "/api/core/journal/",
-                "PUT",
-                {
-                    id: currentId,
-                    content: encrypted,
-                    raw_text: rawText
-                }
-            );
-
-        }
-
-        // CREATE ENTRY
-        else {
-
-            const res = await apiRequest(
-                "/api/core/journal/",
-                "POST",
-                {
-                    content: encrypted,
-                    raw_text: rawText
-                }
-            );
-
-            if (res?.data?.id) {
-                currentId = res.data.id;
-            }
+            await apiRequest("/api/core/journal/", "PUT", { id: currentId, content: encrypted, raw_text: rawText });
+        } else {
+            const res = await apiRequest("/api/core/journal/", "POST", { content: encrypted, raw_text: rawText });
+            if (res?.data?.id) currentId = res.data.id;
         }
 
         await loadEntries();
 
         saveBtn.innerText = "Saved ✓";
-
         setTimeout(() => {
             isSaving = false;
             saveBtn.disabled = false;
             saveBtn.innerText = "Securely Save";
         }, 1200);
 
-    }
-
-    catch (err) {
-        
+    } catch (err) {
         isSaving = false;
         console.error(err);
-
-        alert(
-            "Failed to save encrypted journal."
-        );
-
-        const saveBtn = document.querySelector(
-            'button[onclick="saveEntry()"]'
-        );
-
+        alert("Failed to save encrypted journal.");
+        const saveBtn = document.querySelector('button[onclick="saveEntry()"]');
         saveBtn.disabled = false;
         saveBtn.innerText = "Securely Save";
     }
 }
 
-
 function formatInline(text) {
     if (!text) return "";
-
     return text
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/==(.*?)==/g, "<mark class='bg-yellow-200 dark:bg-yellow-900/50 text-gray-900 dark:text-yellow-100 px-1 rounded'>$1</mark>");
 }
 
 async function togglePinList(event, id) {
-    event.stopPropagation(); // Prevents opening the entry
+    event.stopPropagation(); 
     await apiRequest(`/api/core/journal/${id}/pin/`, "POST");
-    loadEntries(); // Refresh the list to re-sort
+    loadEntries(); 
 }
 
 async function deleteFromList(event, id) {
-    event.stopPropagation(); // Prevents opening the entry
+    event.stopPropagation(); 
     if (!confirm("Are you sure you want to permanently delete this entry?")) return;
-
     await apiRequest("/api/core/journal/", "DELETE", { id: id });
-
-    // If the user deleted the entry they are currently looking at, clear the editor
-    if (currentId === id) {
-        newEntry(); 
-    }
+    if (currentId === id) newEntry(); 
     loadEntries();
 }
-
 </script>
-
 {% endblock %}

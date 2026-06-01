@@ -6,12 +6,12 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from datetime import datetime, timedelta
-import pytz
+from zoneinfo import ZoneInfo
 from .models import Counselor, Booking, Slot
 from .serializers import CounselorSerializer, BookingSerializer
 from .services import BookingService
 
-IST = pytz.timezone('Asia/Kolkata')
+IST = ZoneInfo('Asia/Kolkata')
 
 class CounselorListAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -32,7 +32,7 @@ class CancelBookingAPI(APIView):
 
     def post(self, request, id):
         booking = Booking.objects.get(id=id, user=request.user)
-        appointment = IST.localize(datetime.combine(booking.slot.date, booking.slot.time))
+        appointment = datetime.combine(booking.slot.date, booking.slot.time, tzinfo=IST)
         cutoff = appointment - timedelta(minutes=30)
 
         if timezone.now().astimezone(IST) >= cutoff:
@@ -69,7 +69,7 @@ class RescheduleBookingAPI(APIView):
 
     def post(self, request, id):
         booking = Booking.objects.get(id=id, user=request.user)
-        appointment = IST.localize(datetime.combine(booking.slot.date, booking.slot.time))
+        appointment = datetime.combine(booking.slot.date, booking.slot.time, tzinfo=IST)
         cutoff = appointment - timedelta(minutes=30)
 
         if timezone.now().astimezone(IST) >= cutoff:
@@ -106,7 +106,7 @@ class RescheduleBookingAPI(APIView):
                 fail_silently=True
             )
 
-        return Response({"message": "Booking rescheduled"})
+        return Response({"detail": "Booking rescheduled"})
 
 class BookingAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -118,7 +118,7 @@ class BookingAPI(APIView):
                 counselor_id=request.data.get("counselor"),
                 slot_id=request.data.get("slot")
             )
-            return Response({"message": "Booking created", "booking_id": booking.id})
+            return Response({"detail": "Booking created", "booking_id": booking.id})
         except Exception as e:
             return Response({"error": str(e)}, status=400)
 
@@ -131,7 +131,7 @@ class MyBookingsAPI(APIView):
 
         for booking in bookings:
             if booking.status == "booked":
-                consultation_date_time = IST.localize(datetime.combine(booking.slot.date, booking.slot.time))
+                consultation_date_time = datetime.combine(booking.slot.date, booking.slot.time, tzinfo=IST)
                 if current_time >= consultation_date_time:
                     booking.status = "completed"
                     booking.save()

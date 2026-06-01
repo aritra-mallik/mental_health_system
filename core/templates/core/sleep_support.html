@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sleep Optimization{% endblock %}
+
+{% block content %}
+<style>
+    .checked-item { text-decoration: line-through; opacity: 0.4; }
+    /* Removes outline when editing tasks */
+    [contenteditable="true"]:focus { outline: none; border-bottom: 1px dashed #10B981; }
+</style>
+    <!-- Back Navigation -->
+    <button onclick="window.location.href='/api/core/recovery-hub/'" class="self-start mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors text-sm font-bold tracking-wide group">
+        <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+        Back to Recovery Hub
+    </button>
+
+    <!-- Header (Sapphire Focus) -->
+    <div class="bg-gradient-to-br from-slate-800 to-indigo-950 dark:from-[#111827] dark:to-[#0B1120] rounded-[2rem] p-10 text-center relative overflow-hidden shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] mb-8 border border-slate-700 dark:border-[#1F2937]">
+        <div class="absolute top-10 left-10 w-1.5 h-1.5 bg-blue-200 rounded-full animate-pulse" style="animation-duration: 3s;"></div>
+        <div class="absolute top-24 right-20 w-1 h-1 bg-white rounded-full animate-pulse" style="animation-duration: 4s;"></div>
+        <div class="absolute bottom-12 left-1/4 w-2 h-2 bg-emerald-200/50 rounded-full animate-pulse" style="animation-duration: 5s;"></div>
+        
+        <div class="w-14 h-14 bg-slate-900/60 dark:bg-[#1F2937] rounded-[1rem] flex items-center justify-center text-2xl mx-auto mb-4 border border-slate-700 dark:border-[#374151] shadow-inner text-green-300">🌙</div>
+        <h1 class="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">Sleep Optimization</h1>
+        <p class="text-slate-300 dark:text-slate-400 text-lg font-medium max-w-lg mx-auto leading-relaxed">Calculate your optimal cycles, and personalize your environment for restorative rest.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow">
+        
+        <!-- Left Column: Editable Wind-down Checklist -->
+        <div class="bg-white dark:bg-[#111827] p-8 rounded-[1.5rem] border border-slate-200 dark:border-[#1F2937] shadow-sm dark:shadow-lg flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    Custom Pre-Sleep Protocol
+                </h2>
+                <button onclick="resetTasks()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white uppercase tracking-widest transition-colors">Reset</button>
+            </div>
+            
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Click on any text below to edit and build your own perfect wind-down routine.</p>
+            
+            <!-- Dynamic Checklist Container -->
+            <div class="space-y-3 flex-grow select-none" id="checklist">
+                <!-- Javascript will inject items here -->
+            </div>
+            
+            <!-- Dynamic Progress & Physiological Feedback -->
+            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-[#1F2937]">
+                <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-2 tracking-wider uppercase">
+                    <span>Readiness Score</span>
+                    <span id="progress-text" class="text-emerald-600 dark:text-[#10B981] transition-all">0%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 dark:bg-[#030712] rounded-full overflow-hidden border border-transparent dark:border-[#1F2937] mb-4">
+                    <div id="progress-bar" class="h-full bg-emerald-500 dark:bg-[#10B981] transition-all duration-500 w-0 rounded-full dark:shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                </div>
+                
+                <!-- Physiological Feedback Box -->
+                <div class="bg-slate-50 dark:bg-[#0D1526] p-4 rounded-xl border border-slate-100 dark:border-[#1E293B]">
+                    <p id="progress-message" class="text-sm font-bold text-slate-600 dark:text-slate-300 transition-colors duration-300 flex items-start gap-3">
+                        <span class="text-lg leading-none" id="progress-emoji">🧠</span>
+                        <span id="progress-desc">Select a task to begin your wind-down routine.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Cycle Calculator & Breathing -->
+        <div class="space-y-6 flex flex-col">
+            
+            <!-- Functional Sleep Cycle Calculator -->
+            <div class="bg-slate-50 dark:bg-[#0D1526] p-8 rounded-[1.5rem] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-lg relative overflow-hidden flex flex-col flex-grow">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-900/5 dark:from-blue-900/10 to-transparent pointer-events-none"></div>
+                
+                <h3 class="font-black text-slate-800 dark:text-white mb-2 relative z-10 text-lg flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Sleep Cycle Calculator
+                </h3>
+                
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium relative z-10 leading-relaxed">
+                    Humans sleep in 90-minute cycles. Waking up in the middle of a cycle leaves you groggy. Calculate your optimal bedtimes based on when you need to wake up.
+                </p>
+                
+                <div class="relative z-10 w-full flex flex-col sm:flex-row gap-3 mb-6">
+                    <div class="flex-1 relative">
+                        <label class="absolute -top-2.5 left-3 bg-slate-50 dark:bg-[#0D1526] px-1 text-xs font-black tracking-widest uppercase text-green-600 dark:text-green-400">Wake Up Time</label>
+                        <input type="time" id="wake-time" value="07:00" class="w-full bg-white dark:bg-[#111827] border border-slate-300 dark:border-[#374151] rounded-xl px-4 py-3.5 text-slate-800 dark:text-white font-bold outline-none focus:border-green-500 dark:focus:border-green-500 transition-colors shadow-sm">
+                    </div>
+                    <button onclick="calculateCycles()" class="bg-green-600 dark:bg-[#22C55E] text-white px-6 py-3.5 rounded-xl font-bold shadow-md hover:bg-green-700 dark:hover:bg-[#16A34A] transition-all shrink-0">
+                        Calculate
+                    </button>
+                </div>
+
+                <!-- Results Container -->
+                <div id="cycle-results" class="relative z-10 hidden flex-col gap-3 w-full animate-[fadeInUp_0.3s_ease-out_forwards]">
+                    <div class="text-xs font-bold text-slate-400 tracking-widest uppercase mb-1">Suggested Bedtimes</div>
+                    <!-- JS will inject times here -->
+                </div>
+            </div>
+
+            <!-- Transition to Calm Now -->
+            <div class="bg-white dark:bg-[#111827] p-8 rounded-[1.5rem] border border-slate-200 dark:border-[#1F2937] text-center flex flex-col justify-center shadow-sm dark:shadow-lg">
+                <div class="w-12 h-12 bg-slate-100 dark:bg-[#1F2937] rounded-full flex items-center justify-center text-xl mx-auto mb-4 border border-slate-200 dark:border-[#374151] text-blue-500 dark:text-blue-300">🌬️</div>
+                <h3 class="font-black text-slate-800 dark:text-white mb-2 text-lg">Can't fall asleep?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium leading-relaxed px-4">If you've been in bed for 20 minutes without sleeping, leave the bed. Do a breathing exercise until you feel genuinely tired.</p>
+                <button onclick="window.location.href='/api/core/calm-now/'" class="w-full bg-slate-100 dark:bg-[#1F2937] text-slate-700 dark:text-white border border-slate-200 dark:border-[#374151] px-6 py-3.5 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-[#374151] transition-all shadow-sm">
+                    Start 4-7-8 Breathing
+                </button>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =========================================
+       1. EDITABLE CHECKLIST & PHYSIOLOGY LOGIC
+       ========================================= */
+    const defaultTasks = [
+        "Dim overhead lights to 20% or use warm lamps",
+        "Set phone to Do Not Disturb and place it across the room",
+        "Lower bedroom temperature (65°F/18°C is optimal)",
+        "Write down tomorrow's worries to clear your mind",
+        "Drink a few sips of water to stay hydrated",
+        "Read 10 pages of a physical book (No screens)"
+    ];
+
+    // Load from LocalStorage or use Defaults
+    let tasks = JSON.parse(localStorage.getItem('sleepTasks')) || [...defaultTasks];
+    let completed = new Set(JSON.parse(localStorage.getItem('sleepCompleted')) || []);
+
+    const physiologyData = [
+        { emoji: "🧠", text: "Select a task to begin your wind-down routine." },
+        { emoji: "📉", text: "Cortisol levels are beginning to drop. Your nervous system is shifting into a parasympathetic state." },
+        { emoji: "🌡️", text: "Environmental shifts are signaling your brain. Core body temperature is preparing to lower." },
+        { emoji: "🧬", text: "Melatonin production is actively increasing. Heart rate is slowing down." },
+        { emoji: "🌊", text: "Brain waves are shifting from active Beta waves to calmer Alpha and Theta waves." },
+        { emoji: "🔋", text: "Muscle tension is releasing. Your body is entering the maintenance phase." },
+        { emoji: "🌙", text: "Protocol Complete. Your physiology is fully primed for deep, restorative REM sleep." }
+    ];
+
+    function saveState() {
+        localStorage.setItem('sleepTasks', JSON.stringify(tasks));
+        localStorage.setItem('sleepCompleted', JSON.stringify([...completed]));
+    }
+
+    function resetTasks() {
+        if(confirm("Reset all tasks to their default recommendations?")) {
+            tasks = [...defaultTasks];
+            completed = new Set();
+            saveState();
+            renderChecklist();
+        }
+    }
+
+    function renderChecklist() {
+        const container = document.getElementById('checklist');
+        container.innerHTML = tasks.map((task, index) => {
+            const isDone = completed.has(index);
+            return `
+                <div onclick="toggleTask(${index}, event)" class="flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${isDone ? 'bg-emerald-50 dark:bg-[#064E3B]/20 border border-emerald-200 dark:border-[#10B981]/30' : 'bg-slate-50 dark:bg-[#1F2937]/50 border border-transparent hover:border-slate-300 dark:hover:border-[#374151] hover:bg-slate-100 dark:hover:bg-[#1F2937]'}">
+                    <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isDone ? 'border-emerald-500 dark:border-[#10B981] bg-emerald-500 dark:bg-[#10B981]' : 'border-slate-300 dark:border-slate-600 bg-transparent'} shrink-0">
+                        ${isDone ? `<svg class="w-3.5 h-3.5 text-white dark:text-[#0A0F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>` : ''}
+                    </div>
+                    <!-- Editable Text Span -->
+                    <span contenteditable="true" onblur="editTask(${index}, this.innerText)" class="font-medium text-sm text-slate-700 dark:text-slate-300 transition-all w-full ${isDone ? 'checked-item text-slate-400 dark:text-slate-500' : ''}">${task}</span>
+                </div>
+            `;
+        }).join("");
+
+        updateProgress();
+    }
+
+    function editTask(index, newText) {
+        if (newText.trim() === "") {
+            tasks[index] = defaultTasks[index]; // Revert if emptied
+        } else {
+            tasks[index] = newText.trim();
+        }
+        saveState();
+        renderChecklist();
+    }
+
+    function toggleTask(index, event) {
+        // Prevent toggle if the user is clicking exactly on the text to edit it
+        if(event.target.tagName === 'SPAN' && event.target.isContentEditable) return;
+        
+        if (completed.has(index)) completed.delete(index);
+        else completed.add(index);
+        
+        saveState();
+        renderChecklist();
+    }
+
+    function updateProgress() {
+        const count = completed.size;
+        const total = tasks.length;
+        const pct = Math.round((count / total) * 100);
+        
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+        document.getElementById('progress-text').innerText = `${pct}%`;
+        
+        // Update Physiological Feedback
+        const stage = Math.floor((count / total) * (physiologyData.length - 1));
+        const currentData = physiologyData[count];
+        
+        document.getElementById('progress-emoji').innerText = currentData.emoji;
+        document.getElementById('progress-desc').innerText = currentData.text;
+        
+        const messageBox = document.getElementById('progress-message');
+        if (count === total) {
+            messageBox.classList.replace('text-slate-600', 'text-emerald-600');
+            messageBox.classList.replace('dark:text-slate-300', 'dark:text-[#10B981]');
+        } else {
+            messageBox.classList.remove('text-emerald-600', 'dark:text-[#10B981]');
+            messageBox.classList.add('text-slate-600', 'dark:text-slate-300');
+        }
+    }
+
+    // Initialize Checklist
+    renderChecklist();
+
+    /* =========================================
+       2. SLEEP CYCLE CALCULATOR LOGIC
+       ========================================= */
+    function calculateCycles() {
+        const timeInput = document.getElementById('wake-time').value;
+        if (!timeInput) return;
+
+        const [hours, minutes] = timeInput.split(':').map(Number);
+        const wakeDate = new Date();
+        wakeDate.setHours(hours, minutes, 0, 0);
+
+        // Account for average 15 minutes to actually fall asleep
+        wakeDate.setMinutes(wakeDate.getMinutes() - 15);
+
+        // Standard human sleep cycles (1 cycle = 90 mins / 1.5 hours)
+        const cycles = [
+            { count: 6, hours: 9, label: "Optimal Rest", desc: "Best for recovery" },
+            { count: 5, hours: 7.5, label: "Standard Rest", desc: "Average adult requirement" },
+            { count: 4, hours: 6, label: "Minimum Rest", desc: "Leaves you slightly fatigued" }
+        ];
+
+        const resultsDiv = document.getElementById('cycle-results');
+        
+        // Clear previous results except the title
+        resultsDiv.innerHTML = `<div class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase mb-1">Suggested Bedtimes (Includes 15m to fall asleep)</div>`;
+
+        cycles.forEach((c, index) => {
+            const bedTime = new Date(wakeDate.getTime() - (c.hours * 60 * 60 * 1000));
+            const timeStr = bedTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            
+            // Highlight the Optimal/Standard differently
+            const colorClass = index === 0 ? "text-green-600 dark:text-green-400" : (index === 1 ? "text-emerald-600 dark:text-[#10B981]" : "text-slate-500 dark:text-slate-400");
+            const borderClass = index === 1 ? "border-emerald-200 dark:border-[#10B981]/50 bg-emerald-50/50 dark:bg-[#064E3B]/20" : "border-slate-200 dark:border-[#374151] bg-white dark:bg-[#1E293B]";
+
+            resultsDiv.innerHTML += `
+                <div class="flex justify-between items-center p-4 rounded-xl border ${borderClass} transition-all">
+                    <div class="text-left">
+                        <span class="block font-bold text-slate-800 dark:text-white">${c.label} <span class="text-xs font-normal text-slate-500 ml-1">(${c.count} cycles)</span></span>
+                        <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">${c.desc}</span>
+                    </div>
+                    <div class="text-xl font-black ${colorClass}">${timeStr}</div>
+                </div>
+            `;
+        });
+        
+        resultsDiv.classList.remove('hidden');
+        resultsDiv.classList.add('flex');
+    }
+</script>
+{% endblock %}

@@ -130,6 +130,21 @@ const dateInput = document.getElementById("manualDate");
 const modeFilter = document.getElementById("modeFilter");
 const timeInput = document.getElementById("manualTime");
 
+function formatDateDDMMYYYY(dateStr) {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}-${month}-${year}`;
+}
+
+function formatTimeAMPM(timeStr) {
+    if (!timeStr) return '';
+    let [hours, minutes] = timeStr.split(':');
+    hours = parseInt(hours, 10);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; 
+    return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+}
+
 async function loadBooking() {
   try {
     const {res, data} = await apiRequest("/api/consultation/my-bookings/");
@@ -165,8 +180,8 @@ async function loadBooking() {
     document.getElementById("fee").innerText = `₹${counselor.consultation_fee}`;
     document.getElementById("summaryFee").innerText = `₹${counselor.consultation_fee}`;
     document.getElementById("totalFee").innerText = `₹${parseFloat(counselor.consultation_fee)+50}`;
-    document.getElementById("oldDate").innerText = `📅 ${booking.slot.date}`;
-    document.getElementById("oldTime").innerText = `🕒 ${booking.slot.time}`;
+    document.getElementById("oldDate").innerText = `📅 ${formatDateDDMMYYYY(booking.slot.date)}`;
+    document.getElementById("oldTime").innerText = `🕒 ${formatTimeAMPM(booking.slot.time.substring(0, 5))}`;
     document.getElementById("oldMode").innerText = `${booking.slot.mode==="online"?"💻":"🏥"} ${booking.slot.mode}`;
     
     renderSlots();
@@ -196,14 +211,14 @@ function renderSlots() {
           <div class="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div class="relative z-10 flex flex-wrap justify-between items-start gap-2">
             <div>
-              <h2 class="font-black text-2xl text-slate-800 dark:text-white flex items-center gap-2">🕒 ${s.time.substring(0, 5)}</h2>
+              <h2 class="font-black text-2xl text-slate-800 dark:text-white flex items-center gap-2">🕒 ${formatTimeAMPM(s.time.substring(0, 5))}</h2>
               <p class="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">45 min session</p>
             </div>
             <span class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest shadow-sm border ${s.mode==='online'?'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50':'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800/50'}">
               ${s.mode==='online'?'💻':'🏥'} ${s.mode}
             </span>
           </div>
-          <div class="relative z-10 mt-6 bg-white dark:bg-[#151828] border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-4 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center gap-2 shadow-sm text-base">📅 ${s.date}</div>
+          <div class="relative z-10 mt-6 bg-white dark:bg-[#151828] border border-slate-200/50 dark:border-slate-800/50 rounded-xl p-4 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center gap-2 shadow-sm text-base">📅 ${formatDateDDMMYYYY(s.date)}</div>
         </div>
       `).join("");
 }
@@ -236,10 +251,16 @@ function showPopup(text, type = "success") {
 const today = new Date();
 const maxDate = new Date();
 maxDate.setDate(today.getDate() + 60);
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
 
-dateInput.min = today.toISOString().split("T")[0];
-dateInput.max = maxDate.toISOString().split("T")[0];
-dateInput.value = today.toISOString().split("T")[0];
+dateInput.min = formatLocalDate(today);
+dateInput.max = formatLocalDate(maxDate);
+dateInput.value = formatLocalDate(today);
 
 dateInput.addEventListener("change", renderSlots);
 timeInput.addEventListener("input", renderSlots);

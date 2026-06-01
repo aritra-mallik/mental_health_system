@@ -3,12 +3,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import  JournalEntry, Assessment, MentalSignal
-import re, pytz
+import re
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 from django.utils import timezone
 from collections import defaultdict
 from .assessment_engine import AssessmentEngine
-from .models import ChatSession, ChatMessage
+from .models import ChatSession, ChatMessage, UserVaultKey
 from ChatBot.chatbot.llm_client import generate_response
 from ChatBot.chatbot.prompt_builder import build_prompt
 from .sentiment import analyze_text
@@ -19,6 +20,95 @@ from django.conf import settings
 from .tts import generate_voice_sync
 
 client = Groq(api_key=settings.GROQ_API_KEY)
+
+class RecoverySuggestionView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        # Fetch the user's live emotional state
+        state = compute_state(request.user, days=0.5, mode="realtime")
+        mood = state.get("overall_mood", "neutral")
+        risk = state.get("overall_risk", "less")
+
+        advice = "Take a moment for yourself today."
+        suggestions = []
+        advice_cards = []
+
+        # 1. OVERWHELMED (Includes High Risk)
+        if risk == "high" or mood == "overwhelmed":
+            advice = "You are carrying a heavy load right now. Stop trying to process everything at once. Focus only on this exact physical moment to regulate your nervous system."
+            suggestions = [
+                {"title": "Immediate Calm", "desc": "Regulate your nervous system with 4-7-8 breathing.", "action_url": "/api/core/calm-now/", "type": "urgent", "icon": "🌬️", "color": "text-emerald-500", "bg": "bg-emerald-500/10", "border": "border-emerald-500/30"},
+                {"title": "5-4-3-2-1 Grounding", "desc": "Bring your racing mind back to the physical room.", "action_url": "/api/core/calm-now/?mode=grounding", "type": "urgent", "icon": "🖐️", "color": "text-indigo-500", "bg": "bg-indigo-500/10", "border": "border-indigo-500/30"},
+                {"title": "Burnout Protocol", "desc": "Give yourself permission to completely pause today.", "action_url": "/api/core/burnout-recovery/", "type": "routine", "icon": "🌱", "color": "text-teal-500", "bg": "bg-teal-500/10", "border": "border-teal-500/30"}
+            ]
+            advice_cards = [
+                {"icon": "⛰️", "title": "Break It Down", "desc": "Stop looking at the entire mountain. Pick one single micro-task and ignore the rest entirely until you feel safe."},
+                {"icon": "🛑", "title": "Sensory Disconnect", "desc": "Step into a dark, quiet room for just 5 minutes. Remove all visual and auditory input to lower your cortisol levels."},
+                {"icon": "📝", "title": "Externalize the Chaos", "desc": "Get the swirling thoughts out of your head. Write them down without filtering to free up your cognitive load."}
+            ]
+
+        # 2. LOW
+        elif mood == "low":
+            advice = "Your energy is depleted. Don't force false positivity right now. Focus only on gentle, physical micro-activations to break the freeze response."
+            suggestions = [
+                {"title": "Micro-Activations", "desc": "Tiny, 1-minute steps to rebuild your energy.", "action_url": "/api/core/burnout-recovery/", "type": "routine", "icon": "🌱", "color": "text-emerald-500", "bg": "bg-emerald-500/10", "border": "border-emerald-500/30"},
+                {"title": "Sensory Grounding", "desc": "Gently reconnect with your surroundings.", "action_url": "/api/core/calm-now/?mode=grounding", "type": "urgent", "icon": "🖐️", "color": "text-amber-500", "bg": "bg-amber-500/10", "border": "border-amber-500/30"},
+                {"title": "Private Journal", "desc": "Reflect on what's draining your battery today.", "action_url": "/api/core/journal-page/", "type": "routine", "icon": "📔", "color": "text-purple-500", "bg": "bg-purple-500/10", "border": "border-purple-500/30"}
+            ]
+            advice_cards = [
+                {"icon": "💧", "title": "Basic Needs Check", "desc": "Have you drank water? Have you eaten? Start with the absolute baseline of physical care before demanding productivity."},
+                {"icon": "🛡️", "title": "Forgive Yourself", "desc": "Acknowledge that your battery is empty. Actively release the guilt of unproductivity for today."},
+                {"icon": "🚶", "title": "Gentle Movement", "desc": "Do not force high-energy tasks. Try stretching or walking for just 2 minutes to break the physical freeze state."}
+            ]
+
+        # 3. STRESSED
+        elif mood == "stressed":
+            advice = "Tension is running high. Your body is treating psychological stress like a physical threat. Let's signal safety to your brain."
+            suggestions = [
+                {"title": "Brain Dump", "desc": "Empty your swirling thoughts into the secure vault.", "action_url": "/api/core/journal-page/", "type": "routine", "icon": "📔", "color": "text-purple-500", "bg": "bg-purple-500/10", "border": "border-purple-500/30"},
+                {"title": "Deep Breathing", "desc": "Lower your heart rate in just 2 minutes.", "action_url": "/api/core/calm-now/", "type": "urgent", "icon": "🌬️", "color": "text-blue-500", "bg": "bg-blue-500/10", "border": "border-blue-500/30"},
+                {"title": "Sleep Optimization", "desc": "Stress ruins sleep. Prepare your mind for tonight.", "action_url": "/api/core/sleep-support/", "type": "education", "icon": "🌙", "color": "text-slate-400", "bg": "bg-slate-500/10", "border": "border-slate-500/30"}
+            ]
+            advice_cards = [
+                {"icon": "🎯", "title": "Name the Threat", "desc": "Your brain is perceiving a threat. Identify exactly what is causing the tension and write it down to isolate it."},
+                {"icon": "🚪", "title": "Change the Scenery", "desc": "Move to a different room or step outside. A physical boundary change can actively disrupt the stress loop."},
+                {"icon": "🌬️", "title": "Physiological Reset", "desc": "Take control of your body. Take three deep, slow breaths right now to force your heart rate to slow down."}
+            ]
+
+        # 4. NEUTRAL
+        elif mood == "neutral":
+            advice = "You are in a stable, steady place. This is the absolute best time to build mental resilience and strengthen your baseline routines before the waters get choppy."
+            suggestions = [
+                {"title": "Sleep Hygiene", "desc": "Lock in your deep rest protocol for tonight.", "action_url": "/api/core/sleep-support/", "type": "education", "icon": "🌙", "color": "text-blue-500", "bg": "bg-blue-500/10", "border": "border-blue-500/30"},
+                {"title": "Reflective Journaling", "desc": "Document your thoughts while your mind is clear.", "action_url": "/api/core/journal-page/", "type": "routine", "icon": "📔", "color": "text-purple-500", "bg": "bg-purple-500/10", "border": "border-purple-500/30"},
+                {"title": "Mindful Check-in", "desc": "Take a quick scan of your body and thoughts.", "action_url": "/api/core/assessment-page/", "type": "routine", "icon": "🧘", "color": "text-indigo-500", "bg": "bg-indigo-500/10", "border": "border-indigo-500/30"}
+            ]
+            advice_cards = [
+                {"icon": "🧱", "title": "Build the Baseline", "desc": "Use your current steady energy to build habits and routines that will protect you when things inevitably get hard later."},
+                {"icon": "🔍", "title": "Mindful Scan", "desc": "Take a 3-minute scan of your body. Notice where you might be holding tension in your jaw or shoulders, even if you don't feel actively stressed."},
+                {"icon": "🌙", "title": "Prepare for Rest", "desc": "Use this stability to set up an excellent wind-down routine for deep, restorative sleep tonight."}
+            ]
+
+        # 5. GOOD / GREAT
+        else: 
+            advice = "You're feeling good! Capitalize on this positive momentum by documenting your wins, acknowledging your progress, and enjoying the moment."
+            suggestions = [
+                {"title": "Gratitude Vault", "desc": "Write down exactly what is working well today.", "action_url": "/api/core/journal-page/", "type": "routine", "icon": "📔", "color": "text-rose-500", "bg": "bg-rose-500/10", "border": "border-rose-500/30"},
+                {"title": "Savor the Moment", "desc": "Use grounding to anchor this positive feeling.", "action_url": "/api/core/calm-now/?mode=grounding", "type": "routine", "icon": "☀️", "color": "text-amber-500", "bg": "bg-amber-500/10", "border": "border-amber-500/30"},
+                {"title": "Sleep Maintenance", "desc": "Protect tomorrow's mood with good sleep tonight.", "action_url": "/api/core/sleep-support/", "type": "education", "icon": "🌙", "color": "text-blue-500", "bg": "bg-blue-500/10", "border": "border-blue-500/30"}
+            ]
+            advice_cards = [
+                {"icon": "🙏", "title": "Express Gratitude", "desc": "Take 3 minutes to document what went right today. This actively builds neural pathways for long-term resilience."},
+                {"icon": "🌊", "title": "Ride the Wave", "desc": "Notice how this good day feels in your physical body. Memorize this sensation so you can recall it on harder days."},
+                {"icon": "🛡️", "title": "Protect the Baseline", "desc": "Don't skip your basic self-care routines just because you feel good today. Drink water, eat well, and protect your sleep."}
+            ]
+
+        return Response({
+            "current_state": state,
+            "advice": advice,
+            "suggestions": suggestions,
+            "advice_cards": advice_cards
+        })
 
 class SpeechToTextView(APIView):
     permission_classes = [IsAuthenticated]
@@ -58,8 +148,6 @@ class TextToSpeechView(APIView):
             return Response({"error": str(e)}, status=500)
             
             
-
-MAX_MESSAGES = 8
 def normalize_risk(risk):
     return {
         # WHO5 & WEMWBS
@@ -140,39 +228,18 @@ class AssessmentView(APIView):
 
         derived_mood = direct_mood_mapping.get(raw_risk, "neutral")
         normalized_risk = normalize_risk(raw_risk) # We keep this for the alert generator!
-        # MoodEntry.objects.create(
-        #     user=request.user,
-        #     mood=derived_mood
-        # )
-
-        # -------------------------
+        
         # SAVE
-        # -------------------------
-        Assessment.objects.create(
-            user=request.user,
-            assessment_type=test_type,
-            score=result["score"],
-            risk_level=result["risk_level"],
-            meta=result.get("meta", {})
-        )
+        Assessment.objects.create(user=request.user, assessment_type=test_type, score=result["score"], risk_level=result["risk_level"], meta=result.get("meta", {}))
+       
         MentalSignal.objects.create(
-            user=request.user,
-            source="assessment",
-            mood=derived_mood,
-            risk=normalized_risk,
+            user=request.user, source="assessment", mood=derived_mood, risk=normalized_risk,
             metadata={
                 "test_type": test_type,
                 "score": result["score"]
             }
         )
-        state = compute_state(
-            request.user,
-            days=0.5,
-            mode="realtime"
-        )
-                
-        
-        
+        state = compute_state(request.user, days=0.5, mode="realtime")
 
         alert = generate_alert(
             global_state=state,
@@ -185,9 +252,8 @@ class AssessmentView(APIView):
 
         request.user.latest_smera_alert = alert
         request.user.save()
-        # -------------------------
+        
         # RESPONSE
-        # -------------------------
         return Response({
             "message": "Assessment completed",
             "data": result
@@ -198,11 +264,7 @@ class CurrentMoodView(APIView):
 
     def get(self, request):
 
-        state = compute_state(
-            request.user,
-            days=0.5,
-            mode="realtime"
-        )
+        state = compute_state(request.user, days=0.5, mode="realtime")
 
         return Response({
             "mood": state.get("overall_mood"),
@@ -214,9 +276,7 @@ class JournalView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        entries = JournalEntry.objects.filter(
-            user=request.user
-        ).order_by('-is_pinned', '-created_at')
+        entries = JournalEntry.objects.filter(user=request.user).order_by('-is_pinned', '-created_at')
 
         return Response([
             {
@@ -228,108 +288,70 @@ class JournalView(APIView):
             for e in entries
         ])
 
-    # =========================
     # CREATE JOURNAL
-    # =========================
     def post(self, request):
-
         encrypted_content = request.data.get("content")
         raw_text = request.data.get("raw_text")
 
-        entry = JournalEntry.objects.create(
-            user=request.user,
-            encrypted_content=encrypted_content
-        )
+        entry = JournalEntry.objects.create(user=request.user, encrypted_content=encrypted_content)
 
         self.process_journal_signal(
             request=request,
             user=request.user,
             entry=entry,
-            raw_text=raw_text
+            raw_text=raw_text,
+            action="journal_create"
         )
 
         return Response({
             "message": "Journal saved",
             "id": entry.id
-        })
+        }, status=201)
 
-    # =========================
     # UPDATE JOURNAL
-    # =========================
     def put(self, request):
-
         entry_id = request.data.get("id")
         encrypted_content = request.data.get("content")
         raw_text = request.data.get("raw_text")
 
         try:
-            entry = JournalEntry.objects.get(
-                id=entry_id,
-                user=request.user
-            )
-
+            entry = JournalEntry.objects.get(id=entry_id,user=request.user)
+            
         except JournalEntry.DoesNotExist:
-            return Response({
-                "error": "Entry not found"
-            }, status=404)
+            return Response({"error": "Entry not found"}, status=404)
 
         # update encrypted content
         entry.encrypted_content = encrypted_content
         entry.save()
 
-        # DELETE OLD SIGNALS
-        MentalSignal.objects.filter(
-            user=request.user,
-            source="journal",
-            source_id=entry.id
-        ).delete()
-
-        # recreate fresh signal
         self.process_journal_signal(
             request=request,
             user=request.user,
             entry=entry,
-            raw_text=raw_text
+            raw_text=raw_text,
+            action="journal_update"
         )
 
-        return Response({
-            "message": "Journal updated successfully"
-        })
+        return Response({"message": "Journal updated successfully"})
 
-    # =========================
     # DELETE JOURNAL
-    # =========================
     def delete(self, request):
-
         entry_id = request.data.get("id")
 
         try:
-            entry = JournalEntry.objects.get(
-                id=entry_id,
-                user=request.user
-            )
-
+            entry = JournalEntry.objects.get(id=entry_id, user=request.user)
+            
         except JournalEntry.DoesNotExist:
-            return Response({
-                "error": "Entry not found"
-            }, status=404)
+            return Response({"error": "Entry not found"}, status=404)
 
         # delete linked mental signals
-        MentalSignal.objects.filter(
-            user=request.user,
-            source="journal",
-            source_id=entry.id
-        ).delete()
+        MentalSignal.objects.filter(user=request.user, source="journal", source_id=entry.id).delete()
 
         # delete journal
         entry.delete()
 
         # refresh dashboard state
-        state = compute_state(
-            request.user,
-            days=0.5,
-            mode="realtime"
-        )
+        state = compute_state(request.user, days=0.5, mode="realtime")
 
         alert = generate_alert(
             global_state=state,
@@ -343,20 +365,14 @@ class JournalView(APIView):
         request.user.latest_smera_alert = alert
         request.user.save()
 
-        return Response({
-            "message": "Journal deleted successfully"
-        })
+        return Response({"message": "Journal deleted successfully"})
 
-    # =========================
     # SHARED SENTIMENT LOGIC
-    # =========================
-    def process_journal_signal(self, request, user, entry, raw_text):
-
+    def process_journal_signal(self, request, user, entry, raw_text, action="journal"):
         if not raw_text:
             return
 
         result = analyze_text(raw_text)
-
         mood = result["mood"]
 
         risk = (
@@ -365,26 +381,28 @@ class JournalView(APIView):
             else "less"
         )
 
-        # create mental signal
-        MentalSignal.objects.create(
+        # FIX: Update the existing signal if it exists, preserving its original created_at time!
+        MentalSignal.objects.update_or_create(
             user=user,
             source="journal",
             source_id=entry.id,
-            mood=mood,
-            risk=risk,
-            metadata={
-                "score": result["score"]
+            defaults={
+                "mood": mood,
+                "risk": risk,
+                "metadata": {
+                    "score": result["score"]
+                }
             }
         )
 
-        # recompute dashboard state
-        state = compute_state(user)
+        # recompute dashboard state 
+        state = compute_state(user, days=0.5, mode="realtime")
 
         # regenerate alert
         alert = generate_alert(
             global_state=state,
             trigger_context={
-                "source": "journal",
+                "source": action,
                 "mood": mood,
                 "risk": risk
             }
@@ -428,24 +446,34 @@ class VerifyJournalPasswordView(APIView):
             "message": "Incorrect password"
         })
         
-    
-class ExportDataView(APIView):
+class VaultKeyAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        moods = list(
-            MentalSignal.objects.filter(
-                user=request.user,
-                source="mood"
-            ).values()
-        )
-        journals = list(JournalEntry.objects.filter(user=request.user).values())
+        try:
+            vault = UserVaultKey.objects.get(user=request.user)
+            return Response({
+                "password_encrypted_key": vault.password_encrypted_key,
+                "password_iv": vault.password_iv,
+                "recovery_encrypted_key": vault.recovery_encrypted_key,
+                "recovery_iv": vault.recovery_iv
+            })
+        except UserVaultKey.DoesNotExist:
+            return Response({"error": "No vault key found"}, status=404)
 
-        return Response({
-            "moods": moods,
-            "journals": journals,
-        })
-        
+    def post(self, request):
+        vault, created = UserVaultKey.objects.update_or_create(
+            user=request.user,
+            defaults={
+                # We use .get() so we can update just Safe A or both safes at once
+                "password_encrypted_key": request.data.get("password_encrypted_key", ""),
+                "password_iv": request.data.get("password_iv", ""),
+                "recovery_encrypted_key": request.data.get("recovery_encrypted_key", ""),
+                "recovery_iv": request.data.get("recovery_iv", "")
+            }
+        )
+        return Response({"message": "Vault keys saved."})
+              
 class AssessmentRecommendationView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -461,10 +489,8 @@ class AssessmentRecommendationView(APIView):
     def get(self, request):
         user = request.user
         
-        # Set the local timezone
-        local_tz = pytz.timezone('Asia/Kolkata')
+        local_tz = ZoneInfo('Asia/Kolkata')
         
-        # Get the current date strictly in the local timezone
         local_today_date = timezone.now().astimezone(local_tz).date()
 
         history = Assessment.objects.filter(user=user)
@@ -566,28 +592,6 @@ class LiveAlertView(APIView):
             "alert": alert
         })
           
-def trim_messages(session, max_messages=MAX_MESSAGES):
-
-    messages = ChatMessage.objects.filter(
-        session=session
-    ).order_by("-created_at")
-
-    if messages.count() > max_messages:
-
-        extra_messages = messages[max_messages:]
-
-        ids_to_delete = [
-            m.id for m in extra_messages
-        ]
-
-        ChatMessage.objects.filter(
-            id__in=ids_to_delete
-        ).delete()
-
-
-def get_context_messages(session):
-    return ChatMessage.objects.filter(session=session)\
-        .order_by("created_at")
         
 class ChatSessionCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -595,14 +599,9 @@ class ChatSessionCreateView(APIView):
     def post(self, request):
         mood_context = request.session.pop("last_mood_context", None)
 
-        session = ChatSession.objects.create(
-            user=request.user,
-            initial_context=mood_context
-        )
+        session = ChatSession.objects.create(user=request.user, initial_context=mood_context)
 
-        return Response({
-            "session_id": session.id
-        })
+        return Response({"session_id": session.id})
         
 CONSULTATION_PATTERNS = [
     r"\btherapist\b",
@@ -633,11 +632,8 @@ class ChatMessageView(APIView):
             return Response({"error": "Missing data"}, status=400)       
 
         try:
-            session = ChatSession.objects.get(
-                id=session_id,
-                user=request.user,
-                is_active=True
-            )
+            session = ChatSession.objects.get(id=session_id, user=request.user, is_active=True)
+            
         except ChatSession.DoesNotExist:
             return Response({"error": "Invalid session"}, status=404)
 
@@ -702,7 +698,8 @@ class ChatMessageView(APIView):
         # -------------------------
         # 3. Get context (max 8)
         # -------------------------
-        messages = get_context_messages(session).only("role", "content", "created_at")
+        recent_qs = ChatMessage.objects.filter(session=session).only("role", "content", "created_at").order_by("-created_at")[:10]
+        messages = list(reversed(recent_qs))
 
 
         from ChatBot.rules.safety import check_critical
@@ -992,8 +989,8 @@ class MoodTrendView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # 1. Explicitly define IST and force the current time into it
-        ist_tz = pytz.timezone('Asia/Kolkata')
+        # Explicitly define IST and force the current time into it
+        ist_tz = ZoneInfo('Asia/Kolkata')
         local_now = timezone.now().astimezone(ist_tz)
 
         # Grab the user's very first check-in
@@ -1002,7 +999,7 @@ class MoodTrendView(APIView):
         if not first_signal:
             return Response([])
             
-        # 2. Force the first signal into IST before snapping to midnight
+        # Force the first signal into IST before snapping to midnight
         first_signal_local = first_signal.created_at.astimezone(ist_tz)
         start_time = first_signal_local.replace(hour=0, minute=0, second=0, microsecond=0)
         
@@ -1084,3 +1081,8 @@ def app_dashboard(request): return render(request, "core/dashboard.html")
 def journal(request): return render(request, "core/journal.html")
 def app_assessment(request): return render(request, "core/assessment.html")       
 def app_chatbot(request): return render(request, "core/chatbot.html")
+
+def recovery_hub(request): return render(request, "core/recovery_hub.html")
+def calm_now(request): return render(request, "core/calm_now.html")
+def sleep_support(request): return render(request, "core/sleep_support.html")
+def burnout_recovery(request): return render(request, "core/burnout_recovery.html")

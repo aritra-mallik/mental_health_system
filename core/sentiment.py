@@ -4,9 +4,8 @@
 
 from transformers import pipeline
 
-# -------------------------------
 # Lazy-loaded singleton
-# -------------------------------
+
 _model = None
 
 def get_model():
@@ -20,9 +19,7 @@ def get_model():
     return _model
 
 
-# -------------------------------
 # Chunking (still needed for long text)
-# -------------------------------
 def split_text(text, max_len=400):
     sentences = text.split(". ")
     chunks, current = [], ""
@@ -40,9 +37,8 @@ def split_text(text, max_len=400):
     return chunks
 
 
-# -------------------------------
+
 # Emotion → your mood mapping
-# -------------------------------
 def map_emotion_to_mood(emotion: str):
     if emotion == "joy":
         return "good"
@@ -58,9 +54,6 @@ def map_emotion_to_mood(emotion: str):
         return "neutral"
 
 
-# -------------------------------
-# Main function (drop-in replacement)
-# -------------------------------
 def analyze_text(text: str):
     model = get_model()
     chunks = split_text(text)

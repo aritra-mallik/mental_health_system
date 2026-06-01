@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Burnout Recovery{% endblock %}
+
+{% block content %}
+    <!-- Back Navigation -->
+    <button onclick="window.location.href='/api/core/recovery-hub/'" class="self-start mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors text-sm font-bold tracking-wide group">
+        <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+        Back to Recovery Hub
+    </button>
+
+    <!-- Header (Emerald/Teal Focus) -->
+    <div class="bg-gradient-to-br from-emerald-700 to-teal-900 dark:from-[#064E3B] dark:to-[#022C22] rounded-[2rem] p-10 text-center relative overflow-hidden shadow-xl mb-10 border border-emerald-600/30 dark:border-[#047857]/50">
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/20 dark:bg-[#10B981]/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-teal-400/20 dark:bg-[#0F766E]/30 rounded-full blur-3xl"></div>
+        
+        <div class="w-14 h-14 bg-emerald-900/40 dark:bg-[#022C22] rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 border border-emerald-500/30 dark:border-[#047857] shadow-inner text-emerald-400">🌱</div>
+        <h1 class="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">Burnout Recovery</h1>
+        <p class="text-emerald-50/90 dark:text-emerald-100/80 text-lg font-medium max-w-lg mx-auto leading-relaxed">You are running on empty. The goal today isn't productivity; it's gentle, guilt-free restoration.</p>
+    </div>
+
+    <!-- Core Philosophy Alert -->
+    <div class="bg-amber-50 dark:bg-[#1E140C] border border-amber-200 dark:border-[#5A3815] rounded-2xl p-6 mb-10 flex gap-4 items-start shadow-sm">
+        <div class="text-xl mt-0.5 opacity-90">⚠️</div>
+        <div>
+            <h3 class="font-bold text-amber-900 dark:text-[#FBBF24] mb-1">Permission to Rest</h3>
+            <p class="text-sm font-medium text-amber-800/80 dark:text-amber-100/60 leading-relaxed">Burnout is a physiological state, not a lack of willpower. If you cannot do any of the tasks below, your only task today is to rest. Your body needs safety to heal.</p>
+        </div>
+    </div>
+
+    <!-- The "Freeze" Breaker Section -->
+    <h2 class="text-lg font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-emerald-600 dark:text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        Micro-Activations (The Freeze Breaker)
+    </h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">When everything feels too heavy, pick just ONE micro-task. Completely ignore the rest.</p>
+
+    <!-- HARDCODED PERMANENTLY CHECKED CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
+        
+        <!-- Micro Task 1: Hydrate -->
+        <div class="bg-emerald-50 dark:bg-[#131F32] p-6 rounded-[1.5rem] ring-1 ring-emerald-500 dark:ring-[#10B981] shadow-sm flex flex-col justify-between select-none">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-blue-50 dark:bg-[#1E3A8A]/30 text-blue-500 dark:text-blue-400 rounded-xl flex items-center justify-center text-lg shadow-inner border border-blue-100 dark:border-blue-900/50">💧</div>
+                <div class="w-5 h-5 rounded-full border-2 border-emerald-500 dark:border-[#10B981] bg-emerald-500 dark:bg-[#10B981] flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 text-white dark:text-[#0A0F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800 dark:text-white mb-1.5">Hydrate</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">Drink exactly one glass of water. Notice the cool temperature. That is your only goal right now.</p>
+            </div>
+        </div>
+
+        <!-- Micro Task 2: Change Scenery -->
+        <div class="bg-emerald-50 dark:bg-[#131F32] p-6 rounded-[1.5rem] ring-1 ring-emerald-500 dark:ring-[#10B981] shadow-sm flex flex-col justify-between select-none">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-emerald-100 dark:bg-[#064E3B]/40 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-lg shadow-inner border border-emerald-200 dark:border-emerald-900/50">🌤️</div>
+                <div class="w-5 h-5 rounded-full border-2 border-emerald-500 dark:border-[#10B981] bg-emerald-500 dark:bg-[#10B981] flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 text-white dark:text-[#0A0F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800 dark:text-white mb-1.5">Change Scenery</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">Move from the bed to the couch, or open a single window to feel the fresh air on your face.</p>
+            </div>
+        </div>
+
+        <!-- Micro Task 3: Brain Dump -->
+        <div class="bg-emerald-50 dark:bg-[#131F32] p-6 rounded-[1.5rem] ring-1 ring-emerald-500 dark:ring-[#10B981] shadow-sm flex flex-col justify-between select-none">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-teal-100 dark:bg-[#134E4A]/40 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center text-lg shadow-inner border border-teal-200 dark:border-teal-900/50">🧠</div>
+                <div class="w-5 h-5 rounded-full border-2 border-emerald-500 dark:border-[#10B981] bg-emerald-500 dark:bg-[#10B981] flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 text-white dark:text-[#0A0F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800 dark:text-white mb-1.5">Brain Dump</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">Write down 3 things weighing heavily on your mind, fold the paper, and physically put it away.</p>
+            </div>
+        </div>
+
+        <!-- Micro Task 4: Sensory Shift -->
+        <div class="bg-emerald-50 dark:bg-[#131F32] p-6 rounded-[1.5rem] ring-1 ring-emerald-500 dark:ring-[#10B981] shadow-sm flex flex-col justify-between select-none">
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-10 h-10 bg-cyan-100 dark:bg-[#164E63]/40 text-cyan-600 dark:text-cyan-400 rounded-xl flex items-center justify-center text-lg shadow-inner border border-cyan-200 dark:border-cyan-900/50">🎧</div>
+                <div class="w-5 h-5 rounded-full border-2 border-emerald-500 dark:border-[#10B981] bg-emerald-500 dark:bg-[#10B981] flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 text-white dark:text-[#0A0F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-800 dark:text-white mb-1.5">Sensory Shift</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">Play one familiar, calming song. Close your eyes and just listen. Do not look at a screen.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Pacing Guide -->
+    <div class="bg-white dark:bg-[#111827] p-8 rounded-[1.5rem] border border-slate-200 dark:border-[#1F2937] shadow-sm dark:shadow-lg">
+        <h2 class="text-lg font-black text-slate-800 dark:text-white mb-2 tracking-wide">Energy Pacing Rule (The 50% Rule)</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium leading-relaxed">When recovering from burnout, your perception of your energy is skewed. Whatever you think you have the energy to do today—cut it in half immediately.</p>
+        
+        <div class="w-full h-3 bg-slate-100 dark:bg-[#030712] rounded-full overflow-hidden flex border border-slate-200 dark:border-[#1F2937]">
+            <div class="w-1/2 h-full bg-emerald-500 dark:bg-[#10B981] shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+            <div class="w-1/2 h-full bg-slate-300 dark:bg-[#1F2937] opacity-60"></div>
+        </div>
+        <div class="flex justify-between mt-3 text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em]">
+            <span>What you do</span>
+            <span>What you save for healing</span>
+        </div>
+    </div>
+    
+    <div class="mt-10 text-center">
+        <button onclick="sessionStorage.removeItem('chat_session_id'); window.location.href='/api/core/chatbot-page/';" class="bg-emerald-600 dark:bg-[#10B981] text-white dark:text-[#022C22] px-8 py-3.5 rounded-xl font-black shadow-lg hover:shadow-xl dark:shadow-[0_4px_15px_rgba(16,185,129,0.2)] hover:bg-emerald-700 dark:hover:bg-[#34D399] transition-all hover:-translate-y-1">
+            Talk to Smera about Burnout
+        </button>
+    </div>
+{% endblock %}

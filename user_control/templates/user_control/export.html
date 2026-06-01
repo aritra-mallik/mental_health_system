@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Wellness Report{% endblock %}
+
+{% block content %}
+<style>
+    /* Printing styles to make it look like a physical document */
+    @media print {
+        @page { margin: 15mm; size: auto; }
+        
+        * {
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+        
+        body, html, main, #reportDocument, .report-bg { 
+            background-color: #ffffff !important; 
+            background-image: none !important;
+            box-shadow: none !important;
+        }
+        
+        #reportDocument {
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        
+        .no-print, #chatSidebar, #sidebar, header, footer, .gpu-blob, .bg-constellation, .fixed.inset-0.z-\[-1\] { 
+            display: none !important; 
+        }
+        .print-break-inside-avoid { break-inside: avoid; page-break-inside: avoid; }
+        
+        /* FIX FOR CRUSHED CHARTS */
+        .chart-wrapper {
+            position: relative !important;
+            height: 250px !important; 
+            width: 100% !important;
+            display: block !important;
+        }
+        
+        /* Force canvas to ignore mobile inline styles and stretch to A4 paper width */
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+    }
+</style>
+
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 relative">
+    
+    <div class="no-print flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl p-5 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 gap-4 transition-colors duration-500 z-10 relative">
+        <div class="flex items-center gap-4">
+            <button onclick="window.location.href='/api/core/dashboard-page/'" class="group flex items-center justify-center w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 transition-colors shadow-sm" title="Back to Dashboard">
+                <svg class="w-5 h-5 transform transition-transform duration-300 group-hover:-translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </button>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Export Center</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Generate a beautiful, secure PDF report.</p>
+            </div>
+        </div>
+        <button onclick="triggerPrint()" class="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            Download PDF Report
+        </button>
+    </div>
+
+    <div id="reportDocument" class="report-bg bg-white dark:bg-slate-900 shadow-2xl rounded-[2.5rem] p-6 sm:p-10 md:p-14 border border-slate-200 dark:border-slate-800 transition-colors duration-500 relative overflow-hidden">
+        
+        <div class="no-print absolute -top-40 -right-40 w-[500px] h-[500px] bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="no-print absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-fuchsia-500/10 dark:bg-fuchsia-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 border-b-4 border-indigo-500 pb-6 mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+            <div>
+                <h1 class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 tracking-tight" style="color: #4f46e5; -webkit-text-fill-color: #4f46e5;">Wellness Report</h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-2 font-bold tracking-widest uppercase text-xs">Generated securely via Smera</p>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                <p id="reportDate" class="text-sm font-bold text-slate-600 dark:text-slate-300"></p>
+            </div>
+        </div>
+
+        <div class="relative z-10 mb-12 print-break-inside-avoid">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-5 flex items-center gap-3">
+                <span class="w-8 h-1.5 bg-indigo-500 rounded-full no-print"></span> User Profile
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                
+                <div class="print-card-blue col-span-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/10 p-5 rounded-2xl border border-blue-200 dark:border-blue-800/30 shadow-sm">
+                    <span class="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest block mb-1">Full Name</span>
+                    <strong id="r-name" class="text-slate-900 dark:text-white text-xl">--</strong>
+                </div>
+
+                <div class="print-card-purple col-span-2 bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/10 p-5 rounded-2xl border border-purple-200 dark:border-purple-800/30 shadow-sm">
+                    <span class="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest block mb-1">Email Address</span>
+                    <strong id="r-email" class="text-slate-900 dark:text-white text-lg break-all">--</strong>
+                </div>
+
+                <div class="print-card-emerald bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/30 shadow-sm">
+                    <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block mb-1">Current Age</span>
+                    <strong id="r-age" class="text-slate-900 dark:text-white text-xl">--</strong>
+                </div>
+
+                <div class="print-card-amber bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 p-5 rounded-2xl border border-amber-200 dark:border-amber-800/30 shadow-sm">
+                    <span class="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest block mb-1">Date of Birth</span>
+                    <strong id="r-dob" class="text-slate-900 dark:text-white text-lg">--</strong>
+                </div>
+
+                <div class="print-card-rose bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/10 p-5 rounded-2xl border border-rose-200 dark:border-rose-800/30 shadow-sm">
+                    <span class="text-xs font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest block mb-1">Member Since</span>
+                    <strong id="r-joined" class="text-slate-900 dark:text-white text-lg">--</strong>
+                </div>
+
+                <div class="print-card-cyan bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-900/20 dark:to-sky-900/10 p-5 rounded-2xl border border-cyan-200 dark:border-cyan-800/30 shadow-sm">
+                    <span class="text-xs font-black text-cyan-600 dark:text-cyan-400 uppercase tracking-widest block mb-1">Journal Entries</span>
+                    <strong id="r-journals" class="text-slate-900 dark:text-white text-xl">--</strong>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="relative z-10 mb-12 print-break-inside-avoid">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-5 flex items-center gap-3">
+                <span class="w-8 h-1.5 bg-fuchsia-500 rounded-full no-print"></span> Recent Assessments
+            </h2>
+            <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                            <th class="p-4 font-bold">Date</th>
+                            <th class="p-4 font-bold">Assessment</th>
+                            <th class="p-4 font-bold">Score</th>
+                            <th class="p-4 font-bold">Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="r-assessments" class="divide-y divide-slate-100 dark:divide-slate-800/50 bg-white dark:bg-slate-900/50 backdrop-blur-sm">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="relative z-10 mb-12 print-break-inside-avoid">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-5 flex items-center gap-3">
+                <span class="w-8 h-1.5 bg-blue-500 rounded-full no-print"></span> Emotional Timeline (Daily Average)
+            </h2>
+            <div class="print-card-blue bg-gradient-to-br from-blue-50/50 to-white dark:from-slate-800/80 dark:to-slate-900/80 border border-blue-100 dark:border-slate-700 p-4 rounded-3xl shadow-sm">
+                <div class="chart-wrapper h-64 sm:h-[300px] w-full relative">
+                    <canvas id="reportMoodChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative z-10 mb-12 print-break-inside-avoid">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-5 flex items-center gap-3">
+                <span class="w-8 h-1.5 bg-pink-500 rounded-full no-print"></span> 7-Day Mood Events
+            </h2>
+            <div class="print-card-rose bg-gradient-to-br from-pink-50/50 to-white dark:from-slate-800/80 dark:to-slate-900/80 border border-pink-100 dark:border-slate-700 p-4 rounded-3xl shadow-sm">
+                <div class="chart-wrapper h-64 sm:h-[300px] w-full relative">
+                    <canvas id="reportRawEventsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative z-10 mb-12 print-break-inside-avoid">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-5 flex items-center gap-3">
+                <span class="w-8 h-1.5 bg-emerald-500 rounded-full no-print"></span> Suggested Action Plan
+            </h2>
+            <div class="print-card-emerald bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 border border-emerald-200 dark:border-emerald-800/50 p-6 sm:p-8 rounded-3xl shadow-sm">
+                <ul id="r-recommendations" class="space-y-4 text-slate-800 dark:text-slate-200 text-sm sm:text-base font-medium">
+                </ul>
+            </div>
+        </div>
+
+        <div class="relative z-10 mb-12 print-break-inside-avoid">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-5 flex items-center gap-3">
+                <span class="w-8 h-1.5 bg-amber-500 rounded-full no-print"></span> Clinical Consultations
+            </h2>
+            <div id="r-consultations" class="space-y-3">
+            </div>
+        </div>
+
+        <div class="relative z-10 mt-16 pt-8 border-t-2 border-slate-200 dark:border-slate-800 print-break-inside-avoid">
+            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Clinical Disclaimer</h4>
+            <p id="r-disclaimer" class="text-xs sm:text-xs text-slate-500 dark:text-slate-400 italic leading-relaxed text-justify"></p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.getElementById('reportDate').innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+
+
+// Vibrant Badges
+function getRiskBadge(risk) {
+    const r = risk.toLowerCase();
+    if (r.includes('high') || r.includes('severe')) return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 border-red-200 dark:border-red-500/30';
+    if (r.includes('moderate') || r.includes('subthreshold')) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-500/30';
+    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30';
+}
+
+function getStatusBadge(status) {
+    const s = status.toLowerCase();
+    if (s === 'completed') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30';
+    if (s === 'cancelled') return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 border-red-200 dark:border-red-500/30';
+    return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-500/30';
+}
+
+async function loadReportData() {
+    try {
+        const { data } = await apiRequest("/api/user/report-data/", "GET");
+
+        // Profile
+        document.getElementById('r-name').innerText = data.profile.name;
+        document.getElementById('r-email').innerText = data.profile.email;
+        document.getElementById('r-dob').innerText = data.profile.dob || '--';
+        document.getElementById('r-age').innerText = data.profile.age;
+        document.getElementById('r-joined').innerText = data.profile.member_since;
+        document.getElementById('r-journals').innerText = data.profile.journal_count;
+
+        // Assessments
+        const assessTable = document.getElementById('r-assessments');
+        if (data.assessments.length === 0) {
+            assessTable.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500 italic">No assessments completed yet.</td></tr>`;
+        } else {
+            assessTable.innerHTML = data.assessments.map(a => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
+                    <td class="p-4 text-slate-600 dark:text-slate-400 font-medium">${a.date}</td>
+                    <td class="p-4 font-black text-indigo-600 dark:text-indigo-400">${a.type}</td>
+                    <td class="p-4 font-bold text-slate-800 dark:text-slate-300">${a.score}</td>
+                    <td class="p-4">
+                        <span class="px-3 py-1.5 border rounded-lg text-xs font-black uppercase tracking-wider ${getRiskBadge(a.risk)}">${a.risk}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Consultations
+        const consulDiv = document.getElementById('r-consultations');
+        if (data.consultations.length === 0) {
+            consulDiv.innerHTML = `<p class="text-slate-500 text-sm p-6 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 italic">No clinical consultation history available.</p>`;
+        } else {
+            consulDiv.innerHTML = data.consultations.map(c => `
+                <div class="print-card-blue flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-slate-800/80 p-5 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm gap-4 transition-colors duration-300">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-xl border border-teal-200 dark:border-teal-800/50 shrink-0 no-print shadow-inner">
+                            🩺
+                        </div>
+                        <div>
+                            <p class="font-black text-lg text-slate-800 dark:text-white"> ${c.counselor}</p>
+                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">${c.date} <span class="mx-1 text-slate-300 dark:text-slate-600">•</span> <span class="text-indigo-500 dark:text-indigo-400">${c.mode}</span></p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-widest px-4 py-2 border rounded-xl shadow-sm ${getStatusBadge(c.status)}">Session ${c.status}</span>
+                </div>
+            `).join('');
+        }
+
+        // Recommendations
+        const recList = document.getElementById('r-recommendations');
+        recList.innerHTML = data.recommendations.map(rec => `
+            <li class="flex items-start gap-3">
+                <span class="text-emerald-500 dark:text-emerald-400 mt-0.5 no-print">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                </span>
+                <span class="leading-relaxed">${rec}</span>
+            </li>
+        `).join('');
+
+        // Disclaimer
+        document.getElementById('r-disclaimer').innerText = data.disclaimer;
+
+        // Render Charts
+        renderReportChart(data.mood_trends);
+        renderRawEventsChart(data.raw_mood_events);
+
+    } catch (e) {
+        console.error("Failed to load report data", e);
+    }
+}
+
+// Chart color handling (responsive to theme on screen, overrides on print)
+function getChartTextColor() {
+    return document.documentElement.classList.contains('dark') ? '#9ca3af' : '#475569';
+}
+function getChartGridColor() {
+    return document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0';
+}
+
+function renderReportChart(moodTrends) {
+    const ctx = document.getElementById('reportMoodChart');
+    if (!moodTrends || moodTrends.length === 0) {
+        ctx.parentElement.innerHTML = `<p class="text-slate-500 text-sm text-center mt-10 italic">No emotional data recorded yet.</p>`;
+        return;
+    }
+
+    const labels = moodTrends.map(d => d.date);
+    const moodMap = { "Overwhelmed": 0, "Low": 1, "Stressed": 2, "Neutral": 3, "Good": 4, "Great": 5 };
+    const values = moodTrends.map(d => moodMap[d.mood] ?? 3);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Mood Level',
+                data: values,
+                borderColor: '#4f46e5', 
+                backgroundColor: 'rgba(79, 70, 229, 0.15)',
+                borderWidth: 4,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#4f46e5',
+                pointBorderWidth: 3,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            animation: false, // Ensures rendering finishes instantly for the PDF
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    min: 0, max: 5,
+                    ticks: {
+                        color: getChartTextColor(),
+                        stepSize: 1,
+                        font: { size: 11, weight: 'bold' },
+                        callback: function(value) {
+                            return ['Overwhelmed', 'Low', 'Stressed', 'Neutral', 'Good', 'Great'][value];
+                        }
+                    },
+                    grid: { color: getChartGridColor(), drawBorder: false }
+                },
+                x: {
+                    ticks: { color: getChartTextColor(), font: { size: 11, weight: 'bold' } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function renderRawEventsChart(rawEvents) {
+    const ctx = document.getElementById('reportRawEventsChart');
+    if (!rawEvents || rawEvents.length === 0) {
+        ctx.parentElement.innerHTML = `<p class="text-slate-500 text-sm text-center mt-10 italic">No check-ins recorded in the last 7 days.</p>`;
+        return;
+    }
+
+    const labels = rawEvents.map(e => e.date);
+    const moodMap = { "overwhelmed": 0, "low": 1, "stressed": 2, "neutral": 3, "good": 4, "great": 5 };
+    const values = rawEvents.map(e => moodMap[e.mood.toLowerCase()] ?? 3);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Mood Check-in',
+                data: values,
+                borderColor: '#ec4899', 
+                backgroundColor: 'rgba(236, 72, 153, 0.15)',
+                borderWidth: 4,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#ec4899',
+                pointBorderWidth: 3,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            animation: false, 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    min: 0, max: 5,
+                    ticks: {
+                        color: getChartTextColor(),
+                        stepSize: 1,
+                        font: { size: 11, weight: 'bold' },
+                        callback: function(value) {
+                            return ['Overwhelmed', 'Low', 'Stressed', 'Neutral', 'Good', 'Great'][value];
+                        }
+                    },
+                    grid: { color: getChartGridColor(), drawBorder: false }
+                },
+                x: {
+                    ticks: {
+                        color: getChartTextColor(),
+                        font: { size: 11, weight: 'bold' },
+                        maxTicksLimit: 8,
+                        autoSkip: true
+                    },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+// Small delay ensures charts draw fully before invoking print
+function triggerPrint() {
+    setTimeout(() => {
+        window.print();
+    }, 300);
+}
+
+// --- FORCE LIGHT THEME FOR PDF EXPORT ---
+let wasDarkMode = false;
+
+window.addEventListener('beforeprint', () => {
+    wasDarkMode = document.documentElement.classList.contains('dark');
+    
+    if (wasDarkMode) {
+        document.documentElement.classList.remove('dark');
+        updateChartsTheme('#475569', '#e2e8f0');
+    }
+
+    // NEW: Force all charts to recalculate their resolution for the A4 paper
+    Object.values(Chart.instances).forEach(chart => {
+        if (chart) chart.resize();
+    });
+});
+
+window.addEventListener('afterprint', () => {
+    if (wasDarkMode) {
+        document.documentElement.classList.add('dark');
+        updateChartsTheme('#9ca3af', '#334155');
+    }
+});
+
+function triggerPrint() {
+    // Force a resize right before opening the dialog for mobile safety
+    Object.values(Chart.instances).forEach(chart => {
+        if (chart) chart.resize();
+    });
+    
+    setTimeout(() => {
+        window.print();
+    }, 300);
+}
+
+function updateChartsTheme(textColor, gridColor) {
+    // Safely get existing chart instances
+    const moodChart = Chart.getChart("reportMoodChart");
+    const eventsChart = Chart.getChart("reportRawEventsChart");
+    
+    [moodChart, eventsChart].forEach(chart => {
+        if (chart) {
+            chart.options.scales.x.ticks.color = textColor;
+            chart.options.scales.y.ticks.color = textColor;
+            chart.options.scales.y.grid.color = gridColor;
+            chart.update('none'); // 'none' ensures it updates instantly without breaking the PDF
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", loadReportData);
+</script>
+{% endblock %}

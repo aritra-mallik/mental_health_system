@@ -1,5 +1,4 @@
 {% load static %}
-{% load static%}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -84,8 +83,6 @@
 
   </div>
 
-  {% include "includes/navbar.html" %}
-
   <!-- ✅ TOAST CONTAINER -->
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 space-y-2"></div>
 
@@ -157,7 +154,7 @@
               <span class="text-xs font-medium tracking-[0.4em] uppercase text-amber-500/80 animate-pulse">
                   Please Wait
               </span>
-              <span class="text-[10px] tracking-widest text-slate-400 uppercase drop-shadow-md">
+              <span class="text-xs tracking-widest text-slate-400 uppercase drop-shadow-md">
                   Synchronizing Data
               </span>
           </div>

@@ -15,162 +15,148 @@
       </button>
     </div>
 
-    <div class="bg-white/60 dark:bg-[#151828]/60 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-8 md:p-12 shadow-lg relative">
+    <div class="bg-white/60 dark:bg-[#151828]/60 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-64 h-64 bg-rose-500/10 dark:bg-pink-500/10 rounded-full blur-[60px] pointer-events-none"></div>
       
-      <div class="flex items-center gap-4 mb-10">
-        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-md border border-white/20 relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-br from-rose-600 to-pink-500 opacity-20 dark:opacity-100"></div>
-          <div class="relative z-10">📝</div>
+      <div class="text-center mb-10 relative z-10">
+        <div class="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner border border-rose-200 dark:border-rose-800/50 transform -rotate-6">
+          📋
         </div>
-        <h1 class="text-3xl md:text-4xl font-black text-slate-800 dark:text-white tracking-tight">
-          Review Booking
-        </h1>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-800 dark:text-white tracking-tight mb-3">Review Your Session</h1>
+        <p class="text-slate-500 dark:text-slate-400 font-medium text-lg">Please confirm the details below before booking.</p>
       </div>
 
-      <div class="space-y-6">
+      <div class="bg-white/50 dark:bg-slate-900/50 rounded-[2rem] p-6 md:p-8 border border-slate-200/50 dark:border-slate-700/50 shadow-sm relative z-10 mb-8">
         
-        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
-            👨‍⚕️ Doctor
-          </span>
-          <b id="doctorName" class="text-slate-800 dark:text-white text-lg font-black">Loading...</b>
+        <div class="flex items-center gap-5 mb-8 pb-8 border-b border-slate-200 dark:border-slate-700/50">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-md border border-white/20 relative overflow-hidden shrink-0">
+            <div class="absolute inset-0 bg-gradient-to-br from-rose-600 to-pink-500 opacity-20 dark:opacity-100"></div>
+            <div class="relative z-10">👨‍⚕️</div>
+          </div>
+          <div>
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-1" id="counselorName">Loading...</h2>
+            <p class="text-slate-500 dark:text-slate-400 font-bold" id="counselorSpecialty">--</p>
+          </div>
         </div>
 
-        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest">
-            Designation
-          </span>
-          <b id="designation" class="text-slate-800 dark:text-white text-lg font-black"></b>
+        <div class="mb-6 space-y-4">
+          <div class="flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-700/50">
+            <span class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">Date</span>
+            <span class="font-black text-slate-800 dark:text-white whitespace-nowrap" id="slotDate">Loading...</span>
+          </div>
+          <div class="flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-700/50">
+            <span class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">Time</span>
+            <span class="font-black text-slate-800 dark:text-white whitespace-nowrap" id="slotTime">Loading...</span>
+          </div>
+          <div class="flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-700/50">
+            <span class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">Mode</span>
+            <span class="font-black text-slate-800 dark:text-white uppercase px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs" id="slotMode">Loading...</span>
+          </div>
         </div>
 
-        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
-            📅 Date
-          </span>
-          <b id="slotDate" class="text-slate-800 dark:text-white text-lg font-black"></b>
-        </div>
-
-        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
-            🕒 Time
-          </span>
-          <b id="slotTime" class="text-slate-800 dark:text-white text-lg font-black"></b>
-        </div>
-
-        <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-widest">
-            Mode
-          </span>
-          <b id="slotMode" class="text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-4 py-1.5 rounded-xl border border-rose-100 dark:border-rose-800/50 text-sm font-black uppercase tracking-wider"></b>
-        </div>
-
-        <hr class="my-8 border-slate-200/60 dark:border-slate-700/60">
-
-        <div class="flex justify-between items-center">
-          <span class="text-slate-600 dark:text-slate-300 font-medium text-lg">Consultation Fee</span>
-          <b id="consultationFee" class="text-slate-800 dark:text-white text-xl"></b>
-        </div>
-
-        <div class="flex justify-between items-center">
-          <span class="text-slate-600 dark:text-slate-300 font-medium text-lg">Platform Fee</span>
-          <b class="text-slate-800 dark:text-white text-xl">₹50</b>
-        </div>
-
-        <div class="flex justify-between items-center mt-6 p-6 bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/30 rounded-3xl">
-          <span class="text-2xl font-black text-slate-800 dark:text-white">Total</span>
-          <span id="totalFee" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500"></span>
+        <div class="space-y-3 pt-2">
+          <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 font-medium">
+            <span>Consultation Fee</span>
+            <span class="font-bold text-slate-700 dark:text-slate-300" id="consultationFee">--</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 font-medium">
+            <span>Platform Fee</span>
+            <span class="font-bold text-slate-700 dark:text-slate-300">₹50.00</span>
+          </div>
+          
+          <div class="flex justify-between items-center mt-6 pt-6 border-t-2 border-dashed border-slate-200 dark:border-slate-700">
+            <span class="text-slate-800 dark:text-white font-black text-lg">Total Amount</span>
+            <span class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500" id="totalFee">--</span>
+          </div>
         </div>
 
       </div>
 
-      <div class="flex flex-col sm:flex-row gap-4 mt-10">
-        
-        <button onclick="history.back()" class="flex-1 py-5 rounded-2xl bg-white/80 dark:bg-slate-800 text-rose-500 font-black border border-rose-100 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all shadow-sm hover:-translate-y-0.5 active:translate-y-0 text-lg">
-          Cancel
-        </button>
-
-        <button onclick="openConfirmModal()" class="flex-[2] relative overflow-hidden bg-gradient-to-r from-rose-600 to-pink-500 text-white font-black text-lg py-5 rounded-2xl shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all hover:shadow-[0_12px_25px_-6px_rgba(225,29,72,0.6)] hover:-translate-y-0.5 active:translate-y-0 group/btn border border-rose-400/30">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
-          <span class="relative z-10 tracking-wide uppercase">Confirm Booking</span>
-        </button>
-
-      </div>
+      <button onclick="openConfirmModal()" class="w-full bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-700 hover:to-pink-600 text-white font-black text-xl py-5 rounded-2xl shadow-[0_10px_40px_-10px_rgba(225,29,72,0.5)] transition-all hover:-translate-y-1 active:scale-[0.98] relative z-10">
+        Confirm Booking
+      </button>
 
     </div>
   </div>
 
-<div id="confirmModal" class="fixed inset-0 hidden items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 transition-all">
-  <div class="bg-white/90 dark:bg-[#151828]/90 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-8 max-w-md w-full mx-4 shadow-2xl relative overflow-hidden text-center">
-    
-    <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/20 dark:bg-pink-500/20 rounded-full blur-[40px] pointer-events-none z-[-1]"></div>
-
-    <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl border border-rose-200 dark:border-rose-800/50">
-      ❓
+  <div id="confirmModal" class="fixed inset-0 hidden items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 transition-all">
+    <div class="bg-white/90 dark:bg-[#151828]/90 backdrop-blur-xl border border-white/80 dark:border-slate-700/50 rounded-[2.5rem] p-8 max-w-md w-full mx-4 shadow-2xl relative overflow-hidden text-center">
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/20 dark:bg-pink-500/20 rounded-full blur-[40px] pointer-events-none z-[-1]"></div>
+      
+      <div class="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl border border-rose-200 dark:border-rose-800/50">
+        ✨
+      </div>
+      
+      <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Final Step</h2>
+      <p class="mt-4 text-slate-500 dark:text-slate-400 font-medium text-lg leading-relaxed">You are about to securely lock in this appointment. Proceed?</p>
+      
+      <div class="flex gap-4 mt-8">
+        <button onclick="closeModal()" class="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+        <button onclick="confirmBooking()" class="flex-1 py-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5">Yes, Book Now</button>
+      </div>
     </div>
-
-    <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">
-      Confirm Booking
-    </h2>
-    
-    <p class="mt-4 text-slate-500 dark:text-slate-400 font-medium text-lg">
-      Do you want to confirm and finalize this booking?
-    </p>
-
-    <div class="flex gap-4 mt-8">
-      <button onclick="closeModal()" class="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-        No, wait
-      </button>
-
-      <button onclick="confirmBooking()" class="flex-1 py-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5">
-        Yes, Confirm
-      </button>
-    </div>
-
   </div>
-</div>
 
-<div id="messagePopup" class="hidden">
-  <span id="popupText"></span>
-</div>
+  <div id="messagePopup" class="hidden"><span id="popupText"></span></div>
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
-if(!localStorage.getItem("access")){
-  location.href="/api/core/login-page/";
-}
+if(!localStorage.getItem("access")) location.href = "/api/core/login-page/";
 
 const params = new URLSearchParams(window.location.search);
 const counselorId = params.get("counselor");
 const slotId = params.get("slot");
 
-let counselor = {};
-let selectedSlot = {};
+if(!counselorId || !slotId) location.href = "/api/consultation/";
 
-async function loadReview(){
-  try{
-    const {res,data} = await apiRequest(`/api/consultation/counselors/${counselorId}/`);
-    
-    if(!res.ok){
-      throw new Error();
+// ROBUST DATE FORMATTER
+function formatIndianDate(dateStr) {
+  if (!dateStr) return "--";
+  if (dateStr.includes("-")) {
+    const parts = dateStr.split("-");
+    if (parts[0].length === 4) { 
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
+  }
+  return dateStr;
+}
+
+// ROBUST TIME FORMATTER
+function formatAMPM(timeStr) {
+  if (!timeStr) return "--";
+  try {
+    if (timeStr.toLowerCase().includes("am") || timeStr.toLowerCase().includes("pm")) return timeStr;
+    const parts = timeStr.split(':');
+    let hours = parseInt(parts[0], 10);
+    const minutes = parts[1];
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    return hours.toString().padStart(2, '0') + ':' + minutes + ' ' + ampm;
+  } catch (e) {
+    return timeStr;
+  }
+}
+
+async function loadBooking(){
+  try {
+    const {res: cRes, data: cData} = await apiRequest(`/api/consultation/counselors/${counselorId}/`);
+    if(!cRes.ok) throw new Error();
+
+    const slot = cData.slots.find(s => s.id == slotId);
+    if(!slot) throw new Error();
+
+    document.getElementById("counselorName").innerText = cData.name;
+    document.getElementById("counselorSpecialty").innerText = cData.specialization;
     
-    counselor = data;
-    selectedSlot = data.slots.find(s => String(s.id) === String(slotId));
-
-    if(!selectedSlot){
-      showPopup("Slot not found", "error");
-      return;
-    }
-
-    document.getElementById("doctorName").innerText = counselor.name;
-    document.getElementById("designation").innerText = counselor.designation;
-    document.getElementById("slotDate").innerText = selectedSlot.date;
-    document.getElementById("slotTime").innerText = selectedSlot.time;
-    document.getElementById("slotMode").innerText = selectedSlot.mode;
-    document.getElementById("consultationFee").innerText = `₹${counselor.consultation_fee}`;
-    document.getElementById("totalFee").innerText = `₹${parseFloat(counselor.consultation_fee) + 50}`;
+    document.getElementById("slotDate").innerText = formatIndianDate(slot.date);
+    document.getElementById("slotTime").innerText = formatAMPM(slot.time);
+    
+    document.getElementById("slotMode").innerText = slot.mode;
+    document.getElementById("consultationFee").innerText = `₹${cData.consultation_fee}`;
+    document.getElementById("totalFee").innerText = `₹${parseFloat(cData.consultation_fee) + 50}`;
 
   } catch {
     showPopup("Failed loading booking", "error");
@@ -208,18 +194,12 @@ async function confirmBooking(){
 
 function showPopup(text, type="success"){
   const popup = document.getElementById("messagePopup");
-  
-  // Updated popup styling to match the rose/pink theme for success states
   popup.className = `fixed top-8 left-1/2 -translate-x-1/2 px-8 py-4 rounded-2xl text-white font-bold shadow-2xl z-[999] transition-all transform border border-white/20 backdrop-blur-md ${type === "error" ? "bg-red-500/90" : "bg-rose-600/90"}`;
-  
   document.getElementById("popupText").innerText = text;
   popup.classList.remove("hidden");
-
-  setTimeout(()=>{
-    popup.classList.add("hidden");
-  }, 1800);
+  setTimeout(()=> popup.classList.add("hidden"), 1800);
 }
 
-loadReview();
+loadBooking();
 </script>
 {% endblock %}

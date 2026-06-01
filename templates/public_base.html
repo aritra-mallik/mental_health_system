@@ -1,5 +1,4 @@
 {% load static %}
-{% load static %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -20,7 +19,7 @@
   <!-- ❌ No footer (optional, but cleaner for auth UX) -->
 
   <!-- Toast (still needed) -->
-  <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 space-y-2"></div>
+  <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[150] space-y-2"></div>
 
   <main class="max-w-7xl mx-auto p-4 rounded-md">
     {% block content %}{% endblock %}
@@ -89,7 +88,7 @@
               <span class="text-xs font-medium tracking-[0.4em] uppercase text-amber-500/80 animate-pulse">
                   Please Wait
               </span>
-              <span class="text-[10px] tracking-widest text-slate-400 uppercase drop-shadow-md">
+              <span class="text-xs tracking-widest text-slate-400 uppercase drop-shadow-md">
                   Synchronizing Data
               </span>
           </div>

@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Calm Now{% endblock %}
+
+{% block content %}
+<style>
+    /* 4-7-8 Breathing Animation */
+    @keyframes breathe {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        21% { transform: scale(1.8); opacity: 1; } /* Inhale (4s) */
+        58% { transform: scale(1.8); opacity: 1; } /* Hold (7s) */
+        100% { transform: scale(1); opacity: 0.8; } /* Exhale (8s) */
+    }
+    .circle-breathe {
+        animation: breathe 19s infinite linear;
+        animation-play-state: paused;
+    }
+    .is-breathing .circle-breathe {
+        animation-play-state: running;
+    }
+    
+    /* Smooth transition for grounding steps */
+    .fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="max-w-4xl mx-auto py-10 px-4 flex flex-col items-center justify-center min-h-[80vh] relative z-10">
+    
+    <!-- Back Navigation & Voice Toggle -->
+    <div class="w-full flex justify-between items-center mb-8">
+        <button onclick="window.location.href='/api/core/recovery-hub/'" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors text-sm font-bold tracking-wide group">
+            <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+            Back to Recovery Hub
+        </button>
+        
+        <!-- Voice Guide Toggle -->
+        <button onclick="toggleVoice()" id="btn-voice" class="px-4 py-2 rounded-xl font-bold text-xs tracking-wider uppercase bg-emerald-100 text-emerald-700 dark:bg-[#064E3B]/60 dark:text-[#10B981] shadow-sm transition-all flex items-center gap-2 border border-transparent dark:border-[#10B981]/30">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M19 12h.01M6 15H4a2 2 0 01-2-2V11a2 2 0 012-2h2l5-5v16l-5-5z"></path></svg>
+            Voice: ON
+        </button>
+    </div>
+
+    <!-- Mode Switcher -->
+    <div class="flex gap-4 mb-12 bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] p-1.5 rounded-2xl shadow-sm">
+        <button onclick="setMode('breathe')" id="btn-breathe" class="px-6 py-2.5 rounded-xl font-bold bg-white dark:bg-[#1F2937] text-slate-800 dark:text-white shadow-sm transition-all">Breathing</button>
+        <button onclick="setMode('ground')" id="btn-ground" class="px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all">Grounding</button>
+    </div>
+
+    <!-- ==================== -->
+    <!--    BREATHING UI      -->
+    <!-- ==================== -->
+    <div id="breathe-ui" class="flex flex-col items-center text-center w-full fade-in-up">
+        <h1 class="text-3xl font-black text-slate-800 dark:text-white mb-2">4-7-8 Breathing</h1>
+        <p class="text-slate-500 dark:text-slate-400 mb-16 font-medium">Follow the circle. Inhale for 4, hold for 7, exhale for 8.</p>
+        
+        <div class="relative w-64 h-64 flex items-center justify-center mb-16">
+            <div class="absolute inset-0 bg-emerald-500/20 dark:bg-[#10B981]/10 rounded-full"></div>
+            <div class="circle-breathe absolute w-32 h-32 bg-gradient-to-tr from-emerald-500 to-teal-600 dark:from-[#10B981] dark:to-[#0F766E] rounded-full shadow-[0_0_40px_rgba(16,185,129,0.4)]"></div>
+            <div id="breathe-text" class="relative z-10 text-2xl font-black text-emerald-950 dark:text-white tracking-widest">START</div>
+        </div>
+
+        <button onclick="toggleBreathing()" id="start-btn" class="bg-emerald-600 dark:bg-[#10B981] text-white dark:text-[#022C22] px-10 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl dark:shadow-[0_4px_15px_rgba(16,185,129,0.2)] hover:-translate-y-1 hover:bg-emerald-700 dark:hover:bg-[#34D399] transition-all">Begin Exercise</button>
+    </div>
+
+    <!-- ==================== -->
+    <!--    GROUNDING UI      -->
+    <!-- ==================== -->
+    <div id="ground-ui" class="hidden flex-col items-center text-center w-full max-w-2xl fade-in-up">
+        <h1 class="text-3xl font-black text-slate-800 dark:text-white mb-2">5-4-3-2-1 Grounding</h1>
+        <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium">Physical action interrupts anxiety. Tap a circle each time you find an item.</p>
+
+        <!-- Interactive Grounding Container -->
+        <div class="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-[2rem] p-8 md:p-12 shadow-xl min-h-[360px] flex flex-col justify-center items-center relative overflow-hidden">
+            <div id="grounding-content" class="w-full fade-in-up">
+                <!-- Javascript will inject the interactive steps here -->
+            </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="flex gap-3 mt-8" id="grounding-progress">
+            <!-- Javascript will inject the progress dots here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =========================================
+       TTS AUDIO MANAGER (Smart Caching)
+       ========================================= */
+    let isVoiceEnabled = true;
+    let currentAudio = null;
+    const audioCache = {}; 
+
+    function toggleVoice() {
+        isVoiceEnabled = !isVoiceEnabled;
+        const btn = document.getElementById('btn-voice');
+        
+        if (isVoiceEnabled) {
+            btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M19 12h.01M6 15H4a2 2 0 01-2-2V11a2 2 0 012-2h2l5-5v16l-5-5z"></path></svg> Voice: ON`;
+            btn.classList.replace('bg-slate-100', 'bg-emerald-100');
+            btn.classList.replace('text-slate-500', 'text-emerald-700');
+            btn.classList.replace('dark:bg-[#1F2937]', 'dark:bg-[#064E3B]/60');
+            btn.classList.replace('dark:text-slate-400', 'dark:text-[#10B981]');
+            btn.classList.replace('border-transparent', 'dark:border-[#10B981]/30');
+        } else {
+            btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.586 15H4a2 2 0 01-2-2V11a2 2 0 012-2h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg> Voice: OFF`;
+            btn.classList.replace('bg-emerald-100', 'bg-slate-100');
+            btn.classList.replace('text-emerald-700', 'text-slate-500');
+            btn.classList.replace('dark:bg-[#064E3B]/60', 'dark:bg-[#1F2937]');
+            btn.classList.replace('dark:text-[#10B981]', 'dark:text-slate-400');
+            btn.classList.replace('dark:border-[#10B981]/30', 'border-transparent');
+            if (currentAudio) currentAudio.pause();
+        }
+    }
+
+    async function playVoice(text) {
+        if (!isVoiceEnabled) return;
+        
+        if (currentAudio) {
+            currentAudio.pause();
+        }
+
+        if (audioCache[text]) {
+            currentAudio = audioCache[text];
+            currentAudio.currentTime = 0;
+            currentAudio.play().catch(e => console.log("Audio play blocked:", e));
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/core/chat/tts/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access')}`
+                },
+                body: JSON.stringify({ text: text })
+            });
+            const data = await response.json();
+            if (data.audio_url) {
+                currentAudio = new Audio(data.audio_url);
+                audioCache[text] = currentAudio; 
+                currentAudio.play().catch(e => console.log("Audio play blocked:", e));
+            }
+        } catch (e) {
+            console.warn("Backend TTS failed, using browser fallback voice", e);
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    /* =========================================
+       INTERACTIVE GROUNDING LOGIC
+       ========================================= */
+    const groundingSteps = [
+        { count: 5, sense: "SEE", color: "text-indigo-500 dark:text-indigo-400", bgClass: "bg-indigo-500", shadow: "shadow-indigo-500/40", icon: "👀", desc: "Look around. Notice colors, shapes, or shadows you usually ignore." },
+        { count: 4, sense: "FEEL", color: "text-blue-500 dark:text-blue-400", bgClass: "bg-blue-500", shadow: "shadow-blue-500/40", icon: "🖐️", desc: "Pay attention to your body. The weight of your clothes, the chair beneath you." },
+        { count: 3, sense: "HEAR", color: "text-emerald-500 dark:text-[#10B981]", bgClass: "bg-emerald-500 dark:bg-[#10B981]", shadow: "shadow-emerald-500/40 dark:shadow-[#10B981]/40", icon: "👂", desc: "Listen closely. Focus on distant sounds or the hum of the room." },
+        { count: 2, sense: "SMELL", color: "text-amber-500 dark:text-amber-400", bgClass: "bg-amber-500", shadow: "shadow-amber-500/40", icon: "👃", desc: "Breathe in. Notice any scents, or just the temperature of the air." },
+        { count: 1, sense: "GOOD THING", color: "text-rose-500 dark:text-pink-400", bgClass: "bg-rose-500 dark:bg-pink-500", shadow: "shadow-rose-500/40", icon: "❤️", desc: "Acknowledge one positive thing about yourself or your day today." }
+    ];
+
+    let currentGroundingStep = 0;
+    let clickedItems = 0;
+
+    function renderGroundingStep() {
+        const content = document.getElementById('grounding-content');
+        
+        content.classList.remove('fade-in-up');
+        void content.offsetWidth;
+        content.classList.add('fade-in-up');
+
+        if (currentGroundingStep >= groundingSteps.length) {
+            content.innerHTML = `
+                <div class="w-20 h-20 bg-emerald-100 dark:bg-[#064E3B]/40 text-emerald-500 dark:text-[#10B981] rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner border border-emerald-200 dark:border-[#10B981]/50">🌟</div>
+                <h3 class="text-3xl font-black text-slate-800 dark:text-white mb-3">Exercise Complete</h3>
+                <p class="text-slate-500 dark:text-slate-400 font-medium max-w-md mx-auto leading-relaxed">You have successfully brought your mind back to the present moment. Take a deep breath.</p>
+                <button onclick="resetGrounding()" class="mt-8 px-8 py-3 bg-slate-100 dark:bg-[#1F2937] border border-slate-200 dark:border-[#374151] text-slate-800 dark:text-white rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm">Start Over</button>
+            `;
+            playVoice("Exercise complete. You have successfully brought your mind back to the present moment. Take a deep breath.");
+            updateProgressDots();
+            return;
+        }
+
+        const step = groundingSteps[currentGroundingStep];
+        clickedItems = 0;
+
+        const spokenText = `Find ${step.count} things you can ${step.sense}. ${step.desc}`;
+        playVoice(spokenText);
+
+        let bubblesHtml = '';
+        for(let i = 0; i < step.count; i++) {
+            bubblesHtml += `
+                <button id="bubble-${i}" onclick="clickBubble(${i}, '${step.bgClass}', '${step.shadow}')" 
+                    class="w-14 h-14 md:w-16 md:h-16 rounded-full border-[3px] border-slate-200 dark:border-[#374151] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center text-2xl bg-slate-50 dark:bg-[#111827]">
+                </button>
+            `;
+        }
+
+        content.innerHTML = `
+            <div class="text-5xl mb-4 ${step.color} drop-shadow-md">${step.icon}</div>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">
+                Find <span class="${step.color}">${step.count}</span> things you can <span class="${step.color}">${step.sense}</span>
+            </h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-10 max-w-sm mx-auto">${step.desc}</p>
+            <div class="flex flex-wrap justify-center gap-4 md:gap-6">
+                ${bubblesHtml}
+            </div>
+        `;
+
+        updateProgressDots();
+    }
+
+    function clickBubble(index, bgClass, shadowClass) {
+        const btn = document.getElementById(`bubble-${index}`);
+        if(btn.disabled) return; 
+        
+        btn.disabled = true;
+        btn.className = `w-14 h-14 md:w-16 md:h-16 rounded-full transition-all duration-300 flex items-center justify-center scale-110 ${bgClass} shadow-[0_0_20px_rgba(0,0,0,0)] ${shadowClass} border-none`;
+        btn.innerHTML = `<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>`;
+        
+        clickedItems++;
+        
+        if(clickedItems === groundingSteps[currentGroundingStep].count) {
+            setTimeout(() => {
+                currentGroundingStep++;
+                renderGroundingStep();
+            }, 700); 
+        }
+    }
+
+    function updateProgressDots() {
+        const progressContainer = document.getElementById('grounding-progress');
+        let html = '';
+        
+        for(let i = 0; i < groundingSteps.length; i++) {
+            const step = groundingSteps[i];
+            if (i < currentGroundingStep) {
+                html += `<div class="w-3 h-3 rounded-full ${step.bgClass} opacity-40"></div>`;
+            } else if (i === currentGroundingStep) {
+                html += `<div class="w-4 h-4 rounded-full ${step.bgClass} shadow-md scale-110"></div>`;
+            } else {
+                html += `<div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-[#374151]"></div>`;
+            }
+        }
+        progressContainer.innerHTML = html;
+    }
+
+    function resetGrounding() {
+        currentGroundingStep = 0;
+        if(document.getElementById('ground-ui').classList.contains('flex')) {
+            renderGroundingStep();
+        }
+    }
+
+    /* =========================================
+       MODE SWITCHING & BREATHING LOGIC
+       ========================================= */
+    let isBreathing = false;
+    let cycleInterval;
+    let cycleTimeouts = [];
+
+    function clearBreathingTimeouts() {
+        cycleTimeouts.forEach(t => clearTimeout(t));
+        cycleTimeouts = [];
+    }
+
+    function setMode(mode) {
+        isBreathing = false;
+        clearInterval(cycleInterval);
+        clearBreathingTimeouts();
+        if (currentAudio) currentAudio.pause();
+        
+        document.getElementById('breathe-ui').classList.remove('is-breathing');
+        document.getElementById('breathe-text').innerText = "START";
+        document.getElementById('start-btn').innerText = "Begin Exercise";
+
+        const breatheUI = document.getElementById('breathe-ui');
+        const groundUI = document.getElementById('ground-ui');
+        const btnBreathe = document.getElementById('btn-breathe');
+        const btnGround = document.getElementById('btn-ground');
+
+        if(mode === 'breathe') {
+            breatheUI.classList.replace('hidden', 'flex');
+            groundUI.classList.replace('flex', 'hidden');
+            
+            breatheUI.classList.remove('fade-in-up');
+            void breatheUI.offsetWidth; 
+            breatheUI.classList.add('fade-in-up');
+
+            btnBreathe.className = "px-6 py-2.5 rounded-xl font-bold bg-white dark:bg-[#1F2937] text-slate-800 dark:text-white shadow-sm transition-all";
+            btnGround.className = "px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all";
+        } else {
+            groundUI.classList.replace('hidden', 'flex');
+            breatheUI.classList.replace('flex', 'hidden');
+            
+            groundUI.classList.remove('fade-in-up');
+            void groundUI.offsetWidth; 
+            groundUI.classList.add('fade-in-up');
+
+            resetGrounding();
+
+            btnGround.className = "px-6 py-2.5 rounded-xl font-bold bg-white dark:bg-[#1F2937] text-slate-800 dark:text-white shadow-sm transition-all";
+            btnBreathe.className = "px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all";
+        }
+    }
+
+    function toggleBreathing() {
+        const ui = document.getElementById('breathe-ui');
+        const text = document.getElementById('breathe-text');
+        const btn = document.getElementById('start-btn');
+
+        if(isBreathing) {
+            isBreathing = false;
+            clearInterval(cycleInterval);
+            clearBreathingTimeouts();
+            if (currentAudio) currentAudio.pause();
+            
+            ui.classList.remove('is-breathing');
+            text.innerText = "START";
+            btn.innerText = "Resume Exercise";
+            return;
+        }
+
+        isBreathing = true;
+        ui.classList.add('is-breathing');
+        btn.innerText = "Stop Exercise";
+        
+        runBreathingCycle(text);
+        cycleInterval = setInterval(() => runBreathingCycle(text), 19000);
+    }
+
+    function runBreathingCycle(text) {
+        if(!isBreathing) return;
+        
+        text.innerText = "INHALE";
+        playVoice("Inhale");
+        
+        cycleTimeouts.push(setTimeout(() => { 
+            if(isBreathing) { text.innerText = "HOLD"; playVoice("Hold"); }
+        }, 4000));
+        
+        cycleTimeouts.push(setTimeout(() => { 
+            if(isBreathing) { text.innerText = "EXHALE"; playVoice("Exhale"); }
+        }, 11000));
+    }
+
+    // =========================================
+    // INITIALIZATION 
+    // =========================================
+    document.addEventListener("DOMContentLoaded", () => {
+        // Pre-cache breathing words
+        if (isVoiceEnabled) {
+            ['Inhale', 'Hold', 'Exhale'].forEach(text => {
+                fetch('/api/core/chat/tts/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('access')}` },
+                    body: JSON.stringify({ text: text })
+                }).then(res => res.json()).then(data => {
+                    if (data.audio_url) audioCache[text] = new Audio(data.audio_url);
+                }).catch(e => console.log("Cache pre-fetch failed", e));
+            });
+        }
+
+        // Handle URL parameter accurately 
+        if (window.location.search.includes('mode=grounding')) {
+            setMode('ground');
+        }
+    });
+</script>
+{% endblock %}

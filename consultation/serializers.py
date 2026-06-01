@@ -2,9 +2,9 @@ from rest_framework import serializers
 from .models import Counselor, Slot, Booking
 from django.utils import timezone
 from datetime import datetime, timedelta
-import pytz
+from zoneinfo import ZoneInfo
 
-IST = pytz.timezone('Asia/Kolkata')
+IST = ZoneInfo('Asia/Kolkata')
 
 class SlotSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,7 +30,7 @@ class CounselorSerializer(serializers.ModelSerializer):
         valid_slots = []
 
         for slot in slots:
-            slot_date_time = IST.localize(datetime.combine(slot.date, slot.time))
+            slot_date_time = datetime.combine(slot.date, slot.time, tzinfo=IST)
             if slot_date_time >= booking_buffer:
                 valid_slots.append(slot)
 
@@ -61,13 +61,13 @@ class BookingSerializer(serializers.ModelSerializer):
     
     def get_can_modify(self, obj):
         current = timezone.now().astimezone(IST)
-        appointment = IST.localize(datetime.combine(obj.slot.date, obj.slot.time))
+        appointment = datetime.combine(obj.slot.date, obj.slot.time, tzinfo=IST)
         cutoff = appointment - timedelta(minutes=30)
         return obj.status == "booked" and current < cutoff
 
     def get_can_join(self, obj):
         current = timezone.now().astimezone(IST)
-        appointment = IST.localize(datetime.combine(obj.slot.date, obj.slot.time))
+        appointment = datetime.combine(obj.slot.date, obj.slot.time, tzinfo=IST)
         join_start = appointment - timedelta(minutes=30)
         join_end = appointment + timedelta(minutes=45)
         return obj.status == "booked" and join_start <= current <= join_end

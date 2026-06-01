@@ -57,11 +57,64 @@ if (!localStorage.getItem("access")) location.href = "/api/core/login-page/";
 
 let bookingData = [];
 
+// Helper function to format YYYY-MM-DD to DD-MM-YYYY
+function formatIndianDate(dateString) {
+  if (!dateString) return "";
+  const parts = dateString.split("-");
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateString;
+}
+
+// Helper function to format 24-hour time string to 12-hour AM/PM format
+function formatAMPM(timeString) {
+  if (!timeString) return "";
+  const [hourStr, minuteStr] = timeString.split(':');
+  let hours = parseInt(hourStr, 10);
+  const minutes = minuteStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  return hours.toString().padStart(2, '0') + ':' + minutes + ' ' + ampm;
+}
+
 async function loadBookings() {
   try {
     const {res, data} = await apiRequest("/api/consultation/my-bookings/");
     if (!res.ok) throw new Error();
-    bookingData = data || [];
+    
+    let fetchedData = data || [];
+
+    // --- CUSTOM SORTING LOGIC ---
+    // Force Today and Future to the top, push Past to the bottom
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Snap to midnight for clean date comparison
+
+    fetchedData.sort((a, b) => {
+        const dateA = new Date(a.slot.date);
+        const dateB = new Date(b.slot.date);
+        
+        const isPastA = dateA < today;
+        const isPastB = dateB < today;
+
+        // If one is past and the other is future/today, future/today wins
+        if (isPastA !== isPastB) {
+            return isPastA ? 1 : -1; 
+        }
+
+        // If BOTH are future/today, sort ascending (closest future date appears first)
+        if (!isPastA) {
+            if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+            return a.slot.time.localeCompare(b.slot.time); // Ascending time
+        }
+
+        // If BOTH are past, sort descending (most recent past date appears first)
+        if (dateA.getTime() !== dateB.getTime()) return dateB - dateA;
+        return b.slot.time.localeCompare(a.slot.time); // Descending time
+    });
+
+    bookingData = fetchedData;
     renderBookings(bookingData);
   } catch {
     showPopup("Failed loading bookings", "error");
@@ -104,23 +157,37 @@ function renderBookings(data) {
           </div>
           <h2 class="font-black text-xl text-slate-800 dark:text-white leading-tight">${item.counselor.name}</h2>
         </div>
-        <span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider shadow-sm border shrink-0 ${item.status==="booked" ? "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50" : item.status==="completed" ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50" : "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50"}">${item.status}</span>
+        <span class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-sm border shrink-0 flex items-center gap-1.5 transition-all ${
+          item.status === 'booked' 
+            ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50' 
+            : item.status === 'completed' 
+              ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/50' 
+              : 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800/50'
+        }">
+          ${
+            item.status === 'booked' 
+              ? '<span class="text-xs">✅</span> Booked' 
+              : item.status === 'completed' 
+                ? '<span class="text-xs">⭐</span> Completed' 
+                : '<span class="text-xs">⛔</span> Cancelled'
+          }
+        </span>
       </div>
       <div class="relative z-10 space-y-2.5 mb-6 flex-1">
         <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">📅 Date</span>
-          <b class="text-slate-800 dark:text-white text-sm font-black">${item.slot.date}</b>
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">📅 Date</span>
+          <b class="text-slate-800 dark:text-white text-sm font-black">${formatIndianDate(item.slot.date)}</b>
         </div>
         <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">🕒 Time</span>
-          <b class="text-slate-800 dark:text-white text-sm font-black">${item.slot.time}</b>
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">🕒 Time</span>
+          <b class="text-slate-800 dark:text-white text-sm font-black">${formatAMPM(item.slot.time)}</b>
         </div>
         <div class="flex justify-between items-center bg-white/50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100/50 dark:border-slate-700/30">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">Mode</span>
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">Mode</span>
           <b class="text-slate-800 dark:text-white text-sm font-black uppercase">${item.slot.mode==="online"?"💻":"🏥"} ${item.slot.mode}</b>
         </div>
         <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60 px-1">
-          <span class="text-slate-500 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest">Total Fee</span>
+          <span class="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">Total Fee</span>
           <span class="font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500">₹${item.total_fee}</span>
         </div>
       </div>
@@ -134,12 +201,12 @@ function renderBookings(data) {
           <div class="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800/50 rounded-2xl p-4">
               <div class="text-center font-black text-cyan-600 uppercase text-xs">🏥 Offline Session</div>
               <div class="mt-4 p-4 rounded-xl bg-white/60 dark:bg-slate-800/50">
-                  <div class="text-[10px] uppercase font-bold tracking-widest">🔑 Clinic Access Key</div>
+                  <div class="text-xs uppercase font-bold tracking-widest">🔑 Clinic Access Key</div>
                   <div class="font-black text-lg mt-2">${item.access_key}</div>
               </div>
               ${item.counselor.office_address ? `
               <div class="mt-4 p-4 rounded-xl bg-white/60 dark:bg-slate-800/50">
-                  <div class="text-[10px] uppercase font-bold tracking-widest">📍 Clinic Address Direction</div>
+                  <div class="text-xs uppercase font-bold tracking-widest">📍 Clinic Address Direction</div>
                   <a href="${item.counselor.google_map_link}" target="_blank" class="block text-center mt-4 py-3 rounded-xl bg-rose-600 text-white font-bold">Open in Google Maps</a>
               </div>
               ` : ""}
@@ -152,7 +219,19 @@ function renderBookings(data) {
           </div>
           ` : ""}
       </div>
-      ` : ""}
+      ` : item.status === "completed" ? `
+      <div class="relative z-10 mt-auto pt-4">
+          <div class="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 py-3.5 rounded-xl flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm transition-all hover:bg-blue-100 dark:hover:bg-blue-900/40">
+              <span class="text-sm">⭐</span> Session Completed
+          </div>
+      </div>
+      ` : `
+      <div class="relative z-10 mt-auto pt-4">
+          <div class="w-full bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400 py-3.5 rounded-xl flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest shadow-sm transition-all hover:bg-rose-100 dark:hover:bg-rose-900/40">
+              <span class="text-sm">⛔</span> Booking Cancelled
+          </div>
+      </div>
+      `}
     </div>
   `).join("");
 }

@@ -1,12 +1,12 @@
 from django.contrib import admin
 from django.utils import timezone
 from datetime import timedelta, time
-import pytz
+from zoneinfo import ZoneInfo
 
 from .models import Counselor, Slot, Booking
 
 # Define IST Timezone
-IST = pytz.timezone('Asia/Kolkata')
+IST = ZoneInfo('Asia/Kolkata')
 
 @admin.register(Counselor)
 class CounselorAdmin(admin.ModelAdmin):

@@ -98,7 +98,7 @@
                                     <div id="strength-bar-3" class="h-full w-1/4 bg-stone-200/50 dark:bg-gray-600 transition-colors duration-300"></div>
                                     <div id="strength-bar-4" class="h-full w-1/4 bg-stone-200/50 dark:bg-gray-600 transition-colors duration-300"></div>
                                 </div>
-                                <p id="strength-text" class="text-[10px] font-bold uppercase tracking-wider text-right transition-colors duration-300"></p>
+                                <p id="strength-text" class="text-xs font-bold uppercase tracking-wider text-right transition-colors duration-300"></p>
                             </div>
                         </div>
                         
@@ -127,10 +127,10 @@ function setVerification(elId, isVerified) {
 
   if (isVerified) {
     el.innerHTML = "✔ Verified";
-    el.className = "text-[10px] font-bold uppercase tracking-wide bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-md";
+    el.className = "text-xs font-bold uppercase tracking-wide bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-md";
   } else {
     el.innerHTML = "✖ Unverified";
-    el.className = "text-[10px] font-bold uppercase tracking-wide bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded-md";
+    el.className = "text-xs font-bold uppercase tracking-wide bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded-md";
   }
 
   el.classList.remove("hidden");
@@ -220,14 +220,14 @@ document.getElementById('new_password').addEventListener('input', function(e) {
         bars[0].classList.add('bg-red-500');
         bars[0].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
         text.textContent = 'Weak';
-        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-red-500';
+        text.className = 'text-xs font-bold uppercase tracking-wider text-right text-red-500';
     } else if (strength === 2) {
         bars[0].classList.add('bg-amber-400');
         bars[1].classList.add('bg-amber-400');
         bars[0].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
         bars[1].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
         text.textContent = 'Fair';
-        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-amber-500';
+        text.className = 'text-xs font-bold uppercase tracking-wider text-right text-amber-500';
     } else if (strength === 3) {
         bars[0].classList.add('bg-blue-500');
         bars[1].classList.add('bg-blue-500');
@@ -236,7 +236,7 @@ document.getElementById('new_password').addEventListener('input', function(e) {
         bars[1].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
         bars[2].classList.remove('bg-stone-200/50', 'dark:bg-gray-600');
         text.textContent = 'Good';
-        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-blue-600 dark:text-blue-400';
+        text.className = 'text-xs font-bold uppercase tracking-wider text-right text-blue-600 dark:text-blue-400';
     } else if (strength === 4) {
         bars[0].classList.add('bg-green-500');
         bars[1].classList.add('bg-green-500');
@@ -244,7 +244,7 @@ document.getElementById('new_password').addEventListener('input', function(e) {
         bars[3].classList.add('bg-green-500');
         bars.forEach(bar => bar.classList.remove('bg-stone-200/50', 'dark:bg-gray-600'));
         text.textContent = 'Strong';
-        text.className = 'text-[10px] font-bold uppercase tracking-wider text-right text-green-600 dark:text-green-400';
+        text.className = 'text-xs font-bold uppercase tracking-wider text-right text-green-600 dark:text-green-400';
     }
 });
 
