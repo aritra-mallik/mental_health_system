@@ -286,11 +286,11 @@
                 </div>
 
                 <div class="relative z-10 grid grid-cols-2 gap-4 pt-5 border-t border-slate-100 dark:border-slate-700">
-                    <div>
+                    <div class="text-center">
                         <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Latest Test</h4>
                         <p id="card-assessments" class="text-lg font-black text-slate-800 dark:text-slate-200 uppercase">--</p>
                     </div>
-                    <div>
+                    <div class="text-center">
                         <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Last Check-in</h4>
                         <p id="card-last-checkin" class="text-lg font-black text-slate-800 dark:text-slate-200">--</p>
                     </div>
@@ -2152,14 +2152,13 @@ function toggleMobileSidebar() {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
     
-    // Check if it's currently hidden by looking at the translate class
-    const isHidden = sidebar.classList.contains("-translate-x-full");
+    const isHidden = sidebar.classList.contains("-translate-x-[120%]");
     
     if (isHidden) {
-        sidebar.classList.remove("-translate-x-full");
+        sidebar.classList.remove("-translate-x-[120%]");
         overlay.classList.remove("hidden");
     } else {
-        sidebar.classList.add("-translate-x-full");
+        sidebar.classList.add("-translate-x-[120%]");
         overlay.classList.add("hidden");
     }
 }
