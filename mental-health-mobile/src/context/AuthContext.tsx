@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { useRouter } from 'expo-router';
-import apiClient, { setInMemoryToken } from '../api/apiClient';
+import { router } from 'expo-router'; // 1. IMPORT IMPERATIVE ROUTER
+import apiClient, { setInMemoryToken } from '@/api/apiClient';
 
 interface AuthContextType {
   userToken: string | null;
@@ -19,7 +19,8 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [userToken, setUserToken] = useState<string | null>(null);
-  const router = useRouter();
+  
+  // 2. DELETED: const router = useRouter(); <- This was causing the fatal crash!
 
   // Check for existing tokens when the app loads
   useEffect(() => {
@@ -42,12 +43,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      // 1. Get the refresh token before we delete it
       const refreshToken = await SecureStore.getItemAsync('refresh_token');
       
       if (refreshToken) {
-        // 2. Send it to your Django backend to be blacklisted
-        // This hits the LogoutView in your views.py
         await apiClient.post('/accounts/logout/', { 
           refresh: refreshToken 
         });
@@ -55,16 +53,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.log('Backend logout failed (token might already be expired):', error);
     } finally {
-      // 3. ALWAYS clear the local vault and state, even if the server is unreachable
       await SecureStore.deleteItemAsync('access_token');
       await SecureStore.deleteItemAsync('refresh_token');
-      
-      // Destroy the cached journal encryption key so the vault locks completely
       await SecureStore.deleteItemAsync('smera_journal_key');
+      await SecureStore.deleteItemAsync('user_preferences');
       
       setUserToken(null);
       
-      // 4. Safely route the user back to the login page
+      // 3. This now uses the imperative router, which never loses context
       router.replace('/accounts/login');
     }
   };

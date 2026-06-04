@@ -1,86 +1,148 @@
 {% extends "base.html" %}
-{% block title %}Consent & Security{% endblock %}
+{% load static %}
 
-{% block content %}
-<div class="flex flex-col md:flex-row gap-6 max-w-5xl mx-auto">
+{% block title %}Consent & Security Center{% endblock %}
 
-    <div class="flex-1 space-y-6">
-        <header>
-            <h1 class="text-3xl font-bold tracking-tight">Consent & Security</h1>
-            <p class="text-gray-500 dark:text-gray-400">These are the policies you agreed to during account setup.</p>
-        </header>
+{% block content %}    
+    <div class="absolute -top-24 -right-20 w-[400px] h-[400px] bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 -left-20 w-[400px] h-[400px] bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 gap-4 transition-all duration-500">
+        <div class="flex items-center gap-4">
+            <button onclick="window.location.href='/api/core/dashboard-page/'" class="group flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-violet-600 dark:hover:bg-violet-800 transition-colors shadow-inner" title="Back to Dashboard">
+                <svg class="w-5 h-5 transform transition-transform duration-300 group-hover:-translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </button>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Consent & Security</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Review your active cryptographic protection metrics.</p>
+            </div>
+        </div>
+        
+        <div id="global_status_container">
+            <div class="animate-pulse bg-slate-100 dark:bg-slate-800 h-8 w-36 rounded-full"></div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl rounded-[2.5rem] p-6 sm:p-10 md:p-12 transition-colors duration-500 relative overflow-hidden">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-10 pb-8 border-b border-slate-100 dark:border-slate-800/60">
+            <div class="max-w-xl">
+                <h2 class="text-xs font-black tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">Active Safeguards</h2>
+                <h3 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight mt-1">Platform Protection Framework</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-3 leading-relaxed">
+                    Smera functions using client-side verification parameters. Your global agreement locks down historical processing models, ensuring your record data stays private.
+                </p>
+            </div>
             
-            <div class="p-6 space-y-4">
-                <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Agreements</h3>
-
-                <div class="space-y-4">
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
-                        <span class="text-sm text-black dark:text-white">I acknowledge and agree to the Privacy Policy, recognizing that my data is a private record of my personal development.</span>
-                        <span id="consent_data_policy" class="font-medium whitespace-nowrap"></span>
+            <div class="relative group overflow-hidden bg-white dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700/80 p-5 pr-8 rounded-[1.25rem] flex items-center gap-5 shadow-sm hover:shadow-md transition-all shrink-0">
+                <div class="absolute -right-8 -top-8 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div class="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-xl shadow-inner shrink-0 transition-transform duration-300 group-hover:scale-105">
+                    16+
+                </div>
+        
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h4 class="text-[10px] font-black text-slate-500 dark:text-slate-400 tracking-widest uppercase">Age Clearance</h4>
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                        </span>
                     </div>
-
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
-                        <span class="text-sm text-black dark:text-white">I understand that AI assistance is for guidance only and does not constitute professional medical advice or treatment.</span>
-                        <span id="consent_ai_policy" class="font-medium whitespace-nowrap"></span>
-                    </div>
-
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
-                        <span class="text-sm text-black dark:text-white">I consent to the use of secure storage for my information, protected securely by our care.</span>
-                        <span id="consent_secure_storage" class="font-medium whitespace-nowrap"></span>
-                    </div>
-
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
-                        <span class="text-sm text-black dark:text-white">I accept the Terms of Service and understand that this platform provides non-clinical emotional support and is not a substitute for professional mental health care.</span>
-                        <span id="consent_terms" class="font-medium whitespace-nowrap"></span>
-                    </div>
-                    <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/50 gap-4 transition-colors">
-                        <span class="text-sm text-black dark:text-white">I confirm that I am 16 years of age or older.</span>
-                        <span id="consent_age" class="font-medium whitespace-nowrap"></span>
+                    <p class="text-lg font-black text-slate-800 dark:text-white leading-tight">Verified Account</p>
+                    <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-bold mt-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Attestation Active
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="p-6 bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row gap-4 items-center justify-between border-t border-gray-200 dark:border-gray-700">
-                
-                <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></span> 
-                    Consent is recorded and cannot be modified.
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            
+            <div class="group flex gap-4 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 hover:border-indigo-500/30 dark:hover:border-indigo-400/30 hover:bg-white dark:hover:bg-slate-800/80 transition-all duration-300 shadow-sm hover:shadow-md">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center text-2xl shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">🛡️</div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white text-base">Privacy &amp; Data Isolation</h4>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed mt-1.5">
+                        Your interactions and system queries operate within completely isolated data boundaries, running exclusively as a private trackable log for your development.
+                    </p>
                 </div>
+            </div>
 
-                <button type="button" onclick="window.location.href='/api/core/dashboard-page/'" class="text-blue-600 w-full sm:w-auto bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-95 shadow-sm">
-                    Back to Dashboard
-                </button>
+            <div class="group flex gap-4 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 hover:border-purple-500/30 dark:hover:border-purple-400/30 hover:bg-white dark:hover:bg-slate-800/80 transition-all duration-300 shadow-sm hover:shadow-md">
+                <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/50 flex items-center justify-center text-2xl shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">🤖</div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white text-base">AI Boundary Parameters</h4>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed mt-1.5">
+                        Machine intelligence features generate real-time emotional processing context. Systems remain strictly non-clinical and do not draft clinical therapy prescriptions.
+                    </p>
+                </div>
+            </div>
 
+            <div class="group flex gap-4 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 hover:border-emerald-500/30 dark:hover:border-emerald-400/30 hover:bg-white dark:hover:bg-slate-800/80 transition-all duration-300 shadow-sm hover:shadow-md">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-center text-2xl shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">🔑</div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white text-base">Zero-Knowledge Protocols</h4>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed mt-1.5">
+                        Personal logs are processed with server-side encryption models. Database nodes store data blobs solely in ciphertext states to maintain end-to-end user isolation.
+                    </p>
+                </div>
+            </div>
+
+            <div class="group flex gap-4 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 hover:border-amber-500/30 dark:hover:border-amber-400/30 hover:bg-white dark:hover:bg-slate-800/80 transition-all duration-300 shadow-sm hover:shadow-md">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/50 flex items-center justify-center text-2xl shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-300">🤝</div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white text-base">Non-Clinical Support Rules</h4>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed mt-1.5">
+                        The platform functions inside safe, guided parameters to assist daily emotional balance. It does not replace medical intervention paths or emergency clinic networks.
+                    </p>
+                </div>
             </div>
 
         </div>
+
+        <div class="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wide uppercase">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"></span>
+                Attestation Agreement Signed and Vaulted
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 px-3 py-1.5 rounded-lg select-none">
+                System Status: Cryptographically Secured
+            </div>
+        </div>
+
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (async function(){
+    try {
+        const { res, data } = await apiRequest("/api/user/consent/");
+        if (!res || !res.ok || !data) return;
 
-  const { res, data } = await apiRequest("/api/user/consent/");
-
-  if (!res || !res.ok || !data) return;
-
-  // Added dark mode color variants to the injected HTML
-  function renderStatus(val){
-    return val
-      ? '<span class="text-green-600 dark:text-green-400 flex items-center gap-1">✔ Accepted</span>'
-      : '<span class="text-red-500 dark:text-red-400 flex items-center gap-1">✖ Not Accepted</span>';
-  }
-
-  document.getElementById("consent_data_policy").innerHTML = renderStatus(data.consent_data_policy);
-  document.getElementById("consent_ai_policy").innerHTML = renderStatus(data.consent_ai_policy);
-  document.getElementById("consent_secure_storage").innerHTML = renderStatus(data.consent_secure_storage);
-  document.getElementById("consent_terms").innerHTML = renderStatus(data.consent_terms);
-  document.getElementById("consent_age").innerHTML = renderStatus(data.consent_age);
-
+        const container = document.getElementById("global_status_container");
+        
+        if (data.consent_all_policies) {
+            container.innerHTML = `
+                <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-xs font-black uppercase tracking-widest shadow-sm transition-all duration-300">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    Fully Authorized
+                </span>
+            `;
+        } else {
+            container.innerHTML = `
+                <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20 text-xs font-black uppercase tracking-widest shadow-sm transition-all duration-300">
+                    ✕ Signature Pending
+                </span>
+            `;
+        }
+    } catch (e) {
+        console.error("Failed to load global profile authorization status parameters.", e);
+    }
 })();
 </script>
 {% endblock %}

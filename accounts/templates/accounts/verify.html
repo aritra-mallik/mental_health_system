@@ -40,18 +40,17 @@
             </div>
 
             <form id="otpForm" class="space-y-6">
-                {% csrf_token %}
                 
                 <div class="bg-stone-100/50 p-4 rounded-2xl border border-stone-200/50 space-y-2">
                     <div class="flex justify-between items-center gap-3">
-                        <span class="text-[10px] font-bold text-violet-600 uppercase tracking-widest whitespace-nowrap shrink-0">Email</span>
+                        <span class="text-xs font-bold text-violet-600 uppercase tracking-widest whitespace-nowrap shrink-0">Email</span>
                         <input id="email" type="email" class="bg-transparent text-right text-stone-600 text-sm font-medium focus:outline-none w-full flex-1 min-w-0 text-ellipsis overflow-hidden">
                     </div>
                 </div>
 
                 <div class="space-y-4">
                     <div class="space-y-1">
-                        <label class="block text-[10px] font-bold text-amber-900 uppercase tracking-widest ml-1 mb-1">Email Code</label>
+                        <label class="block text-xs font-bold text-amber-900 uppercase tracking-widest ml-1 mb-1">Email Code</label>
                         <input id="email_otp" placeholder="Enter 6-digit code" 
                             class="w-full px-6 py-4 bg-white/40 border border-stone-200/60 rounded-2xl focus:ring-2 focus:ring-amber-400 focus:bg-white outline-none transition-all placeholder:text-stone-300 text-center tracking-[0.5em] font-mono text-lg">
                     </div>

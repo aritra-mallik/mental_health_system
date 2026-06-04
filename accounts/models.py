@@ -50,11 +50,7 @@ class User(AbstractUser):
 
     is_email_verified = models.BooleanField(default=False)
 
-    consent_data_policy = models.BooleanField(default=False)
-    consent_ai_policy = models.BooleanField(default=False)
-    consent_secure_storage = models.BooleanField(default=False)
-    consent_terms = models.BooleanField(default=False)
-    consent_age = models.BooleanField(default=False)
+    consent_all_policies = models.BooleanField(default=False)
 
     journal_salt = models.CharField(max_length=255, blank=True, null=True)
 

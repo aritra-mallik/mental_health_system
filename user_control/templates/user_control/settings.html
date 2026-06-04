@@ -1,105 +1,141 @@
 {% extends "base.html" %}
-{% block title %}Settings{% endblock %}
+{% load static %}
+
+{% block title %}Interface Settings{% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row gap-6 max-w-5xl mx-auto">
+    <div class="absolute -top-20 -right-20 w-96 h-96 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-20 -left-20 w-96 h-96 bg-fuchsia-500/10 dark:bg-fuchsia-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="flex-1 space-y-6">
-        <header>
-            <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
-            <p class="text-gray-500 dark:text-gray-400">Manage your interface preferences and accessibility.</p>
-        </header>
-
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
-            <form id="settingsForm" class="divide-y divide-gray-100 dark:divide-gray-700">
-                
-                <div class="p-6 space-y-4">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Appearance</h3>
-                    
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="font-medium text-black dark:text-white">Dark Mode</p>
-                            <p class="text-sm text-gray-500">Switch between light and dark themes.</p>
-                        </div>
-                        
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="dark_mode" class="sr-only peer">
-                            <div class="w-14 h-7 bg-blue-300 dark:bg-gray-700 rounded-full flex items-center justify-between px-1.5 transition-colors shadow-inner">
-                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                                <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 2.32a1 1 0 011.415 0l.708.707a1 1 0 01-1.414 1.415l-.708-.708a1 1 0 010-1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zm-2.32 4.22a1 1 0 010 1.415l-.707.708a1 1 0 01-1.415-1.414l.707-.708a1 1 0 011.415 0zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.22-2.32a1 1 0 01-1.415 0l-.708-.707a1 1 0 011.414-1.415l.708.708a1 1 0 010 1.414zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm2.32-4.22a1 1 0 010-1.415l.707-.708a1 1 0 011.415 1.414l-.707.708a1 1 0 01-1.415 0zM10 5a5 5 0 100 10 5 5 0 000-10z" clip-rule="evenodd"></path></svg> 
-                            </div>
-                            <div class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 peer-checked:translate-x-7 shadow-md"></div>
-                        </label>
-                    </div>
-
-                    <div class="space-y-2">
-                        <p class="font-medium text-black dark:text-white">Text Size</p>
-                        <div class="grid grid-cols-3 gap-3">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="font_size" value="small" class="sr-only peer">
-                                <div class="text-blue-500 p-3 text-center border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all">Small</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="font_size" value="medium" class="sr-only peer">
-                                <div class="text-blue-500 p-3 text-center border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all">Default</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="font_size" value="large" class="sr-only peer">
-                                <div class="text-blue-500 p-3 text-center border border-gray-200 dark:border-gray-700 rounded-xl peer-checked:border-blue-600 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all">Large</div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-6 space-y-4">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Localization</h3>
-                    <div class="space-y-2">
-                        <p class="font-medium text-black dark:text-white">Language</p>
-                        <div class="relative">
-                            <input type="text" value="English (ENG)" readonly disabled class="w-full bg-gray-100 dark:bg-gray-900/50 border border-blue-400 dark:border-blue-500 p-3 rounded-xl text-gray-500 dark:text-gray-400 cursor-not-allowed outline-none font-medium">
-                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-6 bg-gray-50 dark:bg-gray-800/50 flex flex-col sm:flex-row gap-3">
-                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95">
-                        Save Changes
-                    </button>
-                    <button type="button" onclick="window.location.href='/api/core/dashboard-page/'" class="text-blue-600 flex-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 font-semibold py-3 px-6 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-600">
-                        Back to Dashboard
-                    </button>
-                </div>
-            </form>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 gap-4 transition-all">
+        <div class="flex items-center gap-4">
+            <button onclick="window.location.href='/api/core/dashboard-page/'" class="group flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-violet-500 dark:hover:bg-violet-700 transition-colors shadow-inner" title="Back to Dashboard">
+                <svg class="w-5 h-5 transform transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </button>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Settings</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Manage your interface preferences and accessibility.</p>
+            </div>
         </div>
     </div>
-</div>
+
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-xl overflow-hidden transition-all duration-300 relative z-10">
+        <form id="settingsForm">
+
+            <div class="p-6 md:p-10 space-y-10">
+
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-4">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl shadow-inner shrink-0">✨</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">Appearance</h3>
+                    </div>
+
+                    <div class="flex items-center justify-between p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 hover:border-indigo-500/30 dark:hover:border-indigo-400/30 transition-all duration-300 group">
+                        <div>
+                            <p class="font-bold text-slate-800 dark:text-white text-base">Light / Dark Mode</p>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Switch between light and dark themes for a comfortable viewing experience.</p>
+                        </div>
+
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+                            <input type="checkbox" id="dark_mode" name="dark_mode" class="sr-only peer">
+                            
+                            <div class="w-14 h-8 bg-amber-400 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-600 shadow-inner group-hover:shadow-md transition-colors duration-300"></div>
+                            
+                            <div class="absolute top-[4px] left-[4px] w-6 h-6 bg-white border border-slate-200 dark:border-slate-600 rounded-full transition-transform duration-300 peer-checked:translate-x-6 shadow-sm"></div>
+
+                            <svg class="absolute top-[8px] left-[8px] w-4 h-4 text-amber-500 pointer-events-none transition-all duration-300 peer-checked:opacity-0 peer-checked:scale-50 peer-checked:rotate-90" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 4.22a1 1 0 011.415 0l.884.884a1 1 0 01-1.414 1.415l-.884-.885a1 1 0 010-1.415zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zm-4.22 4.22a1 1 0 010 1.415l-.885.884a1 1 0 01-1.415-1.414l.885-.885a1 1 0 011.415 0zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.22-4.22a1 1 0 01-1.415 0l-.884-.885a1 1 0 011.414-1.415l.884.885a1 1 0 010 1.415zM4 10a1 1 0 01-1 1H2a1 1 0 110-2h1a1 1 0 011 1zm4.22-4.22a1 1 0 010-1.415l.885-.884a1 1 0 011.415 1.414l-.885.885a1 1 0 01-1.415 0zM10 6a4 4 0 100 8 4 4 0 000-8z" clip-rule="evenodd"></path>
+                            </svg>
+
+                            <svg class="absolute top-[8px] left-[32px] w-4 h-4 text-indigo-500 pointer-events-none transition-all duration-300 opacity-0 scale-50 -rotate-90 peer-checked:opacity-100 peer-checked:scale-100 peer-checked:rotate-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                            </svg>
+
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-4">
+                        <div class="w-10 h-10 rounded-xl bg-fuchsia-50 dark:bg-fuchsia-900/30 text-fuchsia-600 dark:text-fuchsia-400 flex items-center justify-center text-xl shadow-inner shrink-0">Aa</div>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">Typography</h3>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-slate-800 dark:text-white text-base mb-1">Global Font Size</p>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5">Adjust the text size for reading articles and scalable dashboard elements.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="font_size" value="small" class="peer sr-only">
+                                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-200/60 dark:border-slate-700/40 text-slate-500 dark:text-slate-400 peer-checked:border-indigo-500 dark:peer-checked:border-indigo-400 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/20 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 text-center shadow-sm hover:shadow-md">
+                                    <div class="text-sm font-bold mb-2">Small</div>
+                                    <div class="text-xs opacity-80">Compact & Dense</div>
+                                </div>
+                                <div class="absolute top-3 right-3 opacity-0 peer-checked:opacity-100 transition-opacity text-indigo-500 dark:text-indigo-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            </label>
+
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="font_size" value="medium" class="peer sr-only">
+                                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-200/60 dark:border-slate-700/40 text-slate-500 dark:text-slate-400 peer-checked:border-indigo-500 dark:peer-checked:border-indigo-400 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/20 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 text-center shadow-sm hover:shadow-md">
+                                    <div class="text-base font-bold mb-2">Medium</div>
+                                    <div class="text-xs opacity-80">Default & Balanced</div>
+                                </div>
+                                <div class="absolute top-3 right-3 opacity-0 peer-checked:opacity-100 transition-opacity text-indigo-500 dark:text-indigo-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            </label>
+
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="font_size" value="large" class="peer sr-only">
+                                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-200/60 dark:border-slate-700/40 text-slate-500 dark:text-slate-400 peer-checked:border-indigo-500 dark:peer-checked:border-indigo-400 peer-checked:bg-indigo-50 dark:peer-checked:bg-indigo-900/20 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 text-center shadow-sm hover:shadow-md">
+                                    <div class="text-lg font-bold mb-2">Large</div>
+                                    <div class="text-xs opacity-80">Clear & Accessible</div>
+                                </div>
+                                <div class="absolute top-3 right-3 opacity-0 peer-checked:opacity-100 transition-opacity text-indigo-500 dark:text-indigo-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            </label>
+                            
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-6 md:p-8 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800/60 flex justify-end">
+                <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    Save Preferences
+                </button>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Load existing settings into the form
+// Load settings directly into inputs
 async function loadFormDefaults() {
-    const { res, data } = await apiRequest("/api/user/profile/");
-    
-    // Pull from localStorage as a fallback just in case the backend hasn't been updated yet
-    const cachedStr = localStorage.getItem('user_settings');
-    const cachedSettings = cachedStr ? JSON.parse(cachedStr) : null;
-
-    const isDark = data?.dark_mode ?? cachedSettings?.dark_mode ?? false;
-    const fontSize = data?.font_size ?? cachedSettings?.font_size ?? 'medium';
-
-    const form = document.getElementById("settingsForm");
-    
-    // Check toggle
-    form.elements['dark_mode'].checked = isDark;
-    
-    // Select radio
-    const radio = form.querySelector(`input[name="font_size"][value="${fontSize}"]`);
-    if (radio) radio.checked = true;
+    const { data } = await apiRequest("/api/user/profile/");
+    if (data) {
+        document.getElementById("dark_mode").checked = data.dark_mode;
+        
+        const radios = document.getElementsByName("font_size");
+        for (const radio of radios) {
+            if (radio.value === data.font_size) {
+                radio.checked = true;
+            }
+        }
+    }
 }
 
+// Handle save
 document.getElementById("settingsForm").onsubmit = async function(e){
     e.preventDefault();
     const formData = new FormData(this);
@@ -141,4 +177,3 @@ document.getElementById("settingsForm").onsubmit = async function(e){
 document.addEventListener("DOMContentLoaded", loadFormDefaults);
 </script>
 {% endblock %}
-

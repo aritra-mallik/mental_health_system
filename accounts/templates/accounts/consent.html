@@ -8,8 +8,8 @@
 <style>
     /* The Magic "Grain" Texture */
     .bg-texture {
-        background-color: #f1f5e9; /* Light yellowish-green base */
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3%3C/svg%3");
+        background-color: #f1f5e9; 
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         background-blend-mode: overlay;
         opacity: 0.4;
     }
@@ -28,24 +28,24 @@
     /* Custom Sage Checkbox */
     input[type="checkbox"] {
         appearance: none;
-        height: 1.4rem;
-        width: 1.4rem;
-        background-color: rgba(255, 255, 255, 0.6);
-        border: 2px solid #a3b18a; /* Sage Green */
+        height: 1.8rem;
+        width: 1.8rem;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 2px solid #a3b18a; 
         border-radius: 0.5rem;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
     }
     input[type="checkbox"]:checked {
-        background-color: #588157; /* Deep Moss Green */
+        background-color: #588157; 
         border-color: #3a5a40;
     }
     input[type="checkbox"]:checked::after {
         content: '✓';
         position: absolute;
         color: white;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
         top: 45%;
         left: 50%;
         transform: translate(-50%, -50%);
@@ -59,71 +59,90 @@
     <div class="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] bg-lime-200/30 blur-[100px] rounded-full"></div>
     <div class="absolute bottom-[-10%] left-[-5%] w-[35rem] h-[35rem] bg-green-200/20 blur-[100px] rounded-full"></div>
 
-    <div class="relative w-full max-w-2xl px-6 py-12">
+    <div class="relative w-full max-w-3xl px-4 sm:px-6 py-12 mt-10">
         
-        <div class="text-center mb-12 animate-fade">
-            <h2 class="text-4xl font-serif font-bold text-dark-green tracking-tight text-[#344e41]">Gentle Consent 🍂</h2>
-            <p class="text-[#588157] mt-3 text-lg italic max-w-md mx-auto">
-                Your journey is safe with us. Please take a moment to review our care policies.
+        <div class="text-center mb-10 animate-fade">
+            <h2 class="text-4xl md:text-5xl font-serif font-bold text-dark-green tracking-tight text-[#344e41]">Gentle Consent 🍂</h2>
+            <p class="text-[#588157] mt-4 text-lg md:text-xl italic max-w-xl mx-auto font-medium">
+                Your journey is safe with us. Please review and accept our global care policies below.
             </p>
         </div>
 
-        <div class="bg-white/40 backdrop-blur-xl border border-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[3rem] p-8 md:p-14 animate-card relative">
+        <div class="bg-white/40 backdrop-blur-xl border border-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-12 animate-card relative">
             
             <div class="absolute inset-0 bg-texture opacity-10 rounded-[3rem] pointer-events-none"></div>
 
-            <div class="text-center mb-8 animate-[fadeIn_1s_ease-out]">
-                <h1 class="text-2xl font-black tracking-[0.2em] text-[#13481c] uppercase">
-                    User Consent
-                </h1>
-                <div class="h-1.5 w-10 bg-[#cdf006] mx-auto mt-3 rounded-full shadow-sm animate-[scaleIn_1.2s_ease-out]"></div>
-            </div>
+            <form id="consentForm" class="relative z-10">
 
-            <form id="consentForm" class="space-y-8 relative z-10">
-                {% csrf_token %}
+                <!-- CLEAN, LARGE POLICY LIST (No inner box wrappers) -->
+                <div class="flex flex-col gap-8 mb-10 mt-2">
+                    
+                    <!-- Point 1: Privacy -->
+                    <div class="group flex gap-5 sm:gap-6 items-start">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/70 border border-[#c2d5aa] flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-sm text-[#3a5a40] group-hover:scale-110 group-hover:bg-white transition-all duration-300">🛡️</div>
+                        <div class="pt-1 sm:pt-2">
+                            <h4 class="font-black text-[#13481c] text-base sm:text-lg tracking-wide uppercase mb-1">Privacy & Data Policy</h4>
+                            <p class="text-sm sm:text-base text-[#344e41] font-medium leading-relaxed">Your data remains a private reflection of your personal growth and is guarded securely.</p>
+                        </div>
+                    </div>
 
-                <div class="space-y-7">
-                    <label class="flex items-start space-x-5 group cursor-pointer">
-                        <input type="checkbox" id="data_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
-                        <span class="text-[#344e41] leading-relaxed text-base">
-                            I agree to the <b class="text-[#3a5a40]">Privacy Policy</b>. My data is a private reflection of my growth.
-                        </span>
-                    </label>
+                    <!-- Point 2: AI Rules -->
+                    <div class="group flex gap-5 sm:gap-6 items-start">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/70 border border-[#c2d5aa] flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-sm text-[#3a5a40] group-hover:scale-110 group-hover:bg-white transition-all duration-300">🤖</div>
+                        <div class="pt-1 sm:pt-2">
+                            <h4 class="font-black text-[#13481c] text-base sm:text-lg tracking-wide uppercase mb-1">AI Boundary Rules</h4>
+                            <p class="text-sm sm:text-base text-[#344e41] font-medium leading-relaxed">Artificial Intelligence contextually assists your mental wellness journey but is <b class="font-black text-[#13481c]">not</b> a medical practitioner.</p>
+                        </div>
+                    </div>
 
-                    <label class="flex items-start space-x-5 group cursor-pointer">
-                        <input type="checkbox" id="ai_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
-                        <span class="text-[#344e41] leading-relaxed text-base">
-                            I accept that <b class="text-[#3a5a40]">AI assistance</b> helps guide my experience, but is not a doctor.
-                        </span>
-                    </label>
+                    <!-- Point 3: Secure Storage -->
+                    <div class="group flex gap-5 sm:gap-6 items-start">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/70 border border-[#c2d5aa] flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-sm text-[#3a5a40] group-hover:scale-110 group-hover:bg-white transition-all duration-300">🔑</div>
+                        <div class="pt-1 sm:pt-2">
+                            <h4 class="font-black text-[#13481c] text-base sm:text-lg tracking-wide uppercase mb-1">Secure Storage</h4>
+                            <p class="text-sm sm:text-base text-[#344e41] font-medium leading-relaxed">I consent to the secure, zero-knowledge local encryption and protected cloud storage of my information.</p>
+                        </div>
+                    </div>
 
-                    <label class="flex items-start space-x-5 group cursor-pointer">
-                        <input type="checkbox" id="secure_storage_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
-                        <span class="text-[#344e41] leading-relaxed text-base">
-                            I consent to <b class="text-[#3a5a40]">secure storage</b> of my information, protected securely by our care.
-                        </span>
-                    </label>
+                    <!-- Point 4: Terms & Framework -->
+                    <div class="group flex gap-5 sm:gap-6 items-start">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/70 border border-[#c2d5aa] flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-sm text-[#3a5a40] group-hover:scale-110 group-hover:bg-white transition-all duration-300">🤝</div>
+                        <div class="pt-1 sm:pt-2">
+                            <h4 class="font-black text-[#13481c] text-base sm:text-lg tracking-wide uppercase mb-1">Support Framework</h4>
+                            <p class="text-sm sm:text-base text-[#344e41] font-medium leading-relaxed">This platform delivers strictly <b class="font-black text-[#13481c]">non-clinical emotional support</b> and does not replace psychiatric healthcare.</p>
+                        </div>
+                    </div>
 
-                    <label class="flex items-start space-x-5 group cursor-pointer">
-                        <input type="checkbox" id="terms_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
-                        <span class="text-[#344e41] leading-relaxed text-base">
-                            I agree to the <b class="text-[#3a5a40]">Terms of Service</b> for this supportive space and understand that this platform offers <b class="text-[#3a5a40]">non-clinical emotional support</b> and is not a substitute for professional mental health care.
-                        </span>
-                    </label>
-                    <label class="flex items-start space-x-5 group cursor-pointer">
-                        <input type="checkbox" id="age_policy" class="mt-1 flex-shrink-0 group-hover:scale-110">
-                        <span class="text-[#344e41] leading-relaxed text-base">
-                            I confirm that I am <b class="text-[#3a5a40]">16 years of age or older</b>.
-                        </span>
-                    </label>
+                    <!-- Point 5: Age -->
+                    <div class="group flex gap-5 sm:gap-6 items-start">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#3a5a40] border border-[#2c4431] text-[#f1f5e9] flex items-center justify-center font-black text-xl sm:text-2xl shrink-0 shadow-md group-hover:scale-110 transition-all duration-300">16+</div>
+                        <div class="pt-1 sm:pt-2">
+                            <h4 class="font-black text-[#13481c] text-base sm:text-lg tracking-wide uppercase mb-1">Age Declaration</h4>
+                            <p class="text-sm sm:text-base text-[#344e41] font-medium leading-relaxed">Access requires all users to be legally 16 years of age or older to maintain platform safety and compliance.</p>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div class="pt-8">
+                <!-- HIGHLIGHTED MASTER CHECKBOX -->
+                <div class="pt-4 border-t-2 border-white/60">
+                    <div class="bg-[#f1f5e9]/80 backdrop-blur-md border-2 border-[#a3b18a]/80 p-5 sm:p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow mt-6">
+                        <label class="flex items-start space-x-4 sm:space-x-5 group cursor-pointer">
+                            <input type="checkbox" id="consent_all" class="mt-0.5 flex-shrink-0 group-hover:scale-105 shadow-sm">
+                            <span class="text-[#13481c] font-bold leading-relaxed text-sm sm:text-base select-none">
+                                I explicitly accept all the terms, data storage declarations, AI tracking frameworks, and confirm I am 16 years of age or older.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-6">
                     <button type="submit" 
-                        class="w-full py-5 bg-[#3a5a40] text-[#f1f5e9] rounded-[2rem] font-bold text-xl shadow-lg hover:bg-[#344e41] active:scale-[0.97] transition-all transform duration-300">
+                        class="w-full py-5 sm:py-6 bg-[#3a5a40] text-[#f1f5e9] rounded-[2rem] font-black text-xl sm:text-2xl shadow-xl hover:bg-[#2c4431] hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] transition-all transform duration-300 flex items-center justify-center gap-3">
                         I’m Ready to Begin
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
-                    <p class="text-center mt-5 text-sm text-[#588157]/70 italic font-medium">Step forward into your growth.</p>
+                    <p class="text-center mt-5 text-sm sm:text-base text-[#588157] italic font-semibold">Step forward into your growth.</p>
                 </div>
             </form>
         </div>
@@ -132,50 +151,33 @@
 {% endblock %}
 
 {% block extra_js %}
-
 <script>
-
 document.getElementById("consentForm").addEventListener("submit", async function(e){
+    e.preventDefault();
 
-e.preventDefault()
+    const consentAll = document.getElementById("consent_all").checked;
 
-const dataPolicy = document.getElementById("data_policy").checked
-const aiPolicy = document.getElementById("ai_policy").checked
-const storagePolicy = document.getElementById("secure_storage_policy").checked
-const termsPolicy = document.getElementById("terms_policy").checked
-const agePolicy = document.getElementById("age_policy").checked
+    if(!consentAll){
+        showToast("error", "You must accept the terms and policies before continuing.");
+        return;
+    }
 
-if(!dataPolicy || !aiPolicy || !storagePolicy || !termsPolicy || !agePolicy){
+    localStorage.setItem("toast", JSON.stringify({
+        type: "success",
+        message: "Account created successfully"
+    }));
 
-    showToast("error", "You must accept all policies before continuing.")
+    const { res } = await apiRequest(
+        "/api/user/consent/",
+        "PATCH",
+        {
+            consent_all_policies: consentAll
+        }
+    );
 
-    return;
-
-}
-localStorage.setItem("toast", JSON.stringify({
-    type: "success",
-    message: "Account created successfully"
-}));
-
-const { res } = await apiRequest(
-  "/api/user/consent/",
-  "PATCH",
-  {
-    consent_data_policy: dataPolicy,
-    consent_ai_policy: aiPolicy,
-    consent_secure_storage: storagePolicy,
-    consent_terms: termsPolicy,
-    consent_age: agePolicy
-  }
-);
-
-if (res && res.ok) {
-    window.location.href = "/api/accounts/login-page/";
-}
-
-})
-
+    if (res && res.ok) {
+        window.location.href = "/api/accounts/login-page/";
+    }
+});
 </script>
-
 {% endblock %}
-{% comment %} <p id="message" class="text-center text-red-500 mt-4"></p> {% endcomment %}

@@ -1,11 +1,14 @@
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../context/AuthContext';
-
+import { PreferencesProvider } from '../context/PreferencesContext';
 import '../global.css'; 
+
+
 
 export default function RootLayout() {
   return (
     <AuthProvider>
+      <PreferencesProvider> {}
       <Stack screenOptions={{ headerShown: false }}>
         {/* Landing Page */}
         <Stack.Screen name="index" />
@@ -28,7 +31,24 @@ export default function RootLayout() {
         <Stack.Screen name="user_control/profile" />
         <Stack.Screen name="user_control/settings" />
         <Stack.Screen name="user_control/consent" />
+        {/* <Stack.Screen name="user_control/export" /> */}
       </Stack>
+      </PreferencesProvider>
     </AuthProvider>
   );
 }
+// import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+// import { useColorScheme } from 'react-native';
+
+// import { AnimatedSplashOverlay } from '@/components/animated-icon';
+// import AppTabs from '@/components/app-tabs';
+
+// export default function TabLayout() {
+//   const colorScheme = useColorScheme();
+//   return (
+//     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+//       <AnimatedSplashOverlay />
+//       <AppTabs />
+//     </ThemeProvider>
+//   );
+// }

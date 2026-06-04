@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-from cryptography.fernet import Fernet
 import environ
 import os
 
@@ -186,7 +185,5 @@ CACHES = {
         "LOCATION": "unique",
     }
 }
-
-ENCRYPTION_KEY = env("ENCRYPTION_KEY").encode()
 
 GROQ_API_KEY = env("GROQ_API_KEY")

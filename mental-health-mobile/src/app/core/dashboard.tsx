@@ -1,9 +1,10 @@
 // app/core/dashboard.tsx
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Animated, Dimensions, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Animated, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../api/apiClient';
+import { Text } from '@/components/themed-text';
 
 // Import your new Sidebar component
 import Sidebar from '../sidebar';
@@ -104,6 +105,10 @@ export default function DashboardScreen() {
           <TouchableOpacity style={[styles.card, { backgroundColor: '#f3e8ff' }]} onPress={() => router.push('/core/assessment')}>
             <Text style={styles.cardEmoji}>📊</Text><Text style={styles.cardTitle}>WHO-5 Check-In</Text>
             <Text style={styles.cardDesc}>Validated scales to track your progress.</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.card, { backgroundColor: '#f3e8ff' }]} onPress={() => router.push('/')}>
+            <Text style={styles.cardEmoji}>📊</Text><Text style={styles.cardTitle}>Consultation</Text>
+            <Text style={styles.cardDesc}>Seek professional help when needed.</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

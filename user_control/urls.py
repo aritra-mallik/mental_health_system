@@ -12,5 +12,5 @@ urlpatterns = [
     path('profile-page/', profile_page, name='profile-page'),
     path('settings-page/', settings_page, name='settings-page'),
     path('consent-page/', consent_page, name='consent-page'),
-    path('export-page/', export_page, name='export-page'),  
+    path('export-page/', export_page, name='export-page'),
 ]
