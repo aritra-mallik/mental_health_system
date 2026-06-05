@@ -126,6 +126,7 @@ class ReportDataView(APIView):
         user = request.user
         ist_tz = ZoneInfo('Asia/Kolkata')
         local_now = timezone.now().astimezone(ist_tz)
+        thirty_days_ago = local_now - timedelta(days=30)
         
         # 1. Profile Info
         journal_count = JournalEntry.objects.filter(user=user).count()
@@ -139,7 +140,7 @@ class ReportDataView(APIView):
         }
 
         # 2. Assessments
-        assessments = Assessment.objects.filter(user=user).order_by("-created_at")
+        assessments = Assessment.objects.filter(user=user, created_at__gte=thirty_days_ago).order_by("-created_at")
         assessment_data = [{
             "type": a.assessment_type.upper(),
             "score": a.score,
@@ -180,7 +181,7 @@ class ReportDataView(APIView):
         } for s in raw_signals]
 
         # 5. Consultation History
-        bookings = Booking.objects.filter(user=user).select_related('counselor', 'slot').order_by("-slot__date")[:5]
+        bookings = Booking.objects.filter(user=user, slot__date__gte=thirty_days_ago).select_related('counselor', 'slot').order_by("-slot__date")
         booking_data = [{
             "counselor": b.counselor.name,
             "status": b.status.title(),
