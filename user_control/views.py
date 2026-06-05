@@ -139,7 +139,7 @@ class ReportDataView(APIView):
         }
 
         # 2. Assessments
-        assessments = Assessment.objects.filter(user=user).order_by("-created_at")[:10]
+        assessments = Assessment.objects.filter(user=user).order_by("-created_at")
         assessment_data = [{
             "type": a.assessment_type.upper(),
             "score": a.score,

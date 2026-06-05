@@ -449,45 +449,6 @@
 
         </div>
 
-        <div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-500 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 flex flex-col group">
-                
-                <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-400/10 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
-
-                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner border border-emerald-100 dark:border-emerald-800/50">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-black tracking-tight text-slate-800 dark:text-white">
-                                Assessment Scores
-                            </h3>
-                            <p id="assess-subtitle" class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">Click any data point to view daily breakdown</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1.5 shadow-inner border border-slate-200/60 dark:border-slate-700/50">
-                        <button id="btn-assess-all" onclick="setAssessMode('all')" class="bg-emerald-500 text-white px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-md active:scale-95">All Time</button>
-                        
-                        <button id="btn-assess-date" onclick="document.getElementById('assess-date-picker').showPicker()" class="text-slate-500 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 active:scale-95 ml-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <span id="assess-date-label">Pick Date</span>
-                        </button>
-                        
-                        <input type="date" id="assess-date-picker" onchange="setAssessMode('date', this.value)" style="position: absolute; visibility: hidden; width: 0; height: 0;">
-                    </div>
-                </div>
-
-                <div id="custom-legend" class="relative z-10 flex flex-wrap gap-3 mb-6"></div>
-
-                <div class="flex-1 relative z-10 min-h-[260px] w-full overflow-hidden">
-                    <canvas id="assessmentChart"></canvas>
-                </div>
-                
-            </div>
-
             <div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-500 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 flex flex-col group">
                 
                 <div class="absolute -top-24 -right-24 w-64 h-64 bg-cyan-400/10 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
@@ -549,6 +510,45 @@
                 <canvas id="eventMoodChart"></canvas>
             </div>
         </div>
+
+        <div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-500 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 flex flex-col group">
+                
+                <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-400/10 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner border border-emerald-100 dark:border-emerald-800/50">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black tracking-tight text-slate-800 dark:text-white">
+                                Assessment Scores
+                            </h3>
+                            <p id="assess-subtitle" class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">Click any data point to view daily breakdown</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1.5 shadow-inner border border-slate-200/60 dark:border-slate-700/50">
+                        <button id="btn-assess-all" onclick="setAssessMode('all')" class="bg-emerald-500 text-white px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-md active:scale-95">All Time</button>
+                        
+                        <button id="btn-assess-date" onclick="document.getElementById('assess-date-picker').showPicker()" class="text-slate-500 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 active:scale-95 ml-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span id="assess-date-label">Pick Date</span>
+                        </button>
+                        
+                        <input type="date" id="assess-date-picker" onchange="setAssessMode('date', this.value)" style="position: absolute; visibility: hidden; width: 0; height: 0;">
+                    </div>
+                </div>
+
+                <div id="custom-legend" class="relative z-10 flex flex-wrap gap-3 mb-6"></div>
+
+                <div class="flex-1 relative z-10 min-h-[260px] w-full overflow-hidden">
+                    <canvas id="assessmentChart"></canvas>
+                </div>
+                
+            </div>
 
         <div class="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] group/section">
 
