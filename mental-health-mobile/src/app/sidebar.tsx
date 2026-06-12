@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Animated, Dimensions } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Animated, Dimensions, useColorScheme, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -12,47 +13,133 @@ interface SidebarProps {
 
 export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarProps) {
   const router = useRouter();
+  
+  // We keep this ONLY for passing explicit hex colors to the Ionicons component.
+  // All backgrounds, borders, and text are now handled cleanly by Uniwind's dark: classes!
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-  return (
-    <Animated.View style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
-      <View style={styles.sidebarHeader}>
-        <Text style={styles.sidebarTitle}>Menu</Text>
-        <TouchableOpacity onPress={toggleSidebar}>
-          <Text style={{ color: '#a1a1aa', fontSize: 24 }}>✕</Text>
-        </TouchableOpacity>
+  const handleNavigation = (path: any) => {
+    toggleSidebar();
+    router.push(path);
+  };
+
+  const NavItem = ({ 
+    icon, 
+    label, 
+    onPress, 
+    isDestructive = false 
+  }: { 
+    icon: keyof typeof Ionicons.glyphMap, 
+    label: string, 
+    onPress: () => void, 
+    isDestructive?: boolean 
+  }) => (
+    <TouchableOpacity 
+      activeOpacity={0.7}
+      onPress={onPress} 
+      className={`flex-row items-center p-4 mb-3 rounded-2xl border ${
+        isDestructive 
+          ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' 
+          : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700/50'
+      }`}>
+      <View className={`w-10 h-10 rounded-xl items-center justify-center mr-4 ${
+        isDestructive 
+          ? 'bg-rose-100 dark:bg-rose-500/20' 
+          : 'bg-indigo-50 dark:bg-slate-700/50'
+      }`}>
+        <Ionicons 
+          name={icon} 
+          size={20} 
+          color={isDestructive ? (isDark ? '#f43f5e' : '#e11d48') : (isDark ? '#818cf8' : '#4f46e5')}/>
       </View>
       
-      <ScrollView style={{ flex: 1, paddingBottom: 40 }}>
-        <Text style={styles.sidebarSection}>Account</Text>
-        <TouchableOpacity style={styles.navItem} onPress={() => { toggleSidebar(); router.push('/user_control/profile'); }}>
-          <Text style={styles.navIcon}>👤</Text>
-          <Text style={styles.navText}>My Profile</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => { toggleSidebar(); router.push('/user_control/settings'); }}>
-          <Text style={styles.navIcon}>⚙️</Text>
-          <Text style={styles.navText}>Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => { toggleSidebar(); router.push('/user_control/consent'); }}>
-          <Text style={styles.navIcon}>🛡️</Text>
-          <Text style={styles.navText}>Security & Consent</Text>
-        </TouchableOpacity>
+      {/* Refactored to use standard Tailwind dark: modifiers */}
+      <Text className={`text-base font-bold flex-1 ${
+        isDestructive 
+          ? 'text-rose-600 dark:text-rose-500' 
+          : 'text-slate-700 dark:text-slate-200'
+      }`}>
+        {label}
+      </Text>
+      
+      <Ionicons 
+        name="chevron-forward" 
+        size={18} 
+        color={isDestructive ? (isDark ? 'rgba(244, 63, 94, 0.5)' : 'rgba(225, 29, 72, 0.5)') : (isDark ? '#475569' : '#cbd5e1')}/>
+    </TouchableOpacity>
+  );
 
-        <Text style={styles.sidebarSection}>Session</Text>
-        <TouchableOpacity style={[styles.navItem, { borderBottomWidth: 0 }]} onPress={logout}>
-          <Text style={styles.navIcon}>🚪</Text>
-          <Text style={[styles.navText, { color: '#ef4444' }]}>Log Out</Text>
-        </TouchableOpacity>
+  return (
+    <Animated.View 
+      className="absolute top-0 left-0 bottom-0 z-20 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl"
+      style={{ 
+        width: width * 0.75,
+        transform: [{ translateX: slideAnim }]
+      }}
+    >
+      
+      {/* --- Beautiful Header Section --- */}
+      <View className="px-6 pt-16 pb-8 border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <View className="absolute -top-10 -left-10 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl" />
+        
+        <View className="flex-row justify-between items-center mb-6 z-10">
+          <View className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/20 rounded-2xl items-center justify-center border border-indigo-100 dark:border-indigo-500/30">
+            <Ionicons name="leaf" size={24} color={isDark ? '#818cf8' : '#4f46e5'} />
+          </View>
+          <TouchableOpacity 
+            onPress={toggleSidebar}
+            className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-full items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm">
+            <Ionicons name="close" size={20} color={isDark ? '#94a3b8' : '#64748b'} />
+          </TouchableOpacity>
+        </View>
+        <Text className="text-3xl font-black text-slate-900 dark:text-white tracking-tight z-10">Smera</Text>
+        <Text className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 z-10">Your personal sanctuary</Text>
+      </View>
+      
+      {/* --- Scrollable Menu Content --- */}
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ padding: 20, paddingBottom: 60 }} 
+        showsVerticalScrollIndicator={false}>
+        
+        <Text className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-2 mt-2">Account</Text>
+        <NavItem 
+          icon="person-outline" 
+          label="My Profile" 
+          onPress={() => handleNavigation('/user_control/profile')}/>
+        <NavItem 
+          icon="settings-outline" 
+          label="Settings" 
+          onPress={() => handleNavigation('/user_control/settings')}/>
+        <NavItem 
+          icon="shield-checkmark-outline" 
+          label="Security & Consent" 
+          onPress={() => handleNavigation('/user_control/consent')}/>
+
+        <View className="h-4" />
+
+        <Text className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-2">Data & Session</Text>
+        <NavItem 
+          icon="download-outline" 
+          label="Export Data" 
+          onPress={() => handleNavigation('/user_control/export')}/>
+        <NavItem 
+          icon="information-circle-outline" 
+          label="App Info" 
+          onPress={() => handleNavigation('/about')}/>
+        
+        <View className="h-6" />
+        
+        {/* Destructive Logout Button */}
+        <NavItem 
+          icon="log-out-outline" 
+          label="Log Out" 
+          onPress={logout} 
+          isDestructive={true}/>
+        
       </ScrollView>
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  sidebar: { position: 'absolute', top: 0, left: 0, bottom: 0, width: width * 0.75, backgroundColor: '#18181b', zIndex: 20, borderRightWidth: 1, borderRightColor: '#27272a' },
-  sidebarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 60, borderBottomWidth: 1, borderBottomColor: '#27272a' },
-  sidebarTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
-  sidebarSection: { color: '#a855f7', fontSize: 12, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 8 },
-  navItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#27272a' },
-  navIcon: { fontSize: 20, marginRight: 16 },
-  navText: { color: '#e4e4e7', fontSize: 16, fontWeight: '500' }
-});

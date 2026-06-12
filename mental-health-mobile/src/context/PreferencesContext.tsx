@@ -1,67 +1,74 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { View } from 'react-native';
+import { Appearance, useColorScheme as useSystemColorScheme } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import apiClient from '../api/apiClient';
 import { useAuth } from './AuthContext';
-import { useColorScheme } from 'nativewind';
 
-// 1. Types
-type FontSize = 'small' | 'medium' | 'large';
+export type ThemeMode = 'light' | 'dark' | 'system';
 
-// 2. Interface
 interface PreferencesContextType {
+  themeMode: ThemeMode;
   isDarkMode: boolean;
-  fontSize: FontSize;
-  updatePreferences: (updates: { dark_mode?: boolean; font_size?: FontSize }) => Promise<void>;
+  updatePreferences: (updates: { theme_mode?: ThemeMode }) => Promise<void>;
 }
 
-// 3. Context Initialization
-const PreferencesContext = createContext<PreferencesContextType | null>(null);
-
-// 4. Custom Hook for easy access
-export const usePreferences = () => {
-  const context = useContext(PreferencesContext);
-  if (!context) throw new Error('usePreferences must be used within a PreferencesProvider');
-  return context;
+const defaultPreferences = {
+  themeMode: 'system' as ThemeMode,
+  isDarkMode: false,
+  updatePreferences: async () => {},
 };
 
-// 5. The Provider Component
+const PreferencesContext = createContext<PreferencesContextType | null>(null);
+
+export const usePreferences = () => {
+  return useContext(PreferencesContext) ?? defaultPreferences;
+};
+
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const { userToken } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [fontSize, setFontSize] = useState<FontSize>('medium');
   
-  const { setColorScheme } = useColorScheme(); 
+  // 1. We hold the complex 3-way state exclusively on the device
+  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
+  
+  // 2. We listen to the native iOS/Android device color scheme
+  const systemColorScheme = useSystemColorScheme();
+
+  // 3. We compute the absolute boolean for NativeWind and the Backend
+  const isDarkMode = themeMode === 'system' 
+    ? systemColorScheme === 'dark' 
+    : themeMode === 'dark';
+
+  // Apply visual changes instantly to the app window
+  useEffect(() => {
+    Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   useEffect(() => {
     const loadSettings = async () => {
       if (!userToken) {
-        setIsDarkMode(false);
-        setFontSize('medium');
-        setColorScheme('light'); // reset on logout
+        setThemeMode('system');
         return;
       }
 
-      // Load from local cache for instant UI
-      const cached = await SecureStore.getItemAsync('user_preferences');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        setIsDarkMode(parsed.dark_mode);
-        setFontSize(parsed.font_size);
-        setColorScheme(parsed.dark_mode ? 'dark' : 'light');
+      // Check device storage first for the 3-way preference
+      let localTheme: ThemeMode | null = null;
+      const cachedTheme = await SecureStore.getItemAsync('device_theme_mode');
+      
+      if (cachedTheme) {
+        localTheme = cachedTheme as ThemeMode;
+        setThemeMode(localTheme);
       }
 
-      // Fetch fresh from backend
+      // Sync with backend (without overriding a local 'system' choice)
       try {
         const { data } = await apiClient.get('/user/profile/');
-        setIsDarkMode(data.dark_mode);
-        setFontSize(data.font_size);
-        setColorScheme(data.dark_mode ? 'dark' : 'light'); 
         
-        await SecureStore.setItemAsync('user_preferences', JSON.stringify({
-          dark_mode: data.dark_mode,
-          font_size: data.font_size
-        }));
+        // If the device had no saved preference, inherit what the backend thinks
+        if (!localTheme) {
+          const backendInheritedTheme = data.dark_mode ? 'dark' : 'light';
+          setThemeMode(backendInheritedTheme);
+          await SecureStore.setItemAsync('device_theme_mode', backendInheritedTheme);
+        }
       } catch (error) {
         console.error('Failed to fetch user preferences', error);
       }
@@ -70,41 +77,37 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     loadSettings();
   }, [userToken]);
 
-  const updatePreferences = async (updates: { dark_mode?: boolean; font_size?: FontSize }) => {
-    const previousState = { dark_mode: isDarkMode, font_size: fontSize };
+  const updatePreferences = async (updates: { theme_mode?: ThemeMode }) => {
+    if (!updates.theme_mode) return;
 
-    // 1. Optimistic UI Updates
-    if (updates.dark_mode !== undefined) {
-      setIsDarkMode(updates.dark_mode);
-      setColorScheme(updates.dark_mode ? 'dark' : 'light');
-    }
-    
-    if (updates.font_size !== undefined) {
-      setFontSize(updates.font_size);
-    }
+    const previousMode = themeMode;
+    const newMode = updates.theme_mode;
 
-    // 2. Persistence (Syncing with Server and Cache)
+    // 1. Optimistically update local UI and Storage
+    setThemeMode(newMode);
+    await SecureStore.setItemAsync('device_theme_mode', newMode);
+
+    // 2. Translate to a strict Boolean for your Django Backend
+    const backendCompatibleDarkMode = newMode === 'system' 
+      ? (systemColorScheme === 'dark') 
+      : (newMode === 'dark');
+
     try {
-      await apiClient.patch('/user/profile/', updates);
-      
-      await SecureStore.setItemAsync('user_preferences', JSON.stringify({
-        ...previousState,
-        ...updates
-      }));
+      // The backend never knows about "system", it just gets the translated boolean!
+      await apiClient.patch('/user/profile/', { 
+        dark_mode: backendCompatibleDarkMode 
+      });
     } catch (error) {
       // Rollback on failure
-      setIsDarkMode(previousState.dark_mode);
-      setColorScheme(previousState.dark_mode ? 'dark' : 'light');
-      setFontSize(previousState.font_size);
-      console.error('Failed to save preferences to server', error);
+      setThemeMode(previousMode);
+      await SecureStore.setItemAsync('device_theme_mode', previousMode);
+      console.error('Failed to update preferences on server', error);
     }
   };
 
   return (
-    <PreferencesContext.Provider value={{ isDarkMode, fontSize, updatePreferences }}>
-      <View style={{ flex: 1 }}>
-        {children}
-      </View>
+    <PreferencesContext.Provider value={{ themeMode, isDarkMode, updatePreferences }}>
+      {children}
     </PreferencesContext.Provider>
   );
 }

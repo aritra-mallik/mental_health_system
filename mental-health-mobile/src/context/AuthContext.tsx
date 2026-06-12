@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserToken(null);
       
       // 3. This now uses the imperative router, which never loses context
+      //console.log('Logout completed');
       router.replace('/accounts/login');
     }
   };

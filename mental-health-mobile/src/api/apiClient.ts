@@ -1,13 +1,29 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+//import { router } from 'expo-router'; // We use expo-router to handle automatic logouts
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL; 
 
-// 1. In-Memory Token Storage (Fast!)
+// 1. In-Memory Token Storage
 let inMemoryAccessToken: string | null = null;
 
 export const setInMemoryToken = (token: string | null) => {
   inMemoryAccessToken = token;
+};
+
+// --- CRITICAL FIX: Refresh Lock Queue ---
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
 };
 
 const apiClient = axios.create({
@@ -17,7 +33,7 @@ const apiClient = axios.create({
   },
 });
 
-// 2. Request Interceptor: Read from memory, not hardware
+// 2. Request Interceptor
 apiClient.interceptors.request.use(async (config) => {
   if (inMemoryAccessToken) {
     config.headers.Authorization = `Bearer ${inMemoryAccessToken}`;
@@ -25,40 +41,72 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 });
 
-// 3. Response Interceptor: The Auto-Refresh Engine
+// 3. Response Interceptor
 apiClient.interceptors.response.use(
-  (response) => response, // If the request succeeds, just pass it through
+  (response) => response, 
   async (error) => {
     const originalRequest = error.config;
 
-    // If we get a 401 Unauthorized and we haven't already tried to retry this request...
     if (error.response?.status === 401 && !originalRequest._retry) {
+      
+      // If a refresh is already happening, pause this request and put it in the queue
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
       originalRequest._retry = true; 
+      isRefreshing = true; // Lock the interceptor
 
       try {
-        // Grab the refresh token from the vault
-        const refreshToken = await SecureStore.getItemAsync('refresh_token');
-        
-        if (refreshToken) {
-          // Ask Django for a new access token
-          const refreshResponse = await axios.post(`${BASE_URL}/accounts/token/refresh/`, {
-            refresh: refreshToken
-          });
+          const refreshToken = await SecureStore.getItemAsync('refresh_token');
+
+          if (!refreshToken) {
+            await SecureStore.deleteItemAsync('access_token');
+            await SecureStore.deleteItemAsync('refresh_token');
+
+            setInMemoryToken(null);
+
+            return Promise.reject(error);
+          }
+
+          const refreshResponse = await axios.post(
+            `${BASE_URL}/accounts/token/refresh/`,
+            {
+              refresh: refreshToken
+            }
+          );
 
           const newAccessToken = refreshResponse.data.access;
 
-          // Save the new token in the vault AND in memory
           await SecureStore.setItemAsync('access_token', newAccessToken);
           setInMemoryToken(newAccessToken);
 
-          // Update the failed request with the new token and try again!
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          processQueue(null, newAccessToken);
+
+          originalRequest.headers.Authorization =
+            `Bearer ${newAccessToken}`;
+
           return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // If the refresh token is ALSO expired, they must log in again.
-        // Your AuthContext will handle this gracefully.
+        } catch (refreshError) {
+        processQueue(refreshError, null);
+
+        await SecureStore.deleteItemAsync('access_token');
+        await SecureStore.deleteItemAsync('refresh_token');
+        setInMemoryToken(null);
+
+        // 3. This now uses the imperative router, which never loses context
+       // router.replace('/accounts/login');
         return Promise.reject(refreshError);
+      } finally {
+        // Always unlock when done
+        isRefreshing = false;
       }
     }
     

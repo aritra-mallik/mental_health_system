@@ -176,7 +176,7 @@ async function loadBooking() {
       ${counselor.office_address ? `<div class="mt-6 p-4 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800/50"><div class="text-xs uppercase font-bold tracking-widest text-cyan-600">📍 Doctor Office</div><div class="mt-2 text-sm font-medium">${counselor.office_address}</div></div>` : ""}
     `;
 
-    document.getElementById("experience").innerText = `${counselor.experience} yrs`;
+    document.getElementById("experience").innerText = `${counselor.experience}+ Yrs`;
     document.getElementById("fee").innerText = `₹${counselor.consultation_fee}`;
     document.getElementById("summaryFee").innerText = `₹${counselor.consultation_fee}`;
     document.getElementById("totalFee").innerText = `₹${parseFloat(counselor.consultation_fee)+50}`;
