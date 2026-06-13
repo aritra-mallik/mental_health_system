@@ -8,7 +8,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Path, Polygon, Defs, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Speech from 'expo-speech'; 
+import * as Speech from 'expo-speech'; // <-- IMPORT EXPO SPEECH
 import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../api/apiClient';
 import Sidebar from '../sidebar';
@@ -505,7 +505,7 @@ export default function DashboardScreen() {
                 <View className="flex-row flex-wrap gap-2">
                   {recommendation.recommended.map((rec, i) => (
                     <TouchableOpacity key={i} onPress={() => router.push('/core/assessment')} className="px-4 py-2 bg-[#fff7ed] dark:bg-orange-900/30 border border-[#ffedd5] dark:border-orange-800/50 rounded-xl shadow-sm">
-                      <Text className="text-[#ea580c] dark:text-orange-400 text-xs font-black tracking-wide">⏳ {rec.toUpperCase()} due</Text>
+                      <Text className="text-[#ea580c] dark:text-orange-400 text-md font-black tracking-wide">⏳ {rec.toUpperCase()} due</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -651,12 +651,12 @@ export default function DashboardScreen() {
              
              <Text className="text-2xl font-black text-slate-800 dark:text-white tracking-tight mb-2">Clinical Care</Text>
              <Text className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-2 mt-1">Board-Certified Providers</Text>
-             <Text className="text-xs font-medium text-slate-500 dark:text-slate-400 text-center mb-6 leading-relaxed px-2">
+             <Text className="text-md font-medium text-slate-500 dark:text-slate-400 text-center mb-6 leading-relaxed px-2">
                Consult securely with a licensed specialist to evaluate and manage your mental wellbeing.
              </Text>
              
              <LinearGradient colors={['#e11d48', '#ec4899']} className="w-full py-4 rounded-xl flex-row justify-center items-center shadow-md">
-               <Text className="text-white font-black text-xs uppercase tracking-widest mr-2">Request Appointment</Text>
+               <Text className="text-white font-black text-md uppercase tracking-widest mr-2">Request Appointment</Text>
                <Ionicons name="arrow-forward" size={16} color="#fff" />
              </LinearGradient>
            </LinearGradient>
@@ -746,11 +746,11 @@ export default function DashboardScreen() {
                <View className="flex-col w-full items-end gap-3">
                  <View className="flex-row items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1.5 shadow-inner border border-slate-200/60 dark:border-slate-700/50 w-full justify-between sm:justify-start">
                    <TouchableOpacity onPress={() => setAssessMode('all')} className={`flex-1 sm:flex-none items-center justify-center px-4 py-2 rounded-xl transition-all ${assessMode === 'all' ? 'bg-emerald-500 shadow-md' : ''}`}>
-                      <Text className={`text-xs font-bold ${assessMode === 'all' ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}>All Time</Text>
+                      <Text className={`text-md font-bold ${assessMode === 'all' ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}>All Time</Text>
                    </TouchableOpacity>
                    <TouchableOpacity onPress={toggleAssessmentMode} className={`flex-1 sm:flex-none items-center justify-center px-4 py-2 rounded-xl flex-row gap-2 transition-all ml-1 ${assessMode === 'date' ? 'bg-emerald-500 shadow-md' : ''}`}>
                       <Ionicons name="calendar-outline" size={14} color={assessMode === 'date' ? '#fff' : (isDark ? '#cbd5e1' : '#64748b')} />
-                      <Text className={`text-xs font-bold ${assessMode === 'date' ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}>
+                      <Text className={`text-md font-bold ${assessMode === 'date' ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}>
                          {assessMode === 'date' && selectedAssessDate ? new Date(selectedAssessDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Pick Date'}
                       </Text>
                    </TouchableOpacity>
@@ -798,7 +798,7 @@ export default function DashboardScreen() {
                      <View style={{ backgroundColor: isChecked ? flags[type] : 'transparent', borderColor: isChecked ? flags[type] : '#cbd5e1' }} className="w-5 h-5 rounded-full border-2 mr-2 items-center justify-center flex-shrink-0">
                        {isChecked && <Ionicons name="checkmark" size={12} color="#fff" />}
                      </View>
-                     <Text numberOfLines={1} className={`text-xs font-black uppercase tracking-wide flex-shrink-0 ${isChecked ? 'text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
+                     <Text numberOfLines={1} className={`text-md font-black uppercase tracking-wide flex-shrink-0 ${isChecked ? 'text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
                        {type === 'who5' ? 'WHO-5' : type}
                      </Text>
                    </TouchableOpacity>
@@ -840,7 +840,7 @@ export default function DashboardScreen() {
                       {isAutoFeed && <Animated.View style={{ transform: [{ scale: pingScale }], opacity: pingOpacity }} className="absolute inset-0 rounded-full bg-purple-400" />}
                       <View className={`w-2.5 h-2.5 rounded-full ${isAutoFeed ? 'bg-purple-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
                     </View>
-                    <Text className={`text-xs font-bold tracking-widest uppercase ${isAutoFeed ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'}`}>Auto-Feed</Text>
+                    <Text className={`text-md font-bold tracking-widest uppercase ${isAutoFeed ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'}`}>Auto-Feed</Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity onPress={() => setArticleIndex((prev) => (prev + 1) % articles.length)} className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
@@ -856,19 +856,19 @@ export default function DashboardScreen() {
               <View className="relative z-10">
                 <View className="flex-row justify-between items-center mb-5">
                   <View className={`px-3 py-1.5 rounded-lg border shadow-sm ${getMoodTaxonomyColor(currentArticle.mood).bg} ${getMoodTaxonomyColor(currentArticle.mood).border}`}>
-                    <Text className={`text-xs font-black uppercase tracking-wider ${getMoodTaxonomyColor(currentArticle.mood).text}`}>
+                    <Text className={`text-md font-black uppercase tracking-wider ${getMoodTaxonomyColor(currentArticle.mood).text}`}>
                       {currentArticle.mood}
                     </Text>
                   </View>
                   <View className="flex-row items-center bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-100 dark:border-slate-700/50">
                     <Ionicons name="time-outline" size={14} color="#94a3b8" />
-                    <Text className="text-xs font-bold text-slate-400 ml-1.5">{currentArticle.read_time}</Text>
+                    <Text className="text-md font-bold text-slate-400 ml-1.5">{currentArticle.read_time}</Text>
                   </View>
                 </View>
                 <Text className="text-xl font-black text-slate-800 dark:text-white mb-3 leading-tight tracking-tight">{currentArticle.title}</Text>
                 <Text className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-6" numberOfLines={2}>{currentArticle.short}</Text>
                 <View className="flex-row justify-between items-center pt-5 border-t border-slate-100 dark:border-slate-700">
-                   <Text className="text-xs font-bold uppercase tracking-widest text-slate-400">Read Article</Text>
+                   <Text className="text-md font-bold uppercase tracking-widest text-slate-400">Read Article</Text>
                    <View className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 flex items-center justify-center shadow-sm">
                      <Ionicons name="arrow-forward" size={16} color={isDark ? '#818cf8' : '#4f46e5'} />
                    </View>

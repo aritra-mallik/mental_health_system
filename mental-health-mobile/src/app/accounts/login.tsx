@@ -1,25 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, Animated, ScrollView } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  KeyboardAvoidingView, 
+  Platform, 
+  Animated, 
+  ScrollView,
+  Image,
+  Modal,
+  ActivityIndicator,
+  Pressable
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { Button, Card } from 'heroui-native';
+import { Button } from 'heroui-native';
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/api/apiClient';
 
-// --- Password Strength Utility ---
-const checkPasswordStrength = (pass: string) => {
-  if (!pass) return { label: '', color: 'bg-transparent', textColor: 'text-transparent', width: 'w-0' };
-  
-  let score = 0;
-  if (pass.length >= 6) score += 1;
-  if (pass.length >= 8) score += 1;
-  if (/[A-Z]/.test(pass)) score += 1;
-  if (/[0-9]/.test(pass)) score += 1;
-  if (/[^A-Za-z0-9]/.test(pass)) score += 1;
-
-  if (score <= 2) return { label: 'Weak', color: 'bg-rose-500', textColor: 'text-rose-500', width: 'w-1/3' };
-  if (score <= 4) return { label: 'Fair', color: 'bg-amber-500', textColor: 'text-amber-500', width: 'w-2/3' };
-  return { label: 'Strong', color: 'bg-emerald-500', textColor: 'text-emerald-500', width: 'w-full' };
-};
+// --- Reusable Custom Input ---
+const CustomInput = ({ icon: Icon, placeholder, value, onChangeText, secureTextEntry, rightElement, keyboardType, autoCapitalize }: any) => (
+  <View className="flex-row items-center border-[1.5px] border-[#6F4E37]/20 bg-transparent rounded-full h-14 px-4 mb-4">
+    <Icon size={20} color="#8A7362" />
+    <Text className="text-[#8A7362]/30 text-2xl font-light mx-3 pb-1">|</Text>
+    <TextInput
+      className="flex-1 text-[#4A3623] font-medium text-base h-full"
+      placeholder={placeholder}
+      placeholderTextColor="#8A7362"
+      value={value}
+      onChangeText={onChangeText}
+      secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType}
+      autoCapitalize={autoCapitalize}
+    />
+    {rightElement}
+  </View>
+);
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -31,20 +48,31 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
+  // --- Custom Alert State ---
+  const [alertConfig, setAlertConfig] = useState({ visible: false, title: '', message: '' });
+
   // --- Animations ---
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
+  const slideDownAnim = useRef(new Animated.Value(-60)).current; // Starts 60px higher
+  const slideUpAnim = useRef(new Animated.Value(60)).current;    // Starts 60px lower
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true })
+      Animated.timing(fadeAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+      Animated.timing(slideDownAnim, { toValue: 0, duration: 900, useNativeDriver: true }),
+      Animated.timing(slideUpAnim, { toValue: 0, duration: 900, useNativeDriver: true })
     ]).start();
   }, []);
 
+  const showAlert = (title: string, message: string) => {
+    setAlertConfig({ visible: true, title, message });
+  };
+
+  const closeAlert = () => setAlertConfig(prev => ({ ...prev, visible: false }));
+
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Missing Fields', 'Please enter both email and password.');
+      showAlert('Missing Fields', 'Please enter both your email and password to continue.');
       return;
     }
 
@@ -56,117 +84,136 @@ export default function LoginScreen() {
         router.replace('/core/dashboard');
       }
     } catch (error: any) {
-      Alert.alert('Login Failed', error.response?.data?.message || 'Invalid credentials');
+      const errorMessage = error.response?.data?.message || 'Invalid credentials. Please check your email and password.';
+      showAlert('Login Failed', errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const strength = checkPasswordStrength(password);
-
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-neutral-50 dark:bg-black">
-      <ScrollView contentContainerClassName="flex-grow justify-center px-6 py-12" showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }} className="items-center mb-10">
-          <Text className="text-4xl font-black text-neutral-900 dark:text-white tracking-tight text-center">
-            Welcome Home 🏡
-          </Text>
-          <Text className="text-neutral-500 dark:text-neutral-400 mt-3 text-base italic text-center">
-            Take a deep breath and step inside. 🍃
-          </Text>
-        </Animated.View>
-
-        {/* HeroUI Card */}
-        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-          <Card className="p-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[32px] shadow-sm dark:shadow-none">
+    <View style={{ flex: 1, backgroundColor: '#F4E4DB' }}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView 
+          // Notice the massive paddingBottom: 180. This gives the keyboard space to push the inputs upwards!
+          contentContainerStyle={{ flexGrow: 1, padding: 24, paddingTop: 60, paddingBottom: 180 }} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="flex-1 justify-center">
             
-            <View className="items-center mb-8">
-              <Text className="text-2xl font-black tracking-[0.2em] text-neutral-900 dark:text-white uppercase">LOGIN</Text>
-              <View className="h-1.5 w-10 bg-amber-500 rounded-full mt-3" />
-            </View>
+            {/* TOP HALF: Slides DOWN into place */}
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideDownAnim }] }}>
+              {/* Top Illustration Image */}
+              <View className="items-center mb-8">
+                <Image 
+                  source={require('@/assets/images/login_image.png')} 
+                  style={{ width: '100%', height: 220, resizeMode: 'contain' }}
+                />
+              </View>
 
-            <View className="space-y-5 mb-2">
-              
-              {/* Email Input */}
-              <View>
-                <Text className="text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-widest ml-2 mb-2">Email</Text>
-                <TextInput
-                  className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white px-5 py-4 rounded-2xl text-base"
-                  placeholder="hello@mindfulspace.com"
-                  placeholderTextColor="#a1a1aa"
+              {/* Header Text */}
+              <View className="mb-10">
+                <Text className="text-[36px] font-black text-[#4A3623] tracking-tight mb-1">
+                  Welcome Back!
+                </Text>
+                <Text className="text-lg text-[#6F4E37] font-medium">
+                  Glad to see you again
+                </Text>
+              </View>
+            </Animated.View>
+
+            {/* BOTTOM HALF: Slides UP into place */}
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideUpAnim }] }}>
+              {/* Form Fields */}
+              <View className="space-y-2 mb-2">
+                <CustomInput 
+                  icon={Mail} 
+                  placeholder="Email" 
                   value={email}
                   onChangeText={setEmail}
                   autoCapitalize="none"
                   keyboardType="email-address"
                 />
+
+                <CustomInput 
+                  icon={Lock} 
+                  placeholder="Password" 
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!isPasswordVisible}
+                  rightElement={
+                    <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)} className="p-2">
+                      {isPasswordVisible ? <EyeOff size={20} color="#8A7362" /> : <Eye size={20} color="#8A7362" />}
+                    </TouchableOpacity>
+                  }
+                />
               </View>
 
-              {/* Password Input */}
-              <View>
-                <Text className="text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-widest ml-2 mb-2">Password</Text>
-                <View className="relative justify-center">
-                  <TextInput
-                    className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white px-5 py-4 pr-12 rounded-2xl text-base"
-                    placeholder="••••••••"
-                    placeholderTextColor="#a1a1aa"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!isPasswordVisible}
-                  />
-                  {/* Eye Toggle */}
-                  <TouchableOpacity 
-                    className="absolute right-4 p-2"
-                    activeOpacity={0.7}
-                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                  >
-                    <Text className="text-xl">{isPasswordVisible ? '🙈' : '👁️'}</Text>
-                  </TouchableOpacity>
-                </View>
+              {/* Forgot Password Link */}
+              <TouchableOpacity onPress={() => router.push('/accounts/forgot')} className="items-end mb-8 mt-2" activeOpacity={0.6}>
+                <Text className="text-[#4A3623] font-bold text-sm">Forgot Password?</Text>
+              </TouchableOpacity>
 
-                {/* Password Strength Indicator */}
-                {password.length > 0 && (
-                  <View className="mt-3 px-1">
-                    <View className="flex-row justify-between items-center mb-1.5">
-                      <Text className="text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Strength</Text>
-                      <Text className={`text-[10px] font-bold uppercase tracking-wider ${strength.textColor}`}>
-                        {strength.label}
-                      </Text>
-                    </View>
-                    <View className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden flex-row">
-                      <View className={`h-full rounded-full ${strength.color} ${strength.width}`} />
-                    </View>
-                  </View>
+              {/* Login Button */}
+              <TouchableOpacity 
+                className="w-full py-4 rounded-full items-center shadow-md shadow-black/10"
+                style={{ backgroundColor: '#4A3623' }} // Stays a consistent color!
+                onPress={handleLogin} 
+                disabled={loading}
+                activeOpacity={0.8}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#F4E4DB" />
+                ) : (
+                  <Text className="text-white text-lg font-bold tracking-widest uppercase">
+                    Login
+                  </Text>
                 )}
-              </View>
+              </TouchableOpacity>
+
+              {/* Bottom Registration Link */}
+              <TouchableOpacity onPress={() => router.push('/accounts/register')} className="mt-8 items-center" activeOpacity={0.6}>
+                <Text className="text-[#6F4E37] text-base font-medium">
+                  Don't have an account? <Text className="text-[#4c9f10] font-bold underline">REGISTER</Text>
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* --- CUSTOM ALERT MODAL --- */}
+      <Modal visible={alertConfig.visible} transparent animationType="fade">
+        <View className="flex-1 bg-black/40 justify-center items-center px-6">
+          <View className="bg-[#F4E4DB] w-full rounded-[28px] p-6 items-center shadow-2xl">
+            <View className="w-16 h-16 rounded-full items-center justify-center mb-4 bg-rose-100">
+              <AlertCircle size={32} color="#f43f5e" /> 
             </View>
-
-            <TouchableOpacity onPress={() => router.push('/accounts/forgot')} className="items-end mb-8 mt-4">
-              <Text className="text-amber-600 dark:text-amber-500 font-bold text-md">Forgot password?</Text>
-            </TouchableOpacity>
-
-            {/* HeroUI Button */}
-            <Button 
-              color="primary"
-              className="w-full rounded-2xl h-14"
-              isLoading={loading}
-              onPress={handleLogin} 
-              isDisabled={loading}
+            
+            <Text className="text-xl font-black text-[#4A3623] mb-2 text-center tracking-tight">
+              {alertConfig.title}
+            </Text>
+            
+            <Text className="text-base text-[#6F4E37] text-center leading-relaxed mb-8 px-2">
+              {alertConfig.message}
+            </Text>
+            
+            <TouchableOpacity 
+              className="w-full py-4 rounded-full items-center"
+              style={{ backgroundColor: '#4A3623' }}
+              onPress={closeAlert}
             >
-              <Text className="text-white text-base font-bold tracking-wide">ENTER SPACE</Text>
-            </Button>
-
-            <TouchableOpacity onPress={() => router.push('/accounts/register')} className="mt-8">
-              <Text className="text-center text-neutral-500 dark:text-neutral-400 text-sm">
-                New here? <Text className="text-amber-600 dark:text-amber-500 font-bold">Join our community</Text>
-              </Text>
+              <Text className="text-white text-base font-bold tracking-widest uppercase">Got It</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
-          </Card>
-        </Animated.View>
-
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

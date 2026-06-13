@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  View, Text, TextInput, TouchableOpacity, ScrollView, 
+  View, Text, TextInput, TouchableOpacity, ScrollView, Animated, 
   KeyboardAvoidingView, Platform, ActivityIndicator, Modal, Keyboard,
-  ImageBackground, useWindowDimensions, Alert
+  ImageBackground
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAudioRecorder, AudioModule, RecordingPresets } from 'expo-audio'; 
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from 'expo-secure-store'; // NEW: Fast Unlock Cache
 import { 
   Lock, ArrowLeft, Plus, Search, Pin, Trash2, 
-  Mic, MicOff, KeyRound, AlertTriangle, Info, Download, ShieldCheck
+  Mic, MicOff, Save, KeyRound, Book, AlertTriangle, Info, Download
 } from 'lucide-react-native';
 import { Button } from 'heroui-native';
 import { usePreferences } from '@/context/PreferencesContext';
@@ -26,8 +27,7 @@ import { Buffer } from 'buffer';
 // ==========================================
 // TYPES
 // ==========================================
-interface JournalBlock { id: string; type: string; content: string; checked?: boolean; }
-interface JournalEntry { id: number; content: string; created_at: string; is_pinned: boolean; title?: string; body?: string; blocks?: JournalBlock[]; }
+interface JournalEntry { id: number; content: string; created_at: string; is_pinned: boolean; title?: string; body?: string; }
 type AlertType = 'info' | 'error' | 'confirm';
 
 // ==========================================
@@ -36,8 +36,8 @@ type AlertType = 'info' | 'error' | 'confirm';
 const b64ToBytes = (b64: string): Uint8Array => new Uint8Array(Buffer.from(b64, 'base64'));
 
 async function getSalt(): Promise<Uint8Array> {
-  const saltRes = await apiClient.get('/user/journal-salt/');
-  return b64ToBytes(saltRes.data.salt);
+  const res = await apiClient.get('/user/journal-salt/');
+  return b64ToBytes(res.data.salt);
 }
 
 function deriveKey(password: string, salt: Uint8Array): Promise<string> {
@@ -45,6 +45,7 @@ function deriveKey(password: string, salt: Uint8Array): Promise<string> {
     try {
       const md = forge.md.sha256.create();
       const saltStr = Buffer.from(salt).toString('binary');
+      // Yield to React Native UI thread so the spinner animates while calculating
       setTimeout(() => {
         forge.pkcs5.pbkdf2(password, saltStr, 150000, 32, md, (err, derived) => {
           if (err) reject(err);
@@ -137,8 +138,6 @@ export default function JournalScreen() {
   const router = useRouter();
   const { isDarkMode } = usePreferences();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isDesktop = width >= 768; // Web-like Split View breakpoint
 
   // Navigation State
   const [viewMode, setViewMode] = useState<'lock' | 'list' | 'editor'>('lock');
@@ -154,7 +153,6 @@ export default function JournalScreen() {
   const [journalKey, setJournalKey] = useState<string | null>(null);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeDays, setActiveDays] = useState(0);
   
   // Processing States
   const [isUnlocking, setIsUnlocking] = useState(false);
@@ -167,14 +165,17 @@ export default function JournalScreen() {
   // Editor State
   const [currentId, setCurrentId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
-  const [blocks, setBlocks] = useState<JournalBlock[]>([{ id: Date.now().toString(), type: 'text', content: '' }]);
+  const [body, setBody] = useState('');
 
   // Audio State
   const [isListening, setIsListening] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordingDots, setRecordingDots] = useState('');
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
+  // Initialize Keyboard Tracker & Fast Unlock
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
@@ -182,6 +183,7 @@ export default function JournalScreen() {
     const showSub = Keyboard.addListener(showEvent, (e) => setKeyboardHeight(e.endCoordinates.height));
     const hideSub = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
     
+    // FAST UNLOCK: Check if key is already in SecureStore
     const checkFastUnlock = async () => {
       try {
         const cachedKey = await SecureStore.getItemAsync('smera_journal_key');
@@ -201,6 +203,13 @@ export default function JournalScreen() {
     return () => { showSub.remove(); hideSub.remove(); };
   }, []);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isListening) interval = setInterval(() => setRecordingDots(prev => (prev.length >= 3 ? '' : prev + '.')), 400);
+    else setRecordingDots('');
+    return () => clearInterval(interval);
+  }, [isListening]);
+
   const showAlert = (title: string, message: string, type: AlertType = 'info', onConfirm?: () => void) => {
     setAlertConfig({ visible: true, title, message, type, onConfirm });
   };
@@ -213,21 +222,42 @@ export default function JournalScreen() {
     setIsUnlocking(true);
 
     try {
+      // 1. Verify password against Django backend
       const verify = await apiClient.post("/core/journal/verify-password/", { password });
       if (!verify.data?.valid) throw new Error("Incorrect password.");
 
       const salt = await getSalt();
-      const vaultRes = await apiClient.get('/core/journal/vault-key/');
+      
+      // 2. Safely fetch Vault Key (Catching 404 for new users)
+      let vaultData = null;
+      try {
+        const vaultRes = await apiClient.get('/core/journal/vault-key/');
+        vaultData = vaultRes.data;
+      } catch (error: any) {
+        if (error.response?.status !== 404) {
+          throw new Error("Failed to connect to the vault server.");
+        }
+      }
 
       let masterKeyStr: string;
 
-      // If the vault already exists, unwrap it.
-      if (vaultRes.data && vaultRes.data.password_encrypted_key) {
+      if (vaultData && vaultData.password_encrypted_key) {
         const passwordKeyStr = await deriveKey(password, salt);
-        masterKeyStr = await unwrapMasterKey(passwordKeyStr, vaultRes.data.password_encrypted_key, vaultRes.data.password_iv);
-      } 
-      // If no vault exists, generate new Master Key and Recovery Phrase!
-      else {
+        
+        // FIX: Nested try/catch specifically to catch the "Changed Password" decryption failure
+        try {
+          masterKeyStr = await unwrapMasterKey(passwordKeyStr, vaultData.password_encrypted_key, vaultData.password_iv);
+        } catch (cryptoError) {
+          setIsUnlocking(false); // Stop the loading spinner
+          return showAlert(
+            "Decryption Failed", 
+            "Your vault is locked with a different password. If you recently changed your account password, click 'Forgot Password? Recover Vault' to resync it.", 
+            "error"
+          );
+        }
+
+      } else {
+        // FIRST TIME USER SETUP
         masterKeyStr = forge.random.getBytesSync(32);
         const passwordKeyStr = await deriveKey(password, salt);
         const passEnc = await encryptMasterKey(masterKeyStr, passwordKeyStr);
@@ -243,17 +273,12 @@ export default function JournalScreen() {
           recovery_iv: recEnc.iv
         });
 
-        // FIXED: Wait until the user clicks 'OK' to proceed, mimicking the web browser alert exactly
-        await new Promise<void>((resolve) => {
-            Alert.alert(
-                "URGENT: Your Recovery Phrase is:",
-                `${recoveryPhraseStr}\n\nWrite this down immediately! If you lose your recovery phrase, you will not be able to recover your journal if you ever change or forget your password.`,
-                [{ text: "OK", style: "default", onPress: () => resolve() }]
-            );
-        });
+        showAlert("URGENT: Recovery Phrase", `Your Recovery Phrase is:\n\n${recoveryPhraseStr}\n\nWrite this down immediately!`, "info");
       }
 
+      // SAVE FAST UNLOCK CACHE
       await SecureStore.setItemAsync('smera_journal_key', masterKeyStr);
+      
       setJournalKey(masterKeyStr);
       await fetchEntries(masterKeyStr);
       setViewMode('list');
@@ -266,6 +291,7 @@ export default function JournalScreen() {
   };
 
   const lockVault = async () => {
+    // DESTROY FAST UNLOCK CACHE FOR SAFETY
     await SecureStore.deleteItemAsync('smera_journal_key');
     setPassword('');
     setJournalKey(null);
@@ -282,7 +308,7 @@ export default function JournalScreen() {
     }
 
     setIsRecovering(true);
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 50)); // Yield to UI thread for spinner
 
     try {
       const verify = await apiClient.post("/core/journal/verify-password/", { password: newPass });
@@ -292,7 +318,19 @@ export default function JournalScreen() {
       const vault = (await apiClient.get('/core/journal/vault-key/')).data;
       
       const recoveryKeyStr = await deriveKey(phrase, salt);
-      const masterKeyStr = await unwrapMasterKey(recoveryKeyStr, vault.recovery_encrypted_key, vault.recovery_iv);
+      
+      // FIX: Nested try/catch specifically to catch an invalid recovery phrase!
+      let masterKeyStr: string;
+      try {
+        masterKeyStr = await unwrapMasterKey(recoveryKeyStr, vault.recovery_encrypted_key, vault.recovery_iv);
+      } catch (cryptoError) {
+        setIsRecovering(false); // Stop the loading spinner
+        return showAlert(
+          "Invalid Recovery Phrase", 
+          "The recovery phrase you entered is incorrect. Please check for typos and try again.", 
+          "error"
+        );
+      }
 
       const newPasswordKeyStr = await deriveKey(newPass, salt);
       const passEnc = await encryptMasterKey(masterKeyStr, newPasswordKeyStr);
@@ -304,6 +342,7 @@ export default function JournalScreen() {
         recovery_iv: vault.recovery_iv
       });
 
+      // Automatically unlock the vault to save the user a click!
       await SecureStore.setItemAsync('smera_journal_key', masterKeyStr);
       setJournalKey(masterKeyStr);
       await fetchEntries(masterKeyStr);
@@ -315,7 +354,7 @@ export default function JournalScreen() {
 
       showAlert("Success", "Vault recovery keys synced successfully. Your journal is unlocked.", "info");
     } catch (e: any) {
-      showAlert("Recovery Failed", e.message || "Invalid Recovery Phrase.", "error");
+      showAlert("Recovery Error", e.message || "An unexpected error occurred.", "error");
     } finally {
       setIsRecovering(false);
     }
@@ -330,7 +369,6 @@ export default function JournalScreen() {
     try {
       const res = await apiClient.get('/core/journal/');
       const rawEntries = res.data;
-      const uniqueDays = new Set<string>();
 
       const decrypted = await Promise.all(rawEntries.map(async (e: any) => {
         try {
@@ -338,62 +376,39 @@ export default function JournalScreen() {
           let parsed: any;
           try { parsed = JSON.parse(dec); } catch { parsed = { title: "Note", body: dec }; }
 
-          uniqueDays.add(new Date(e.created_at).toDateString());
-          return { ...e, title: parsed.title || "Untitled Note", body: parsed.body, blocks: parsed.blocks };
+          let bodyText = parsed.body || "";
+          if (parsed.blocks && Array.isArray(parsed.blocks)) {
+            bodyText = parsed.blocks.map((b: any) => b.content).join('\n\n');
+          }
+          return { ...e, title: parsed.title || "Untitled Note", body: bodyText };
         } catch {
           return { ...e, title: "⚠️ Corrupted Entry", body: "Could not decrypt this entry." };
         }
       }));
-      
-      setActiveDays(uniqueDays.size);
       setEntries(decrypted);
     } catch (e) { console.error(e); }
   };
 
-  const newEntry = () => {
-    setCurrentId(null);
-    setTitle('');
-    setBlocks([{ id: Date.now().toString(), type: 'text', content: '' }]);
+  const openEditor = (entry?: any) => {
+    setCurrentId(entry ? entry.id : null);
+    setTitle(entry ? entry.title : '');
+    setBody(entry ? entry.body : '');
     setViewMode('editor');
-  };
-
-  const openEditor = (entry: any) => {
-    setCurrentId(entry.id);
-    setTitle(entry.title || '');
-    
-    // Load blocks or format legacy body text into blocks
-    if (entry.blocks && Array.isArray(entry.blocks) && entry.blocks.length > 0) {
-      setBlocks(entry.blocks.map((b: any, i: number) => ({ id: `${Date.now()}-${i}`, type: b.type || 'text', content: b.content })));
-    } else {
-      setBlocks([{ id: Date.now().toString(), type: 'text', content: entry.body || '' }]);
-    }
-    
-    setViewMode('editor');
-  };
-
-  const addBlock = (content: string = '') => {
-    setBlocks([...blocks, { id: Date.now().toString(), type: 'text', content }]);
-  };
-
-  const updateBlock = (id: string, content: string) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, content } : b));
   };
 
   const saveEntry = async () => {
-    const hasContent = blocks.some(b => b.content.trim() !== "");
-    if (!title.trim() && !hasContent) {
-      return showAlert("Incomplete", "Provide a title or content to save.", "error");
+    if (!title.trim() || !body.trim()) {
+      return showAlert("Incomplete Entry", "Both a title and content are required to securely save your journal.", "error");
     }
-    if (!journalKey) return;
+    
+    if (!journalKey) return showAlert("Error", "Vault is locked. Please unlock first.", "error");
     
     setIsSaving(true);
+
     try {
-      const payload = JSON.stringify({ 
-        title: title.trim(), 
-        blocks: blocks.map(b => ({ type: b.type, content: b.content, checked: b.checked }))
-      });
+      const payload = JSON.stringify({ title: title.trim(), body: body.trim() });
       const encrypted = await encryptContent(payload, journalKey);
-      const rawText = `${title}\n${blocks.map(b => b.content).join('\n')}`;
+      const rawText = `${title}\n${body}`;
 
       if (currentId) {
         await apiClient.put('/core/journal/update/', { id: currentId, content: encrypted, raw_text: rawText });
@@ -403,7 +418,7 @@ export default function JournalScreen() {
       }
 
       await fetchEntries();
-      if (!isDesktop) setViewMode('list');
+      setViewMode('list');
     } catch (e) {
       showAlert("Save Failed", "Could not securely save your entry.", "error");
     } finally {
@@ -417,7 +432,7 @@ export default function JournalScreen() {
       try {
         await apiClient.delete('/core/journal/delete/', { data: { id } });
         await fetchEntries();
-        if (currentId === id) newEntry();
+        if (currentId === id) setViewMode('list');
         setAlertConfig(prev => ({ ...prev, visible: false }));
       } catch (e) { 
         showAlert("Error", "Failed to delete entry.", "error"); 
@@ -447,13 +462,7 @@ export default function JournalScreen() {
       entries.forEach(item => {
           const dateObj = new Date(item.created_at);
           const safeTitle = (item.title || "Untitled Note").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-          let safeContent = "";
-          
-          if (item.blocks && item.blocks.length) {
-              safeContent = item.blocks.map(b => `<p style="margin: 0 0 10px 0; color: #374151;">${(b.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`).join("");
-          } else {
-              safeContent = (item.body || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>');
-          }
+          const safeContent = (item.body || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, '<br>');
           
           contentHtml += `
             <div style="margin-bottom: 50px; page-break-inside: avoid;">
@@ -521,11 +530,8 @@ export default function JournalScreen() {
 
       const res = await apiClient.post('/core/chat/stt/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 
-      if (res.data?.text) {
-          addBlock(res.data.text);
-      } else {
-          showAlert("Notice", "No speech detected. Please try again.", "info");
-      }
+      if (res.data?.text) setBody(prev => prev + (prev.endsWith(' ') || prev.length === 0 ? '' : ' ') + res.data.text);
+      else showAlert("Notice", "No speech detected. Please try again.", "info");
     } catch (e) {
       showAlert("Failed", "Could not transcribe audio.", "error");
     } finally {
@@ -534,13 +540,12 @@ export default function JournalScreen() {
   };
 
   /* =========================================
-     RENDER FUNCTIONS (FIXES FOCUS BUG)
+     UI RENDERERS
   ========================================= */
-
-  const renderCustomAlert = () => (
+  const CustomAlert = () => (
     <Modal visible={alertConfig.visible} transparent animationType="fade">
       <View className="flex-1 items-center justify-center bg-black/60 px-6 backdrop-blur-sm">
-        <View className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl">
+        <View className="w-full max-w-sm bg-white dark:bg-[#111827] rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl">
           
           <View className="flex-row items-center gap-3 mb-4">
             {alertConfig.type === 'error' && <AlertTriangle size={24} color="#ef4444" />}
@@ -570,267 +575,287 @@ export default function JournalScreen() {
     </Modal>
   );
 
-  const renderHeader = () => (
-    <View className="flex-row justify-between items-center mb-6">
-      <View className="flex-row items-center gap-3">
-        <Text className="text-2xl font-bold text-slate-900 dark:text-white">
-          🔐 Private Journal
-        </Text>
-        <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 hidden sm:flex">
-          <ShieldCheck size={12} color={isDarkMode ? "#4ade80" : "#15803d"} />
-          <Text className="text-xs font-medium text-green-700 dark:text-green-400">Encrypted</Text>
-        </View>
-      </View>
+  const renderLockScreen = () => {
+    // Hide lock screen UI if we are in the middle of fast-booting the cache
+    if (isFastBooting) {
+        return (
+            <View className="flex-1 items-center justify-center">
+                <ActivityIndicator size="large" color={isDarkMode ? "#60a5fa" : "#2563eb"} />
+            </View>
+        );
+    }
 
-      <TouchableOpacity onPress={lockVault} className="bg-slate-200 dark:bg-slate-700 px-4 py-2 rounded-xl active:scale-95 transition-transform">
-        <Text className="text-sm font-medium text-red-500">🔒 Lock</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderLockScreen = () => (
-    <View className="flex-1 items-center justify-center p-6">
-      <View className="w-full max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-10 items-center shadow-2xl">
-        
-        <View className="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center mb-6 border border-blue-100 dark:border-blue-900/50">
-           <Lock size={32} color={isDarkMode ? "#60a5fa" : "#2563eb"} />
-        </View>
-        
-        <Text className="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-2">
-            Local Decryption
-        </Text>
-        <Text className="text-slate-500 dark:text-slate-400 mb-8 text-sm text-center leading-relaxed">
-            Your journal is securely encrypted. Your passphrase never leaves your device.
-        </Text>
-
-        <TextInput 
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="Enter password"
-          placeholderTextColor={isDarkMode ? "#4b5563" : "#9ca3af"}
-          editable={!isUnlocking}
-          onSubmitEditing={unlockVault}
-          className="w-full block px-4 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl mb-4 focus:border-blue-500 shadow-sm"
-        />
-
-        <Button onPress={unlockVault} disabled={isUnlocking || !password} className="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 rounded-xl py-3.5 mb-4 shadow-lg shadow-blue-500/30">
-          {isUnlocking ? <ActivityIndicator color="#ffffff" /> : <Text className="font-bold text-white">Unlock Vault</Text>}
-        </Button>
-
-        <TouchableOpacity onPress={() => setRecoveryModal(true)} disabled={isUnlocking} className="mb-6 w-full items-center">
-          <Text className="text-sm font-medium text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 underline">
-            Changed Your Password? Recover Vault
+    return (
+      <View className="flex-1 items-center justify-center px-6">
+        <View className="w-full max-w-sm bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl border border-slate-200/50 dark:border-neutral-800 rounded-[2.5rem] p-8 shadow-2xl shadow-blue-500/10 items-center">
+          <View className="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 rounded-full items-center justify-center mb-6 border border-blue-100 dark:border-blue-900/50">
+            <Lock size={32} color={isDarkMode ? "#60a5fa" : "#2563eb"} />
+          </View>
+          <Text className="text-2xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Private Journal</Text>
+          <Text className="text-slate-500 dark:text-slate-400 text-center text-sm mb-8 leading-relaxed">
+            Your thoughts are securely encrypted. Enter your login password to unlock the vault.
           </Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/dashboard')} className="flex-row items-center gap-2 mt-2">
-            <ArrowLeft size={16} color={isDarkMode ? "#9ca3af" : "#6b7280"} />
-            <Text className="text-sm text-slate-500 dark:text-slate-400 font-medium">Back to Dashboard</Text>
-        </TouchableOpacity>
+          <View className="w-full mb-6">
+            <TextInput 
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="Enter password..."
+              placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
+              editable={!isUnlocking}
+              className="w-full bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-neutral-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-medium focus:border-blue-500 transition-colors"
+            />
+          </View>
+
+          <Button onPress={unlockVault} disabled={isUnlocking || !password} className="w-full bg-blue-600 rounded-2xl h-14 shadow-lg shadow-blue-500/30">
+            {isUnlocking ? (
+              <View className="flex-row items-center gap-2">
+                <ActivityIndicator color="#ffffff" size="small" />
+                <Text className="font-bold text-white text-base">Decrypting Vault...</Text>
+              </View>
+            ) : (
+              <Text className="font-bold text-white text-base">Unlock Vault</Text>
+            )}
+          </Button>
+
+          <TouchableOpacity onPress={() => setRecoveryModal(true)} className="mt-6" disabled={isUnlocking}>
+            <Text className="text-sm font-medium text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 underline">
+              Forgot Password? Recover Vault
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
-  const renderListPane = () => {
+  const renderList = () => {
     const filtered = entries.filter(e => 
       (e.title || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (e.blocks?.some(b => b.content.toLowerCase().includes(searchQuery.toLowerCase()))) ||
       (e.body || "").toLowerCase().includes(searchQuery.toLowerCase())
     );
     const pinned = filtered.filter(e => e.is_pinned);
     const unpinned = filtered.filter(e => !e.is_pinned);
 
-    return (
-      <ImageBackground 
-        source={{ uri: 'https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png' }}
-        style={{ flex: 1, backgroundColor: isDarkMode ? '#0b141a' : '#ffffff' }}
-        imageStyle={{ opacity: isDarkMode ? 0.8 : 0.8, filter: isDarkMode ? 'invert(1)' : 'none', resizeMode: 'repeat' }}
-        className="flex-1 flex-col border border-indigo-100 dark:border-indigo-900/50 rounded-[2rem] shadow-xl overflow-hidden"
+    const EntryCard = ({ item }: { item: JournalEntry }) => (
+      <TouchableOpacity 
+        onPress={() => openEditor(item)}
+        className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-3xl p-5 mb-3 shadow-sm flex-row items-start justify-between active:scale-[0.98] transition-transform"
       >
-        <View className="flex-col gap-2 p-4 pb-2 border-b border-amber-100 dark:border-slate-800 bg-amber-50 dark:bg-[#202020] z-10 relative">
-          <View className="flex-row justify-between items-center">
-            <Text className="font-bold text-slate-800 dark:text-slate-200 text-lg">Entries</Text>
-            <TouchableOpacity onPress={newEntry} className="bg-indigo-600 px-3 py-1.5 rounded-lg shadow-sm">
-                <Text className="text-white text-sm font-bold">+ New</Text>
-            </TouchableOpacity>
+        <View className="flex-1 pr-4">
+          <Text className="text-lg font-black text-slate-900 dark:text-white mb-1.5 tracking-tight" numberOfLines={1}>{item.title || "Untitled Note"}</Text>
+          <Text className="text-sm text-slate-500 dark:text-slate-400 leading-snug" numberOfLines={2}>{item.body || "No content..."}</Text>
+          <Text className="text-[10px] font-bold text-blue-500 dark:text-blue-400 mt-4 uppercase tracking-widest">
+            {new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
+        <View className="flex-row gap-2">
+          <TouchableOpacity onPress={() => togglePin(item.id)} className="p-2.5 bg-slate-50 dark:bg-black rounded-xl">
+            <Pin size={16} color={item.is_pinned ? "#f59e0b" : (isDarkMode ? "#6b7280" : "#94a3b8")} fill={item.is_pinned ? "#f59e0b" : "none"} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => confirmDelete(item.id)} className="p-2.5 bg-red-50 dark:bg-red-900/10 rounded-xl">
+            <Trash2 size={16} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+
+    return (
+      <View className="flex-1">
+        <View className="pt-14 pb-4 px-6 flex-row items-center justify-between border-b border-slate-200/50 dark:border-neutral-800/50 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-10">
+          <View className="flex-row items-center gap-3">
+            <View className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl items-center justify-center border border-indigo-200 dark:border-indigo-800/50">
+              <Book size={20} color={isDarkMode ? "#818cf8" : "#4f46e5"} />
+            </View>
+            <Text className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Journal</Text>
           </View>
-          <TextInput 
-            value={searchQuery} onChangeText={setSearchQuery}
-            placeholder="Search encrypted entries..."
-            placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
-            className="w-full mt-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm dark:text-white"
-          />
-          <View className="flex-row justify-between items-center mt-2 px-1">
-             <Text className="text-xs text-slate-500 dark:text-slate-400 font-medium">{activeDays} days active</Text>
-             <TouchableOpacity onPress={exportJournalToPDF} className="flex-row items-center gap-1">
-                {isExporting ? <ActivityIndicator size="small" /> : <Download size={12} color={isDarkMode ? "#9ca3af" : "#64748b"}/>}
-                <Text className="text-xs text-slate-500 dark:text-slate-400 font-medium">Export</Text>
-             </TouchableOpacity>
+          
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity onPress={exportJournalToPDF} disabled={isExporting} className="p-2.5 bg-slate-100 dark:bg-neutral-800 rounded-xl">
+              {isExporting ? <ActivityIndicator size="small" color={isDarkMode ? "#cbd5e1" : "#475569"} /> : <Download size={18} color={isDarkMode ? "#cbd5e1" : "#475569"} />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity onPress={lockVault} className="p-2.5 bg-slate-100 dark:bg-neutral-800 rounded-xl">
+              <Lock size={18} color={isDarkMode ? "#cbd5e1" : "#475569"} />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView className="flex-1 px-4 pt-2">
-          {pinned.length > 0 && (
-            <View className="mb-4">
-              <View className="flex-row items-center gap-1.5 mt-2 mb-3 px-1">
-                <Pin size={12} color="#f59e0b" fill="#f59e0b" />
-                <Text className="text-xs font-bold text-amber-500 uppercase tracking-widest">Pinned</Text>
-              </View>
-              {pinned.map(e => (
-                <TouchableOpacity key={e.id} onPress={() => openEditor(e)} className={`p-4 border rounded-xl mb-3 ${currentId === e.id ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-transparent dark:bg-slate-900/80 border-slate-200 dark:border-slate-700'}`}>
-                   <View className="flex-row justify-between items-start mb-2">
-                      <Text className={`flex-1 text-sm font-bold truncate pr-2 ${currentId === e.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`} numberOfLines={1}>{e.title || "Untitled Note"}</Text>
-                      <TouchableOpacity onPress={() => togglePin(e.id)} className="p-1"><Pin size={14} color="#f59e0b" fill="#f59e0b"/></TouchableOpacity>
-                   </View>
-                   <Text className={`text-xs font-medium ${currentId === e.id ? 'text-blue-500 dark:text-blue-400' : 'text-slate-400'}`}>{new Date(e.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
-                </TouchableOpacity>
-              ))}
+        <View className="px-6 py-4 flex-row items-center gap-3">
+          <View className="flex-1 flex-row items-center h-14 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl px-4 shadow-sm">
+            <Search size={20} color={isDarkMode ? "#6b7280" : "#9ca3af"} />
+            <TextInput 
+              value={searchQuery} 
+              onChangeText={setSearchQuery} 
+              placeholder="Search secure vault..." 
+              placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
+              className="flex-1 ml-3 text-base text-slate-900 dark:text-white font-medium h-full"
+              style={{ paddingVertical: 0 }}
+            />
+          </View>
+          <TouchableOpacity onPress={() => openEditor()} className="w-14 h-14 bg-blue-600 rounded-2xl items-center justify-center shadow-lg shadow-blue-500/30 active:scale-95">
+            <Plus size={26} color="#ffffff" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView className="flex-1 px-6 pt-2" showsVerticalScrollIndicator={false}>
+          {entries.length === 0 ? (
+            <View className="items-center justify-center py-20 opacity-70">
+              <Book size={64} color={isDarkMode ? "#334155" : "#cbd5e1"} className="mb-4" />
+              <Text className="text-lg font-bold text-slate-400">Your vault is empty.</Text>
+            </View>
+          ) : (
+            <View className="pb-24">
+              {pinned.length > 0 && (
+                <View className="mb-6">
+                  <View className="flex-row items-center gap-2 mb-3 px-2">
+                    <Pin size={14} color="#f59e0b" fill="#f59e0b" />
+                    <Text className="text-[10px] font-black uppercase tracking-widest text-amber-500">Pinned</Text>
+                  </View>
+                  {pinned.map(e => <EntryCard key={e.id} item={e} />)}
+                </View>
+              )}
+              {unpinned.length > 0 && (
+                <View>
+                  <Text className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 px-2">Recent Entries</Text>
+                  {unpinned.map(e => <EntryCard key={e.id} item={e} />)}
+                </View>
+              )}
             </View>
           )}
-
-          {unpinned.map(e => (
-            <TouchableOpacity key={e.id} onPress={() => openEditor(e)} className={`p-4 border rounded-xl mb-3 ${currentId === e.id ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-transparent dark:bg-slate-900/80 border-slate-200 dark:border-slate-700'}`}>
-               <View className="flex-row justify-between items-start mb-2">
-                  <Text className={`flex-1 text-sm font-bold truncate pr-2 ${currentId === e.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`} numberOfLines={1}>{e.title || "Untitled Note"}</Text>
-                  <TouchableOpacity onPress={() => togglePin(e.id)} className="p-1"><Pin size={14} color={isDarkMode ? "#64748b" : "#cbd5e1"} /></TouchableOpacity>
-               </View>
-               <Text className={`text-xs font-medium ${currentId === e.id ? 'text-blue-500 dark:text-blue-400' : 'text-slate-400'}`}>{new Date(e.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
-            </TouchableOpacity>
-          ))}
-          <View className="h-10"/>
         </ScrollView>
-      </ImageBackground>
+      </View>
     );
   };
 
-  const renderEditorPane = () => {
-    return (
-      <ImageBackground 
+  const renderEditor = () => (
+    <ImageBackground 
         source={{ uri: 'https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png' }}
         style={{ flex: 1, backgroundColor: isDarkMode ? '#0b141a' : '#ffffff' }}
         imageStyle={{ opacity: isDarkMode ? 0.8 : 0.8, filter: isDarkMode ? 'invert(1)' : 'none', resizeMode: 'repeat' }}
-        className="flex-1 flex-col border border-slate-200 dark:border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden"
+        className="flex-1 flex-col border border-slate-200 dark:border-slate-800 md:rounded-[2rem] rounded-xl shadow-2xl overflow-hidden">
+
+      <View className="pt-14 pb-4 px-4 flex-row items-center justify-between border-b border-slate-100 dark:border-neutral-800/50 bg-white/90 dark:bg-black/90 backdrop-blur-md z-10">
+        <TouchableOpacity onPress={() => setViewMode('list')} className="flex-row items-center gap-1.5 p-2 text-slate-600 dark:text-slate-300">
+          <ArrowLeft size={20} color={isDarkMode ? "#cbd5e1" : "#475569"} />
+          <Text className="font-bold text-base text-slate-600 dark:text-slate-300">Back</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity onPress={saveEntry} disabled={isSaving} className={`px-5 py-2.5 rounded-full flex-row items-center gap-2 shadow-sm ${isSaving ? 'bg-slate-200 dark:bg-neutral-800' : 'bg-emerald-600 dark:bg-emerald-500'}`}>
+          {isSaving ? <ActivityIndicator size="small" color={isDarkMode ? "#94a3b8" : "#64748b"} /> : <Save size={16} color="#ffffff" />}
+          <Text className={`font-bold ${isSaving ? 'text-slate-500' : 'text-white'}`}>{isSaving ? 'Encrypting...' : 'Save Securely'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView 
+        className="flex-1" 
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: 24, paddingBottom: Platform.OS === 'android' ? keyboardHeight + 120 : 120 }}
       >
-        <ScrollView className="flex-1" contentContainerStyle={{ padding: isDesktop ? 32 : 24, paddingBottom: keyboardHeight + 100 }}>
-          {!isDesktop && (
-             <TouchableOpacity onPress={() => setViewMode('list')} className="flex-row items-center gap-2 mb-6">
-                <ArrowLeft size={16} color={isDarkMode ? "#60a5fa" : "#2563eb"} />
-                <Text className="text-sm font-bold text-blue-600 dark:text-blue-400">Back to Entries</Text>
-             </TouchableOpacity>
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Untitled Note..."
+          placeholderTextColor={isDarkMode ? "#4b5563" : "#9ca3af"}
+          className="text-3xl font-black text-slate-900 dark:text-white mb-6 border-b border-transparent focus:border-slate-200 dark:focus:border-neutral-800 pb-2 tracking-tight"
+        />
+        <TextInput
+          value={body}
+          onChangeText={setBody}
+          placeholder="Write your thoughts here... They are strictly encrypted and secure."
+          placeholderTextColor={isDarkMode ? "#4b5563" : "#9ca3af"}
+          multiline
+          textAlignVertical="top"
+          className="text-lg leading-relaxed text-slate-800 dark:text-slate-200 min-h-[300px]"
+        />
+      </ScrollView>
+
+      {/* Floating Audio Feedback Pill */}
+      {(isListening || isTranscribing) && (
+        <Animated.View 
+          className="absolute z-20 bg-slate-900 dark:bg-slate-100 px-4 py-2.5 rounded-full shadow-2xl flex-row items-center gap-2"
+          style={{ 
+            right: 24, 
+            bottom: Platform.OS === 'android' ? keyboardHeight + Math.max(insets.bottom + 16, 24) + 70 : Math.max(insets.bottom + 16, 24) + 70 
+          }}
+        >
+          {isTranscribing ? (
+            <ActivityIndicator size="small" color={isDarkMode ? "#000000" : "#ffffff"} />
+          ) : (
+            <View className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
           )}
+          <Text className="text-white dark:text-black font-bold text-md tracking-wider">
+            {isListening ? `Listening${recordingDots}` : 'Transcribing...'}
+          </Text>
+        </Animated.View>
+      )}
 
-          <TextInput 
-            value={title} onChangeText={setTitle}
-            placeholder="Untitled Note"
-            placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"}
-            className="text-3xl md:text-4xl font-black mb-4 bg-transparent outline-none text-slate-900 dark:text-white tracking-tight"
-          />
-
-          <View className="flex-1 space-y-3 mb-6">
-            {blocks.map(block => (
-               <View key={block.id} className="flex-row mb-3 group">
-                  <TextInput
-                     value={block.content} onChangeText={(t) => updateBlock(block.id, t)}
-                     multiline textAlignVertical="top"
-                     placeholder="Write your thoughts here..."
-                     placeholderTextColor={isDarkMode ? "#4b5563" : "#9ca3af"}
-                     className="flex-1 text-slate-800 dark:text-slate-200 text-base leading-relaxed bg-transparent"
-                  />
-               </View>
-            ))}
-          </View>
-
-          <View className="flex-row flex-wrap items-center gap-4 mt-6 pt-2">
-             <TouchableOpacity onPress={() => addBlock()} className="flex-row items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-200/50 dark:bg-slate-800/50">
-                <Text className="text-slate-600 dark:text-slate-400 text-sm font-bold">+ Add block</Text>
-             </TouchableOpacity>
-
-             <TouchableOpacity onPress={handleDictation} disabled={isTranscribing} className={`flex-row items-center gap-2 px-3 py-1.5 rounded-lg focus:outline-none ${isListening ? 'bg-red-50 dark:bg-red-900/30' : 'bg-blue-50 dark:bg-blue-900/30'}`}>
-                {isListening ? <MicOff size={16} color="#ef4444" /> : <Mic size={16} color="#2563eb" />}
-                <Text className={`text-sm font-bold ${isListening ? 'text-red-500 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>
-                  {isTranscribing ? 'Transcribing...' : isListening ? 'Listening...' : 'Start Dictation'}
-                </Text>
-             </TouchableOpacity>
-          </View>
-
-          <View className="flex-row justify-between items-center mt-6 pt-4 border-t border-slate-300 dark:border-slate-700 gap-4">
-             <TouchableOpacity onPress={() => currentId && confirmDelete(currentId)}>
-                 <Text className="text-red-500 font-bold text-sm">Delete</Text>
-             </TouchableOpacity>
-             <TouchableOpacity onPress={saveEntry} disabled={isSaving} className="bg-[#497b30] px-8 py-3 rounded-xl shadow-lg active:scale-95">
-                 {isSaving ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-bold text-base">Securely Save</Text>}
-             </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </ImageBackground>
-    );
-  };
+      {/* Floating Dictation Button */}
+      <Animated.View 
+        style={{ 
+          position: 'absolute', right: 24, zIndex: 20,
+          bottom: Platform.OS === 'android' ? keyboardHeight + Math.max(insets.bottom + 16, 24) : Math.max(insets.bottom + 16, 24) 
+        }}
+      >
+        <TouchableOpacity 
+          onPress={handleDictation}
+          disabled={isTranscribing}
+          className={`w-14 h-14 rounded-full items-center justify-center shadow-xl ${isListening ? 'bg-red-500 shadow-red-500/40 animate-pulse' : 'bg-blue-600 shadow-blue-500/40 active:scale-90 transition-transform'}`}
+        >
+          {isTranscribing ? <ActivityIndicator color="#ffffff" /> : isListening ? <MicOff size={24} color="#ffffff" /> : <Mic size={24} color="#ffffff" />}
+        </TouchableOpacity>
+      </Animated.View>
+    </ImageBackground>
+  );
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} enabled={Platform.OS === 'ios'}>
-      <View className="flex-1 bg-slate-100 dark:bg-slate-950 relative">
+      <View className="flex-1 bg-neutral-50 dark:bg-black relative">
+        <LinearGradient colors={isDarkMode ? ['rgba(63,94,251,0.08)', 'transparent'] : ['rgba(99,102,241,0.1)', 'transparent']} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 450 }} />
 
-        {renderCustomAlert()}
+        <CustomAlert />
 
-        {/* Display loading or Lock Screen without absolute overlay issues */}
-        {viewMode === 'lock' && (isFastBooting ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color={isDarkMode ? "#60a5fa" : "#2563eb"} />
-          </View>
-        ) : renderLockScreen())}
+        {viewMode === 'lock' && renderLockScreen()}
+        {viewMode === 'list' && renderList()}
+        {viewMode === 'editor' && renderEditor()}
 
-        {/* Core Layout Structure */}
-        {viewMode !== 'lock' && (
-          <View className="max-w-7xl mx-auto w-full flex-1 px-4 md:px-6 py-6">
-            {renderHeader()}
-            {isDesktop ? (
-              <View className="flex-row flex-1 gap-6">
-                 <View className="flex-1">{renderListPane()}</View>
-                 <View className="flex-[2]">{renderEditorPane()}</View>
-              </View>
-            ) : (
-              viewMode === 'list' ? renderListPane() : renderEditorPane()
-            )}
-          </View>
-        )}
-
-        {/* Modal: Vault Recovery mapped directly from web */}
         <Modal visible={recoveryModal} transparent animationType="slide">
-          <View className="flex-1 bg-slate-900/80 backdrop-blur-md justify-center px-4">
-            <View className="w-full max-w-md bg-white dark:bg-slate-800 rounded-[2rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-700 mx-auto">
+          <View className="flex-1 bg-black/80 backdrop-blur-md justify-end">
+            <View className="bg-white dark:bg-neutral-900 rounded-t-[2.5rem] p-8 pb-12 shadow-2xl border-t border-slate-200 dark:border-neutral-800" style={{ paddingBottom: Math.max(insets.bottom + 20, 40) }}>
+              <View className="w-12 h-1.5 bg-slate-200 dark:bg-neutral-800 rounded-full mx-auto mb-6" />
               
-              <View className="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 rounded-full items-center justify-center border border-amber-100 dark:border-amber-900/50 mx-auto mb-6">
-                <KeyRound size={32} color={isDarkMode ? "#f59e0b" : "#f59e0b"} />
+              <View className="flex-row items-center gap-3 mb-6">
+                <View className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full items-center justify-center border border-amber-200 dark:border-amber-800/50">
+                  <KeyRound size={24} color={isDarkMode ? "#fbbf24" : "#d97706"} />
+                </View>
+                <View>
+                  <Text className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Vault Recovery</Text>
+                  <Text className="text-slate-500 dark:text-slate-400 text-sm">Resync your encryption keys.</Text>
+                </View>
               </View>
               
-              <Text className="text-2xl font-black text-slate-900 dark:text-white tracking-tight text-center mb-2">Vault Recovery</Text>
-              <Text className="text-slate-500 dark:text-slate-400 text-sm text-center mb-8 leading-relaxed">Enter your 16-character recovery phrase to regain access and securely re-encrypt your journal.</Text>
-              
-              <View className="mb-5">
-                 <Text className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-widest">Recovery Phrase</Text>
-                 <TextInput 
-                   value={recoveryPhrase} onChangeText={setRecoveryPhrase}
-                   placeholder="XXXX-XXXX-XXXX-XXXX" placeholderTextColor={isDarkMode ? "#4b5563" : "#9ca3af"} 
-                   className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white uppercase font-mono tracking-wider shadow-inner" 
-                 />
-              </View>
-              
-              <View className="mb-8">
-                 <Text className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-widest">Current Login Password</Text>
-                 <TextInput 
-                   value={recoveryPassword} onChangeText={setRecoveryPassword} secureTextEntry 
-                   placeholder="Enter your valid account password" placeholderTextColor={isDarkMode ? "#4b5563" : "#9ca3af"} 
-                   className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white shadow-inner" 
-                 />
-              </View>
+              <TextInput 
+                value={recoveryPhrase}
+                onChangeText={setRecoveryPhrase}
+                placeholder="16-Character Recovery Phrase" 
+                placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"} 
+                className="bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-neutral-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white mb-4 uppercase font-mono tracking-widest" 
+              />
+              <TextInput 
+                value={recoveryPassword}
+                onChangeText={setRecoveryPassword}
+                placeholder="Current Login Password" 
+                secureTextEntry 
+                placeholderTextColor={isDarkMode ? "#6b7280" : "#9ca3af"} 
+                className="bg-slate-50 dark:bg-black/50 border border-slate-200 dark:border-neutral-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white mb-6" 
+              />
               
               <View className="flex-row gap-3">
-                <Button onPress={() => setRecoveryModal(false)} className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-xl py-3.5" disabled={isRecovering}>
-                  <Text className="font-bold text-slate-800 dark:text-white">Cancel</Text>
+                <Button onPress={() => setRecoveryModal(false)} className="flex-1 bg-slate-100 dark:bg-neutral-800 rounded-2xl h-14" disabled={isRecovering}>
+                  <Text className="font-bold text-slate-700 dark:text-slate-300 text-base">Cancel</Text>
                 </Button>
-                <Button onPress={executeRecovery} className="flex-[2] bg-blue-600 hover:bg-blue-700 rounded-xl py-3.5 shadow-lg shadow-blue-500/30" disabled={isRecovering}>
-                  {isRecovering ? <ActivityIndicator color="#fff"/> : <Text className="font-bold text-white">Recover Access</Text>}
+                <Button onPress={executeRecovery} className="flex-[2] bg-blue-600 rounded-2xl h-14 shadow-lg shadow-blue-500/30" disabled={isRecovering}>
+                  {isRecovering ? <ActivityIndicator color="#fff"/> : <Text className="font-bold text-white text-base">Recover</Text>}
                 </Button>
               </View>
             </View>

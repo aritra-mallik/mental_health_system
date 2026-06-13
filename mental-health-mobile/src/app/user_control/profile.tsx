@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, TextInput, TouchableOpacity, ActivityIndicator, useColorScheme, Modal, Text } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // NEW: For navigation bar spacing
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from 'heroui-native';
 import apiClient from '@/api/apiClient';
@@ -19,6 +20,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const insets = useSafeAreaInsets(); // Initialize insets
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -156,12 +158,18 @@ export default function ProfileScreen() {
       </Modal>
 
       <KeyboardAwareScrollView 
-        contentContainerClassName="p-6 pb-24 pt-16"
         showsVerticalScrollIndicator={false} 
         keyboardShouldPersistTaps="handled" 
         enableOnAndroid={true} 
         enableAutomaticScroll={true}
-        extraScrollHeight={80}>
+        extraScrollHeight={80}
+        // FIX: Dynamically add the bottom inset padding to push content above the nav bar
+        contentContainerStyle={{
+          padding: 24,
+          paddingTop: 64,
+          paddingBottom: Math.max(insets.bottom + 40, 100) 
+        }}
+      >
         
         {/* HEADER */}
         <View className="flex-row justify-between items-center mb-8">
@@ -241,13 +249,19 @@ export default function ProfileScreen() {
               placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}/>
           </View>
           
+          {/* FIX: Manual ActivityIndicator + Styling */}
           <Button 
-            color="primary"
-            className="h-14 rounded-2xl"
+            className="h-14 rounded-2xl bg-indigo-600"
             onPress={handleSaveProfile} 
-            isLoading={saving}>
-            <Ionicons name="save" size={20} color="#ffffff" style={{ marginRight: 6 }} />
-            <Text className="text-white font-bold text-base tracking-wide">Save Identity</Text>
+            disabled={saving}>
+            {saving ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <View className="flex-row items-center">
+                <Ionicons name="save" size={20} color="#ffffff" style={{ marginRight: 6 }} />
+                <Text className="text-white font-bold text-base tracking-wide">Save Identity</Text>
+              </View>
+            )}
           </Button>
         </Card>
 
@@ -299,13 +313,19 @@ export default function ProfileScreen() {
             )}
           </View>
           
+          {/* FIX: Manual ActivityIndicator + Amber Styling */}
           <Button 
-            color="warning"
-            className="h-14 rounded-2xl"
+            className="h-14 rounded-2xl bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700"
             onPress={handleChangePassword} 
-            isLoading={passwordSaving}>
-            <Ionicons name="key" size={20} color="#ffffff" style={{ marginRight: 6 }} />
-            <Text className="text-white font-bold text-base tracking-wide">Change Password</Text>
+            disabled={passwordSaving}>
+            {passwordSaving ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <View className="flex-row items-center">
+                <Ionicons name="key" size={20} color="#ffffff" style={{ marginRight: 6 }} />
+                <Text className="text-white font-bold text-base tracking-wide">Change Password</Text>
+              </View>
+            )}
           </Button>
         </Card>
 

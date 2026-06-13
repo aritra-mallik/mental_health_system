@@ -508,7 +508,7 @@ export default function ChatbotScreen() {
                       </Text>
 
                       {msg.action_card?.type === 'consultation' && (
-                        <TouchableOpacity onPress={() => router.push('/core/recovery_hub')} className="mt-4 bg-blue-600 border border-blue-500 p-3 rounded-xl flex-row items-center justify-between">
+                        <TouchableOpacity onPress={() => router.push('/consultation/consultation')} className="mt-4 bg-blue-600 border border-blue-500 p-3 rounded-xl flex-row items-center justify-between">
                           <Text className="font-bold text-sm text-white">{msg.action_card.title}</Text>
                           <HeartHandshake size={18} className="text-white" />
                         </TouchableOpacity>
@@ -528,7 +528,7 @@ export default function ChatbotScreen() {
                               </View>
                             ))}
                           </View>
-                          <Button className="mt-2 w-full bg-blue-600 rounded-lg" onPress={() => router.push('/core/recovery_hub')}>
+                          <Button className="mt-2 w-full bg-blue-600 rounded-lg" onPress={() => router.push('/consultation/consultation')}>
                             <Text className="font-bold text-white text-sm">Book a Consultation</Text>
                           </Button>
                         </View>
