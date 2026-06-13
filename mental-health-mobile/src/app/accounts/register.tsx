@@ -4,18 +4,19 @@ import {
   Text, 
   TextInput, 
   TouchableOpacity, 
+  ScrollView, 
   ActivityIndicator, 
   Animated,
   Platform,
   Modal,
   Pressable
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useRouter } from 'expo-router';
 import { 
   Mail, Lock, Calendar as CalendarIcon, Eye, EyeOff, 
   Users, ArrowLeft, Tag, ChevronDown, AlertCircle, CheckCircle2 
 } from 'lucide-react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import apiClient from '@/api/apiClient';
 
@@ -168,15 +169,11 @@ export default function RegisterScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F4E4DB' }}>
-      <KeyboardAwareScrollView 
-        contentContainerStyle={{ flexGrow: 1, padding: 24, paddingTop: 60, paddingBottom: 40 }} 
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        enableOnAndroid={true}
-        extraScrollHeight={20} // Adds a nice 20px buffer above the keyboard
-        enableAutomaticScroll={true}
-      >
-        <Animated.View style={{ opacity: fadeAnim }}>
+      <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1, padding: 24, paddingTop: 60, paddingBottom: 100 }} 
+        showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" enableOnAndroid={true}
+        extraScrollHeight={20} enableAutomaticScroll={true}>
+
+          <Animated.View style={{ opacity: fadeAnim }}>
             
             {/* Header */}
             <TouchableOpacity onPress={() => router.back()} className="mb-6 w-10">
@@ -289,8 +286,8 @@ export default function RegisterScreen() {
               </Text>
             </TouchableOpacity>
 
-        </Animated.View>
-      </KeyboardAwareScrollView>
+          </Animated.View>
+        </KeyboardAwareScrollView>
 
       {/* --- CUSTOM GENDER DROPDOWN MODAL --- */}
       <Modal visible={showGenderPicker} transparent animationType="fade">

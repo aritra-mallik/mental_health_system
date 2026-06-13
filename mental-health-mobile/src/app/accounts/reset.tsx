@@ -4,7 +4,6 @@ import {
   Text, 
   TextInput, 
   TouchableOpacity, 
-  KeyboardAvoidingView, 
   ActivityIndicator,
   Platform, 
   Animated, 
@@ -13,6 +12,7 @@ import {
   Modal
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Button } from 'heroui-native';
 import { Lock, KeyRound, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react-native';
 import apiClient from '@/api/apiClient';
@@ -142,17 +142,10 @@ export default function ResetPasswordScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F4E4DB' }}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView 
-          // Massive paddingBottom ensures keyboard has space to push inputs upward
-          contentContainerStyle={{ flexGrow: 1, padding: 24, paddingTop: 60, paddingBottom: 250 }} 
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          automaticallyAdjustKeyboardInsets={true}
-        >
+      <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1, padding: 24, paddingTop: 60, paddingBottom: 100 }} 
+        showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" enableOnAndroid={true}
+        extraScrollHeight={20} enableAutomaticScroll={true}>
+
           <View className="flex-1 justify-center">
             
             {/* TOP HALF: Slides DOWN into place */}
@@ -243,8 +236,7 @@ export default function ResetPasswordScreen() {
             </Animated.View>
 
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
 
       {/* --- CUSTOM ALERT MODAL --- */}
       <Modal visible={alertConfig.visible} transparent animationType="fade">
