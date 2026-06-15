@@ -84,12 +84,12 @@ export default function ConsentScreen() {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       
       {/* CUSTOM THEMED MODAL */}
       <Modal transparent visible={alertConfig.visible} animationType="fade" onRequestClose={closeAlert}>
         <View className="flex-1 bg-black/60 items-center justify-center px-6">
-          <Card className="w-full bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <Card className="w-full bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
             
             {alertConfig.type && (
               <View className={`w-20 h-20 rounded-full items-center justify-center mb-6 border ${getModalStyles(alertConfig.type).bg} ${getModalStyles(alertConfig.type).border}`}>
@@ -124,17 +124,17 @@ export default function ConsentScreen() {
         <View className="flex-row justify-between items-center mb-8">
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm">
+            className="w-12 h-12 bg-amber-50/90 dark:bg-stone-950/90 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm">
             <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
           </TouchableOpacity>
           <View className="flex-1 items-end">
             {hasConsent ? (
-              <View className="flex-row items-center bg-emerald-50 dark:bg-emerald-500/10 px-4 py-2.5 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+              <View className="flex-row items-center bg-emerald-50/90 dark:bg-emerald-500/40 px-4 py-2.5 rounded-full border border-emerald-200 dark:border-emerald-500/20">
                 <Ionicons name="checkmark-circle" size={16} color={isDark ? '#34d399' : '#059669'} style={{ marginRight: 6 }} />
                 <Text className="text-md font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Fully Authorized</Text>
               </View>
             ) : (
-              <View className="flex-row items-center bg-rose-50 dark:bg-rose-500/10 px-4 py-2.5 rounded-full border border-rose-200 dark:border-rose-500/20">
+              <View className="flex-row items-center bg-rose-50/90 dark:bg-rose-500/90 px-4 py-2.5 rounded-full border border-rose-200 dark:border-rose-500/20">
                 <Ionicons name="close-circle" size={16} color={isDark ? '#fb7185' : '#e11d48'} style={{ marginRight: 6 }} />
                 <Text className="text-md font-black uppercase tracking-widest text-rose-700 dark:text-rose-400">Signature Pending</Text>
               </View>
@@ -146,16 +146,16 @@ export default function ConsentScreen() {
         <Text className="text-sm font-bold text-neutral-500 dark:text-neutral-400 mb-8">Review your active cryptographic protection metrics.</Text>
 
         {/* MAIN HERO CARD */}
-        <Card className="bg-emerald-50 dark:bg-emerald-900/10 rounded-[2.5rem] p-6 mb-6 shadow-sm dark:shadow-none border border-emerald-100 dark:border-emerald-500/20">
+        <Card className="bg-emerald-50/90 dark:bg-emerald-900/90 rounded-[2.5rem] p-6 mb-6 shadow-sm dark:shadow-none border border-emerald-100 dark:border-emerald-500/20">
           <Text className="text-md font-black tracking-widest text-emerald-600 dark:text-emerald-400 uppercase mb-2">Active Safeguards</Text>
           <Text className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight mb-3 leading-8">Platform Protection Framework</Text>
           <Text className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed mb-6">
             Smera functions using client-side verification parameters. Your global agreement locks down historical processing models, ensuring your record data stays private.
           </Text>
 
-          <View className="flex-row items-center bg-white dark:bg-neutral-900 p-4 rounded-3xl border border-neutral-200 dark:border-neutral-800">
-            <View className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 items-center justify-center mr-4">
-              <Text className="text-xl font-black text-indigo-600 dark:text-indigo-400">16+</Text>
+          <View className="flex-row items-center bg-white/90 dark:bg-neutral-900/90 p-4 rounded-3xl border border-neutral-200 dark:border-neutral-800">
+            <View className="w-14 h-14 rounded-2xl bg-indigo-50/90 dark:bg-indigo-500/90 border border-indigo-100 dark:border-indigo-500/20 items-center justify-center mr-4">
+              <Text className="text-xl font-black text-indigo-600 dark:text-indigo-200">16+</Text>
             </View>
             <View className="flex-1">
               <View className="flex-row items-center mb-1">
@@ -186,8 +186,8 @@ export default function ConsentScreen() {
 
         {/* INFO CARDS GRID */}
         <View className="gap-4 mb-10">
-          <Card className="flex-row items-start bg-white dark:bg-neutral-900 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
-            <View className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 items-center justify-center mr-4">
+          <Card className="flex-row items-start bg-amber-50/90 dark:bg-stone-950/90 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
+            <View className="w-12 h-12 rounded-2xl bg-blue-50/90 dark:bg-blue-500/50 border border-blue-100 dark:border-blue-500/20 items-center justify-center mr-4">
               <Ionicons name="shield-outline" size={24} color={isDark ? '#60a5fa' : '#3b82f6'} />
             </View>
             <View className="flex-1">
@@ -196,8 +196,8 @@ export default function ConsentScreen() {
             </View>
           </Card>
 
-          <Card className="flex-row items-start bg-white dark:bg-neutral-900 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
-            <View className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 items-center justify-center mr-4">
+          <Card className="flex-row items-start bg-amber-50/90 dark:bg-stone-950/90 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
+            <View className="w-12 h-12 rounded-2xl bg-purple-50/90 dark:bg-purple-500/50 border border-purple-100 dark:border-purple-500/20 items-center justify-center mr-4">
               <Ionicons name="hardware-chip-outline" size={24} color={isDark ? '#c084fc' : '#9333ea'} />
             </View>
             <View className="flex-1">
@@ -206,8 +206,8 @@ export default function ConsentScreen() {
             </View>
           </Card>
 
-          <Card className="flex-row items-start bg-white dark:bg-neutral-900 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
-            <View className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 items-center justify-center mr-4">
+          <Card className="flex-row items-start bg-amber-50/90 dark:bg-stone-950/90 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
+            <View className="w-12 h-12 rounded-2xl bg-emerald-50/90 dark:bg-emerald-500/50 border border-emerald-100 dark:border-emerald-500/20 items-center justify-center mr-4">
               <Ionicons name="key-outline" size={24} color={isDark ? '#34d399' : '#10b981'} />
             </View>
             <View className="flex-1">
@@ -216,8 +216,8 @@ export default function ConsentScreen() {
             </View>
           </Card>
 
-          <Card className="flex-row items-start bg-white dark:bg-neutral-900 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
-            <View className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 items-center justify-center mr-4">
+          <Card className="flex-row items-start bg-amber-50/90 dark:bg-stone-950/90 p-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
+            <View className="w-12 h-12 rounded-2xl bg-amber-50/90 dark:bg-amber-500/50 border border-amber-100 dark:border-amber-500/20 items-center justify-center mr-4">
               <Ionicons name="medkit-outline" size={24} color={isDark ? '#fbbf24' : '#d97706'} />
             </View>
             <View className="flex-1">
@@ -229,7 +229,7 @@ export default function ConsentScreen() {
 
         {/* FOOTER STATUS */}
         {hasConsent && (
-          <View className="flex-row items-center justify-center bg-neutral-100 dark:bg-neutral-900 py-4 px-6 rounded-2xl border border-neutral-200 dark:border-neutral-800">
+          <View className="flex-row items-center justify-center bg-amber-50/90 dark:bg-stone-950/90 py-4 px-6 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <Ionicons name="lock-closed" size={16} color={isDark ? '#94a3b8' : '#64748b'} />
             <Text className="text-md font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest ml-2">System Status: Secured</Text>
           </View>

@@ -48,66 +48,66 @@ export default function AllArticlesScreen() {
     const m = (mood || 'neutral').toLowerCase();
     switch(m) {
       case 'good': return { 
-        bg: 'bg-emerald-50 dark:bg-emerald-900/10', border: 'border-emerald-200 dark:border-emerald-800/50', 
+        bg: 'bg-emerald-50/90 dark:bg-emerald-900/50', border: 'border-emerald-200 dark:border-emerald-800/50', 
         text: 'text-emerald-700 dark:text-emerald-400', badge: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200',
-        iconBg: 'bg-emerald-500'
+        iconBg: 'bg-emerald-500/90'
       };
       case 'great': return { 
-        bg: 'bg-purple-50 dark:bg-purple-900/10', border: 'border-purple-200 dark:border-purple-800/50', 
+        bg: 'bg-purple-50/90 dark:bg-purple-900/50', border: 'border-purple-200 dark:border-purple-800/50', 
         text: 'text-purple-700 dark:text-purple-400', badge: 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200',
-        iconBg: 'bg-purple-500'
+        iconBg: 'bg-purple-500/90'
       };
       case 'low': return { 
-        bg: 'bg-blue-50 dark:bg-blue-900/10', border: 'border-blue-200 dark:border-blue-800/50', 
+        bg: 'bg-blue-50/90 dark:bg-blue-900/50', border: 'border-blue-200 dark:border-blue-800/50', 
         text: 'text-blue-700 dark:text-blue-400', badge: 'bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-200',
-        iconBg: 'bg-blue-500'
+        iconBg: 'bg-blue-500/90'
       };
       case 'stressed': return { 
-        bg: 'bg-orange-50 dark:bg-orange-900/10', border: 'border-orange-200 dark:border-orange-800/50', 
+        bg: 'bg-orange-50/90 dark:bg-orange-900/50', border: 'border-orange-200 dark:border-orange-800/50', 
         text: 'text-orange-700 dark:text-orange-400', badge: 'bg-orange-100 dark:bg-orange-500/20 text-orange-800 dark:text-orange-200',
-        iconBg: 'bg-orange-500'
+        iconBg: 'bg-orange-500/90'
       };
       case 'stress': return { 
-        bg: 'bg-rose-50 dark:bg-rose-900/10', border: 'border-rose-200 dark:border-rose-800/50', 
+        bg: 'bg-rose-50/90 dark:bg-rose-900/50', border: 'border-rose-200 dark:border-rose-800/50', 
         text: 'text-rose-700 dark:text-rose-400', badge: 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-200',
-        iconBg: 'bg-rose-500'
+        iconBg: 'bg-rose-500/90'
       };
       case 'overwhelmed': return { 
-        bg: 'bg-slate-100 dark:bg-slate-800/50', border: 'border-slate-300 dark:border-slate-700', 
+        bg: 'bg-slate-100/90 dark:bg-slate-800/50', border: 'border-slate-300 dark:border-slate-700', 
         text: 'text-slate-700 dark:text-slate-300', badge: 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white',
-        iconBg: 'bg-slate-600'
+        iconBg: 'bg-slate-600/90'
       };
       default: return { 
-        bg: 'bg-indigo-50 dark:bg-indigo-900/10', border: 'border-indigo-200 dark:border-indigo-800/50', 
+        bg: 'bg-indigo-50/90 dark:bg-indigo-900/50', border: 'border-indigo-200 dark:border-indigo-800/50', 
         text: 'text-indigo-700 dark:text-indigo-400', badge: 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-200',
-        iconBg: 'bg-indigo-500'
+        iconBg: 'bg-indigo-500/90'
       };
     }
   };
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-neutral-50 dark:bg-black">
+      <View className="flex-1 justify-center items-center bg-amber-50/90 dark:bg-stone-950/90">
         <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4f46e5'} />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-[#0a0a0f]">
+    <View className="flex-1 bg-transparent">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
         
         {/* Top Header */}
         <View className="px-6 pt-16 pb-4">
           <TouchableOpacity 
             onPress={() => router.replace('/core/dashboard')} 
-            className="w-12 h-12 mb-8 bg-white dark:bg-neutral-900 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm"
+            className="w-12 h-12 mb-8 bg-amber-50/90 dark:bg-stone-950/90 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm"
           >
             <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
           </TouchableOpacity>
 
           <View className="mb-8">
-            <View className="self-start px-4 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-4 border border-indigo-200 dark:border-indigo-500/20">
+            <View className="self-start px-4 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-500/30 mb-4 border border-indigo-200 dark:border-indigo-500/20">
               <Text className="text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest">📚 Wellness Articles</Text>
             </View>
             <Text className="text-4xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight mb-3">
@@ -119,7 +119,7 @@ export default function AllArticlesScreen() {
           </View>
 
           {/* Modern Search Bar */}
-          <View className="flex-row items-center bg-white dark:bg-[#13131a] px-5 h-14 rounded-2xl mb-8 shadow-sm border border-neutral-200 dark:border-neutral-800">
+          <View className="flex-row items-center bg-amber-50/90 dark:bg-stone-950/90 px-5 h-14 rounded-2xl mb-8 shadow-sm border border-neutral-200 dark:border-neutral-800">
             <Ionicons name="search" size={20} color={isDark ? '#818cf8' : '#4f46e5'} />
             <TextInput 
               placeholder="Search by title or mood..."
@@ -138,7 +138,7 @@ export default function AllArticlesScreen() {
           {/* Article Grid */}
           <View className="gap-5">
             {filteredArticles.length === 0 ? (
-              <Card className="p-10 bg-white dark:bg-[#13131a] border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] items-center shadow-sm">
+              <Card className="p-10 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] items-center">
                 <View className="w-20 h-20 bg-neutral-50 dark:bg-neutral-800/50 rounded-full items-center justify-center mb-4 border border-neutral-100 dark:border-neutral-700/50">
                   <Text className="text-3xl grayscale opacity-60">🔍</Text>
                 </View>

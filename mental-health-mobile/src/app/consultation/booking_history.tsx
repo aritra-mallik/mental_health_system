@@ -100,7 +100,7 @@ export default function BookingHistoryScreen() {
 
   const renderBooking = ({ item }: { item: any }) => {
     return (
-      <Card className="bg-white dark:bg-neutral-900 p-6 md:p-8 rounded-[2.5rem] border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6">
+      <Card className="bg-amber-50/90 dark:bg-stone-950/90 p-6 md:p-8 rounded-[2.5rem] border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6">
         
         {/* Separated Status Row */}
         <View className="flex-row flex-wrap justify-between items-center gap-3 mb-5 pb-4 border-b border-neutral-200 dark:border-neutral-800">
@@ -108,8 +108,8 @@ export default function BookingHistoryScreen() {
             Session Details
           </Text>
           <View className={`px-3.5 py-1.5 rounded-lg border ${
-            item.status === 'booked' ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 
-            item.status === 'completed' ? 'bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30' : 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/30'
+            item.status === 'booked' ? 'bg-emerald-50/90 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 
+            item.status === 'completed' ? 'bg-purple-50/90 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30' : 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/30'
           }`}>
             <Text numberOfLines={1} className={`text-[10px] font-black uppercase tracking-widest ${
               item.status === 'booked' ? 'text-emerald-600 dark:text-emerald-400' : 
@@ -122,7 +122,7 @@ export default function BookingHistoryScreen() {
 
         {/* Doctor Info Row */}
         <View className="flex-row items-center gap-4 mb-6 flex-wrap">
-          <View className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-900/10 items-center justify-center border border-rose-100 dark:border-rose-500/20 shrink-0">
+          <View className="w-16 h-16 rounded-2xl bg-rose-50/90 dark:bg-rose-900/30 items-center justify-center border border-rose-100 dark:border-rose-500/20 shrink-0">
             <Text className="text-4xl">👨‍⚕️</Text>
           </View>
           <View className="flex-1 justify-center min-w-[50%]">
@@ -132,12 +132,12 @@ export default function BookingHistoryScreen() {
         </View>
 
         {/* Unified Vertical Details Box */}
-        <View className="bg-neutral-50 dark:bg-neutral-800 rounded-[1.5rem] border border-neutral-200 dark:border-neutral-700 mb-6 overflow-hidden">
+        <View className="bg-neutral-50/70 dark:bg-neutral-800/70 rounded-[1.5rem] border border-neutral-200 dark:border-neutral-700 mb-6 overflow-hidden">
           
           {/* Date Row */}
           <View className="flex-row justify-between items-center p-4 md:p-5 border-b border-neutral-200 dark:border-neutral-700 flex-wrap gap-2">
             <View className="flex-row items-center gap-3">
-              <View className="w-9 h-9 rounded-full bg-rose-50 dark:bg-rose-900/20 items-center justify-center border border-rose-100 dark:border-rose-500/30">
+              <View className="w-9 h-9 rounded-full bg-rose-50/90 dark:bg-rose-900/20 items-center justify-center border border-rose-100 dark:border-rose-500/30">
                 <Text className="text-sm">📅</Text>
               </View>
               <Text className="text-md font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Date</Text>
@@ -148,7 +148,7 @@ export default function BookingHistoryScreen() {
           {/* Time Row */}
           <View className="flex-row justify-between items-center p-4 md:p-5 border-b border-neutral-200 dark:border-neutral-700 flex-wrap gap-2">
             <View className="flex-row items-center gap-3">
-              <View className="w-9 h-9 rounded-full bg-amber-50 dark:bg-amber-900/20 items-center justify-center border border-amber-100 dark:border-amber-500/30">
+              <View className="w-9 h-9 rounded-full bg-amber-50/90 dark:bg-amber-900/20 items-center justify-center border border-amber-100 dark:border-amber-500/30">
                 <Text className="text-sm">🕒</Text>
               </View>
               <Text className="text-md font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Time</Text>
@@ -159,7 +159,7 @@ export default function BookingHistoryScreen() {
           {/* Mode Row */}
           <View className="flex-row justify-between items-center p-4 md:p-5 flex-wrap gap-2">
             <View className="flex-row items-center gap-3">
-              <View className={`w-9 h-9 rounded-full items-center justify-center border ${item.slot?.mode === 'online' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-500/30' : 'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-100 dark:border-cyan-500/30'}`}>
+              <View className={`w-9 h-9 rounded-full items-center justify-center border ${item.slot?.mode === 'online' ? 'bg-emerald-50/80 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-500/30' : 'bg-cyan-50 dark:bg-cyan-900/20 border-cyan-100 dark:border-cyan-500/30'}`}>
                 <Text className="text-sm">{item.slot?.mode === 'online' ? '💻' : '🏥'}</Text>
               </View>
               <Text className="text-md font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Mode</Text>
@@ -172,7 +172,7 @@ export default function BookingHistoryScreen() {
         </View>
         
         {/* Highlighted Total Fee Row */}
-        <View className="flex-row flex-wrap justify-between items-center bg-neutral-100 dark:bg-neutral-800 px-5 py-4 rounded-[1.5rem] mb-6 border border-neutral-200 dark:border-neutral-700 gap-2">
+        <View className="flex-row flex-wrap justify-between items-center bg-neutral-100/80 dark:bg-neutral-800/80 px-5 py-4 rounded-[1.5rem] mb-6 border border-neutral-200 dark:border-neutral-700 gap-2">
           <Text numberOfLines={1} className="text-neutral-600 dark:text-neutral-400 font-bold text-md uppercase tracking-widest shrink mr-4">Total Fee</Text>
           <Text numberOfLines={1} adjustsFontSizeToFit className="font-black text-xl text-neutral-900 dark:text-white shrink-0 text-right flex-1">₹{item.total_fee}</Text>
         </View>
@@ -190,12 +190,12 @@ export default function BookingHistoryScreen() {
                   <Text numberOfLines={1} adjustsFontSizeToFit className="text-white font-black text-md uppercase tracking-widest text-center flex-wrap">🎥 Join Session</Text>
                 </Button>
               ) : (
-                <View className="bg-neutral-50 dark:bg-neutral-800 p-4 rounded-xl items-center justify-center mb-4 border border-neutral-200 dark:border-neutral-700">
+                <View className="bg-neutral-50/80 dark:bg-neutral-800/80 p-4 rounded-xl items-center justify-center mb-4 border border-neutral-200 dark:border-neutral-700">
                   <Text className="font-bold text-neutral-500 dark:text-neutral-400 text-md text-center flex-wrap">Join available 30 minutes before session</Text>
                 </View>
               )
             ) : (
-              <View className="bg-cyan-50 dark:bg-cyan-900/10 border border-cyan-200 dark:border-cyan-800/40 rounded-[1.5rem] p-5 mb-4">
+              <View className="bg-cyan-50/80 dark:bg-cyan-900/10 border border-cyan-200 dark:border-cyan-800/40 rounded-[1.5rem] p-5 mb-4">
                 <Text className="text-center font-black text-cyan-700 dark:text-cyan-400 uppercase text-md tracking-widest mb-4 flex-wrap">🏥 Offline Session Details</Text>
                 
                 <View className="p-4 rounded-[1.25rem] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 mb-3 items-center">
@@ -204,10 +204,10 @@ export default function BookingHistoryScreen() {
                 </View>
 
                 {item.counselor?.google_map_link && (
-                  <View className="p-4 rounded-[1.25rem] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 items-center">
+                  <View className="p-4 rounded-[1.25rem] bg-amber-50/90 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 items-center">
                     <Text className="text-[10px] uppercase font-bold tracking-widest text-neutral-500 dark:text-neutral-400 mb-3 text-center flex-wrap">📍 Clinic Address Direction</Text>
                     <Button 
-                      className="h-12 w-full rounded-xl bg-rose-600 dark:bg-rose-500"
+                      className="h-12 w-full rounded-xl bg-rose-600/90 dark:bg-rose-500/90"
                       onPress={() => Linking.openURL(item.counselor.google_map_link)}
                     >
                       <Text numberOfLines={1} adjustsFontSizeToFit className="text-white font-bold text-md uppercase tracking-widest text-center">Open in Maps</Text>
@@ -239,11 +239,11 @@ export default function BookingHistoryScreen() {
             )}
           </View>
         ) : item.status === "completed" ? (
-          <View className="w-full bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800/40 py-4 rounded-xl items-center justify-center">
+          <View className="w-full bg-purple-50/90 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800/40 py-4 rounded-xl items-center justify-center">
             <Text numberOfLines={1} adjustsFontSizeToFit className="text-purple-600 dark:text-purple-400 font-black text-md uppercase tracking-widest text-center">⭐ Session Completed</Text>
           </View>
         ) : (
-          <View className="w-full bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800/40 py-4 rounded-xl items-center justify-center">
+          <View className="w-full bg-rose-50/90 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800/40 py-4 rounded-xl items-center justify-center">
             <Text numberOfLines={1} adjustsFontSizeToFit className="text-rose-600 dark:text-rose-400 font-black text-md uppercase tracking-widest text-center">⛔ Booking Cancelled</Text>
           </View>
         )}
@@ -252,13 +252,13 @@ export default function BookingHistoryScreen() {
   };
 
   if (loading) return (
-    <View className="flex-1 justify-center items-center bg-neutral-50 dark:bg-black">
+    <View className="flex-1 justify-center items-center bg-amber-50/90 dark:bg-stone-950/90">
       <ActivityIndicator size="large" color={isDark ? '#fb7185' : '#e11d48'} />
     </View>
   );
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       <ScrollView 
         className="flex-1 z-10" 
         showsVerticalScrollIndicator={false}
@@ -270,7 +270,7 @@ export default function BookingHistoryScreen() {
             <View className="flex-row items-center flex-1 pr-4">
               <TouchableOpacity 
                 onPress={() => router.back()} 
-                className="w-12 h-12 mr-4 shrink-0 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
+                className="w-12 h-12 mr-4 shrink-0 bg-amber-50/90 dark:bg-stone-950/90 border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
               >
                 <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
               </TouchableOpacity>
@@ -293,8 +293,8 @@ export default function BookingHistoryScreen() {
                     onPress={() => setFilter(f.id)}
                     className={`mr-2 px-6 py-3.5 rounded-xl border items-center justify-center flex-shrink-0 min-w-[80px] shadow-sm ${
                       isActive 
-                        ? 'bg-rose-600 border-rose-600' 
-                        : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'
+                        ? 'bg-rose-600/90 border-rose-600' 
+                        : 'bg-amber-50/90 dark:bg-stone-950/90 border-neutral-200 dark:border-neutral-800'
                     }`}
                   >
                     <Text 
@@ -312,8 +312,8 @@ export default function BookingHistoryScreen() {
 
         <View className="px-5">
           {displayedBookings.length === 0 ? (
-            <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-12 text-center shadow-sm border border-neutral-200 dark:border-neutral-800 items-center mt-6">
-              <View className="w-24 h-24 bg-neutral-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-12 text-center shadow-sm border border-neutral-200 dark:border-neutral-800 items-center mt-6">
+              <View className="w-24 h-24 bg-neutral-50/90 dark:bg-neutral-800/90 rounded-full flex items-center justify-center mx-auto mb-6 border border-neutral-200 dark:border-neutral-700 shadow-sm">
                  <Text className="text-4xl opacity-50 grayscale">😔</Text>
               </View>
               <Text className="text-2xl font-black text-neutral-900 dark:text-white mt-2 text-center flex-wrap">No bookings found</Text>
@@ -333,7 +333,7 @@ export default function BookingHistoryScreen() {
       {/* --- 1. CUSTOM CANCEL CONFIRMATION MODAL WITH WAITING ANIMATION --- */}
       <Modal visible={isCancelModalVisible} transparent={true} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/60 px-5">
-          <Card className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <Card className="w-full max-w-sm bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
             
             {isCancelling ? (
               <View className="items-center w-full py-2">
@@ -349,7 +349,7 @@ export default function BookingHistoryScreen() {
               </View>
             ) : (
               <>
-                <View className="w-20 h-20 bg-rose-50 dark:bg-rose-900/10 rounded-full items-center justify-center mb-6 border border-rose-200 dark:border-rose-500/30">
+                <View className="w-20 h-20 bg-rose-50/90 dark:bg-rose-900/10 rounded-full items-center justify-center mb-6 border border-rose-200 dark:border-rose-500/30">
                   <Text className="text-4xl">⚠️</Text>
                 </View>
                 
@@ -386,9 +386,9 @@ export default function BookingHistoryScreen() {
       {/* --- 2. BEAUTIFUL SUCCESS MODAL --- */}
       <Modal visible={isSuccessModalVisible} transparent={true} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/60 px-5">
-          <Card className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <Card className="w-full max-w-sm bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
             
-            <View className="w-24 h-24 bg-emerald-50 dark:bg-emerald-500/10 rounded-full items-center justify-center mb-6 border border-emerald-200 dark:border-emerald-500/30">
+            <View className="w-24 h-24 bg-emerald-50/90 dark:bg-emerald-500/10 rounded-full items-center justify-center mb-6 border border-emerald-200 dark:border-emerald-500/30">
               <Ionicons name="checkmark-done" size={48} color={isDark ? '#34d399' : '#10b981'} />
             </View>
             

@@ -16,7 +16,7 @@ export default function RootLayout() {
         <AuthProvider>
           <PreferencesProvider> 
             
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
               {/* Landing Page */}
               <Stack.Screen name="index" />
               <Stack.Screen name="about" />
@@ -28,16 +28,6 @@ export default function RootLayout() {
               <Stack.Screen name="accounts/consent" />
               <Stack.Screen name="accounts/forgot" />
               <Stack.Screen name="accounts/reset" />
-              
-              {/* Core App Routing */}
-              <Stack.Screen name="core/dashboard" />
-              <Stack.Screen name="core/journal" />
-              <Stack.Screen name="core/chatbot" />
-              <Stack.Screen name="core/assessment" />
-              <Stack.Screen name="core/recovery_hub" />
-              <Stack.Screen name="core/calm_now" />
-              <Stack.Screen name="core/sleep_support" />
-              <Stack.Screen name="core/burnout_recovery" />
 
               {/* Articles App Routing */}
               <Stack.Screen name="articles/all_articles" />
@@ -49,7 +39,17 @@ export default function RootLayout() {
               <Stack.Screen name="consultation/review_booking" />
               <Stack.Screen name="consultation/reschedule_booking" />
               <Stack.Screen name="consultation/booking_history" />
-
+              
+              {/* Core App Routing */}
+              <Stack.Screen name="core/dashboard" />
+              <Stack.Screen name="core/journal" />
+              <Stack.Screen name="core/chatbot" />
+              <Stack.Screen name="core/assessment" />
+              <Stack.Screen name="core/recovery_hub" />
+              <Stack.Screen name="core/calm_now" />
+              <Stack.Screen name="core/sleep_support" />
+              <Stack.Screen name="core/burnout_recovery" />
+              
               {/* User Control Routing */}
               <Stack.Screen name="user_control/profile" />
               <Stack.Screen name="user_control/settings" />

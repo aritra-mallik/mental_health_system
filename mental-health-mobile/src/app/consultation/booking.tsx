@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, TouchableOpacity, Alert, ActivityIndicator, View, Text, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from 'heroui-native';
 import apiClient from '@/api/apiClient';
 
 export default function BookingScreen() {
-  const { counselorId, bookingId } = useLocalSearchParams(); 
+  const { counselorId, bookingId } = useLocalSearchParams();
+  const insets = useSafeAreaInsets(); 
   
   // Use exact theme detection logic as profile.tsx
   const colorScheme = useColorScheme();
@@ -131,35 +133,35 @@ export default function BookingScreen() {
   const totalFee = parseFloat(counselor.consultation_fee) + 50;
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       <ScrollView 
         className="flex-1 px-5 pt-14" 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 170 }} // Prevent bottom button overlap
+        contentContainerStyle={{ paddingBottom: 220 }} 
       >
         
         {/* Back Arrow Button */}
         <TouchableOpacity 
           onPress={() => router.back()} 
-          className="w-12 h-12 mb-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm rounded-full items-center justify-center self-start"
+          className="w-12 h-12 mb-6 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 shadow-sm rounded-full items-center justify-center self-start"
         >
           <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
         </TouchableOpacity>
 
-        {/* Reschedule Card */}
+        {/* Old Booking Card */}
         {oldBooking && (
-          <Card className="bg-amber-50 dark:bg-amber-900/10 rounded-[2.5rem] p-6 border border-amber-200 dark:border-amber-500/20 shadow-sm mb-6">
+          <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-6 border border-amber-200 dark:border-amber-500/20 shadow-sm mb-6">
             <Text className="text-xl font-black text-neutral-900 dark:text-white tracking-tight mb-1 flex-wrap">Reschedule Session</Text>
             <Text className="text-md font-bold text-neutral-500 dark:text-amber-200/70 uppercase tracking-widest mb-4 flex-wrap">Current Booking Details</Text>
             
             <View className="flex-row flex-wrap gap-2">
-              <View className="bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+              <View className="bg-amber-50/90 dark:bg-stone-950/90 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
                 <Text className="font-bold text-neutral-700 dark:text-neutral-300 text-md">📅 {formatLocalDate(oldBooking.slot.date)}</Text>
               </View>
-              <View className="bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+              <View className="bg-amber-50/90 dark:bg-stone-950/90 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
                 <Text className="font-bold text-neutral-700 dark:text-neutral-300 text-md">🕒 {formatTimeAMPM(oldBooking.slot.time)}</Text>
               </View>
-              <View className="bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+              <View className="bg-amber-50/90 dark:bg-stone-950/90 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
                 <Text className="font-bold text-neutral-700 dark:text-neutral-300 text-md uppercase">{oldBooking.slot.mode === 'online' ? '💻' : '🏥'} {oldBooking.slot.mode}</Text>
               </View>
             </View>
@@ -167,16 +169,16 @@ export default function BookingScreen() {
         )}
 
         {/* Doctor Info Card */}
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6 items-center text-center">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6 items-center text-center">
           
           <View className="flex-row justify-center mb-4">
-            <View className="flex-row items-center bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-1.5 rounded-2xl">
+            <View className="flex-row items-center bg-amber-50/90 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-1.5 rounded-2xl">
               <Text className="text-md font-black text-amber-500 dark:text-amber-400">⭐ {counselor.rating}</Text>
               <Text className="text-md font-bold text-amber-700/70 dark:text-amber-300/70 ml-1">({counselor.total_sessions})</Text>
             </View>
           </View>
 
-          <View className="w-24 h-24 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-500/20 rounded-[2rem] items-center justify-center mb-4 shadow-sm">
+          <View className="w-24 h-24 bg-rose-50/90 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-500/20 rounded-[2rem] items-center justify-center mb-4 shadow-sm">
             <Text className="text-4xl">👨‍⚕️</Text>
           </View>
           
@@ -206,7 +208,7 @@ export default function BookingScreen() {
 
           {/* Office Address */}
           {counselor.office_address && (
-            <View className="mt-6 w-full p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-center items-center">
+            <View className="mt-6 w-full p-4 rounded-2xl bg-neutral-50/90 dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700 text-center items-center">
               <Text className="text-md uppercase font-bold tracking-widest text-neutral-500 dark:text-neutral-400">📍 Doctor Office</Text>
               <Text className="mt-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center flex-wrap">{counselor.office_address}</Text>
             </View>
@@ -214,25 +216,25 @@ export default function BookingScreen() {
 
           {/* Experience & Session Length Grid */}
           <View className="flex-row w-full mt-8 gap-4 flex-wrap">
-            <View className="flex-1 bg-neutral-50 dark:bg-neutral-800 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
+            <View className="flex-1 bg-neutral-50/90 dark:bg-neutral-800/90 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
               <Text numberOfLines={1} adjustsFontSizeToFit className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Experience</Text>
               <Text numberOfLines={1} adjustsFontSizeToFit className="font-black text-xl text-neutral-900 dark:text-white mt-1">{counselor.experience}+ Yrs</Text>
             </View>
-            <View className="flex-1 bg-neutral-50 dark:bg-neutral-800 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
+            <View className="flex-1 bg-neutral-50/90 dark:bg-neutral-800/90 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
               <Text numberOfLines={1} adjustsFontSizeToFit className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Session</Text>
               <Text numberOfLines={1} adjustsFontSizeToFit className="font-black text-xl text-neutral-900 dark:text-white mt-1">45 min</Text>
             </View>
           </View>
 
           {/* Consultation Fee */}
-          <View className="w-full mt-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-500/20 rounded-3xl p-5 items-center">
+          <View className="w-full mt-4 bg-rose-50/90 dark:bg-rose-900/40 border border-rose-100 dark:border-rose-500/20 rounded-3xl p-5 items-center">
             <Text numberOfLines={1} adjustsFontSizeToFit className="text-md font-bold uppercase tracking-widest text-neutral-600 dark:text-rose-200/70">Consultation Fee</Text>
             <Text numberOfLines={1} adjustsFontSizeToFit className="text-3xl font-black text-rose-600 dark:text-rose-400 mt-1">₹{counselor.consultation_fee}</Text>
           </View>
         </Card>
 
         {/* Middle Card: Slot Selection */}
-        <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm mb-6">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm mb-6">
           <Text className="text-2xl md:text-3xl font-black text-neutral-900 dark:text-white tracking-tight mb-6 flex-wrap">
             {bookingId ? "Choose New Slot" : "Choose Available Slot"}
           </Text>
@@ -249,8 +251,8 @@ export default function BookingScreen() {
                   onPress={() => { setSelectedDate(date); setSelectedSlot(null); }}
                   className={`mr-3 px-5 py-4 rounded-[1.5rem] border items-center justify-center ${
                     isSelected 
-                      ? 'bg-rose-600 border-rose-600' 
-                      : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'
+                      ? 'bg-rose-600/80 border-rose-600/80' 
+                      : 'bg-neutral-50/80 dark:bg-neutral-800/80 border-neutral-200 dark:border-neutral-700'
                   }`}
                 >
                   <Text numberOfLines={1} className={`text-md font-bold mb-1 ${isSelected ? 'text-rose-100' : 'text-neutral-500 dark:text-neutral-400'}`}>{dayName}</Text>
@@ -268,15 +270,15 @@ export default function BookingScreen() {
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
               <View className="flex-row gap-3">
-                <TouchableOpacity onPress={() => setModeFilter('')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === '' ? 'bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+                <TouchableOpacity onPress={() => setModeFilter('')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === '' ? 'bg-rose-50/90 border-rose-200/90 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                   <Text numberOfLines={1} className={`font-bold text-sm ${modeFilter === '' ? 'text-rose-700 dark:text-rose-300' : 'text-neutral-500 dark:text-neutral-400'}`}>All Modes</Text>
                 </TouchableOpacity>
                 
-                <TouchableOpacity onPress={() => setModeFilter('online')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'online' ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+                <TouchableOpacity onPress={() => setModeFilter('online')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'online' ? 'bg-emerald-50/90 border-emerald-200/90 dark:bg-emerald-500/10 dark:border-emerald-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                   <Text numberOfLines={1} className={`font-bold text-sm ${modeFilter === 'online' ? 'text-emerald-700 dark:text-emerald-300' : 'text-neutral-500 dark:text-neutral-400'}`}>💻 Online</Text>
                 </TouchableOpacity>
                 
-                <TouchableOpacity onPress={() => setModeFilter('offline')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'offline' ? 'bg-cyan-50 border-cyan-200 dark:bg-cyan-500/10 dark:border-cyan-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+                <TouchableOpacity onPress={() => setModeFilter('offline')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'offline' ? 'bg-cyan-50/90 border-cyan-200/90 dark:bg-cyan-500/10 dark:border-cyan-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                   <Text numberOfLines={1} className={`font-bold text-sm ${modeFilter === 'offline' ? 'text-cyan-700 dark:text-cyan-300' : 'text-neutral-500 dark:text-neutral-400'}`}>🏥 Offline</Text>
                 </TouchableOpacity>
               </View>
@@ -299,7 +301,7 @@ export default function BookingScreen() {
                    <TouchableOpacity 
                      key={filter.id}
                      onPress={() => setTimeFilter(filter.id)} 
-                     className={`px-5 py-2.5 rounded-full border items-center flex-row ${timeFilter === filter.id ? 'bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+                     className={`px-5 py-2.5 rounded-full border items-center flex-row ${timeFilter === filter.id ? 'bg-rose-50/90 border-rose-200/90 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                      <Text numberOfLines={1} className={`font-bold text-sm ${timeFilter === filter.id ? 'text-rose-700 dark:text-rose-300' : 'text-neutral-500 dark:text-neutral-400'}`}>
                        {filter.icon} {filter.label}
                      </Text>
@@ -312,14 +314,14 @@ export default function BookingScreen() {
           {/* Time Slots Grid */}
           <View className="flex-row items-center justify-between mb-4 border-t border-neutral-200 dark:border-neutral-800 pt-4 flex-wrap">
             <Text className="font-bold text-neutral-900 dark:text-white text-lg">Available Times</Text>
-            <View className="px-3 py-1 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-100 dark:border-rose-500/30">
+            <View className="px-3 py-1 bg-rose-50/90 dark:bg-rose-900/20 rounded-lg border border-rose-100 dark:border-rose-500/30">
               <Text numberOfLines={1} className="text-md font-bold text-rose-700 dark:text-rose-300">{filteredSlots.length} Slots</Text>
             </View>
           </View>
 
           <View className="flex-row flex-wrap justify-between">
             {filteredSlots.length === 0 && (
-              <View className="w-full py-8 items-center bg-neutral-50 dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700">
+              <View className="w-full py-8 items-center bg-amber-50/90 dark:bg-stone-950/90 rounded-2xl border border-neutral-200 dark:border-neutral-700">
                 <Ionicons name="time-outline" size={32} color={isDark ? "#fb7185" : "#94a3b8"} />
                 <Text className="text-neutral-600 dark:text-neutral-400 font-medium mt-2 text-center px-4 flex-wrap">No slots match your current date and time filters.</Text>
               </View>
@@ -333,8 +335,8 @@ export default function BookingScreen() {
                   onPress={() => setSelectedSlot(s)}
                   className={`w-[48%] p-4 mb-3 rounded-[1.5rem] border ${
                     isSelected 
-                      ? 'border-rose-500 bg-rose-50 dark:bg-rose-900/20 shadow-sm' 
-                      : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+                      ? 'border-rose-500 bg-rose-50/90 dark:bg-rose-900/20 shadow-sm' 
+                      : 'border-neutral-200 bg-neutral-50/80 dark:border-neutral-700 dark:bg-neutral-800/80'
                   }`}
                 >
                   <Text numberOfLines={1} adjustsFontSizeToFit className={`font-black text-xl mb-2 flex-wrap ${isSelected ? 'text-rose-600 dark:text-rose-400' : 'text-neutral-900 dark:text-white'}`}>
@@ -353,7 +355,7 @@ export default function BookingScreen() {
         </Card>
 
         {/* Bottom Card: Booking Summary */}
-        <Card className="bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
           <Text className="text-2xl font-black text-neutral-900 dark:text-white mb-6 flex-wrap">Booking Summary</Text>
           <View className="flex-row justify-between mb-4 flex-wrap">
             <Text className="text-neutral-600 dark:text-neutral-400 font-medium text-lg">Consultation Fee</Text>
@@ -372,9 +374,12 @@ export default function BookingScreen() {
       </ScrollView>
 
       {/* Floating Confirm Button (Sticky Footer using HeroUI Button) */}
-      <View className="absolute bottom-0 left-0 right-0 pt-4 pb-8 px-5 bg-neutral-50/90 dark:bg-black/90 border-t border-neutral-200 dark:border-neutral-800 backdrop-blur-xl">
+      <View 
+        style={{ paddingBottom: Math.max(insets.bottom + 16, 32) }}
+        className="absolute bottom-0 left-0 right-0 pt-4 px-5 bg-neutral-50/90 dark:bg-black/90 border-t border-neutral-200 dark:border-neutral-800 backdrop-blur-xl"
+      >
         <Button 
-          className={`w-full h-14 rounded-2xl flex-row shadow-sm ${selectedSlot ? 'bg-rose-600 dark:bg-rose-500' : 'bg-neutral-200 dark:bg-neutral-800'}`}
+          className={`w-full h-14 rounded-2xl flex-row shadow-sm ${selectedSlot ? 'bg-rose-600/90 dark:bg-rose-500/90' : 'bg-neutral-200/90 dark:bg-neutral-800/90'}`}
           onPress={handleBooking}
           disabled={!selectedSlot}
         >

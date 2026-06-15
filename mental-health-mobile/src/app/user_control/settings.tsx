@@ -100,12 +100,12 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       
       {/* --- CUSTOM THEMED MODAL --- */}
       <Modal transparent visible={alertConfig.visible} animationType="fade" onRequestClose={closeAlert}>
         <View className="flex-1 bg-black/60 items-center justify-center px-6">
-          <Card className="w-full bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <Card className="w-full bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
 
             {/* Modal Icon Header */}
             {alertConfig.type && (
@@ -166,7 +166,7 @@ export default function SettingsScreen() {
         <View className="flex-row justify-between items-center mb-6">
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="w-12 h-12 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
+            className="w-12 h-12 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
           >
             <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#94a3b8" : "#475569"} />
           </TouchableOpacity>
@@ -181,7 +181,7 @@ export default function SettingsScreen() {
           <Text className="text-4xl font-black text-neutral-900 dark:text-white tracking-tight mb-3 text-center">
             Settings
           </Text>
-          <Text className="text-neutral-500 dark:text-neutral-400 text-sm font-medium text-center px-4 leading-relaxed">
+          <Text className="text-neutral-600 dark:text-neutral-300 text-sm font-medium text-center px-4 leading-relaxed">
             Customize your sanctuary. Adjust the environment to fit your needs perfectly.
           </Text>
         </View>
@@ -192,14 +192,14 @@ export default function SettingsScreen() {
           <Text className="text-md font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Appearance</Text>
         </View>
         
-        <Card className="bg-white dark:bg-neutral-900 rounded-3xl p-2 mb-10 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800">
+        <Card className="bg-amber-50/90 dark:bg-neutral-950/90 rounded-3xl p-2 mb-10 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800">
           
-          {/* Three-Way Theme Selector */}
+          {/* Theme Selector */}
           <View className="p-4 py-5">
             <View className="flex-row items-center mb-5">
               <View className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl items-center justify-center mr-4 border border-indigo-100/50 dark:border-indigo-500/20">
                   <Ionicons 
-                    name={themeMode === 'system' ? 'settings' : isDarkMode ? 'moon' : 'sunny'} 
+                    name={isDarkMode ? 'moon' : 'sunny'} 
                     size={24} 
                     color={isDarkMode ? "#818cf8" : "#4f46e5"} 
                   />
@@ -211,7 +211,7 @@ export default function SettingsScreen() {
             </View>
             
             <View className="flex-row justify-between gap-3">
-              {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => (
+              {(['light', 'dark'] as ThemeMode[]).map((mode) => (
                 <TouchableOpacity
                   key={mode}
                   activeOpacity={0.7}
@@ -240,7 +240,7 @@ export default function SettingsScreen() {
           </Text>
         </View>
 
-        <Card className="bg-white dark:bg-neutral-900 rounded-3xl p-2 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-3xl p-2 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8">
           
           {/* Clear Data Row */}
           <TouchableOpacity 

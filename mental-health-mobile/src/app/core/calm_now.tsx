@@ -118,12 +118,12 @@ export default function CalmNowScreen() {
   const CurrentIcon = GROUNDING_STEPS[groundingStep]?.Icon;
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-950">
+    <View className="flex-1 bg-transparent">
       <ScrollView contentContainerClassName="p-6 pb-20 pt-12 items-center" showsVerticalScrollIndicator={false}>
         
         {/* Header Actions */}
         <View className="flex-row items-center justify-between w-full mb-8 max-w-2xl">
-          <TouchableOpacity onPress={() => router.back()} className="w-12 h-12 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 items-center justify-center mb-8 shadow-sm">
+          <TouchableOpacity onPress={() => router.back()} className="w-12 h-12 rounded-full bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 items-center justify-center mb-8 shadow-sm">
             <ArrowLeft size={22} color="#64748b" />
           </TouchableOpacity>
 
@@ -192,7 +192,7 @@ export default function CalmNowScreen() {
               Physical action interrupts anxiety. Tap a circle each time you find an item.
             </Text>
 
-            <View className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-[2rem] p-8 md:p-12 shadow-xl min-h-[360px] items-center justify-center">
+            <View className="w-full bg-amber-50/90 dark:bg-stone-950/90 border border-slate-200 dark:border-neutral-800 rounded-[2rem] p-8 md:p-12 shadow-xl min-h-[360px] items-center justify-center">
               {groundingStep < GROUNDING_STEPS.length ? (
                 <>
                   <Text className="text-5xl mb-4" style={{ color: GROUNDING_STEPS[groundingStep].color }}>

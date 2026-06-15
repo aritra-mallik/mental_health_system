@@ -52,7 +52,7 @@ export default function ConsultationScreen() {
   const renderCounselor = ({ item }: { item: any }) => (
     <Card 
       key={item.id.toString()} 
-      className="bg-white dark:bg-neutral-900 p-6 md:p-8 rounded-[2.5rem] border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6"
+      className="bg-amber-50/90 dark:bg-stone-950/90 p-6 md:p-8 rounded-[2.5rem] border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6"
     >
       {/* Top Floating Badge (Rating) */}
       <View className="flex-row justify-end mb-2">
@@ -63,7 +63,7 @@ export default function ConsultationScreen() {
       </View>
 
       {/* Avatar */}
-      <View className="w-20 h-20 rounded-[1.5rem] items-center justify-center mb-5 border border-rose-100 dark:border-rose-500/20 bg-rose-50 dark:bg-rose-900/10 shadow-sm">
+      <View className="w-20 h-20 rounded-[1.5rem] items-center justify-center mb-5 border border-rose-100 dark:border-rose-500/20 bg-rose-50/90 dark:bg-rose-900/10 shadow-sm">
         <Text className="text-4xl">👨‍⚕️</Text>
       </View>
       
@@ -81,7 +81,7 @@ export default function ConsultationScreen() {
 
       {/* Mode Badge */}
       <View className="flex-row flex-wrap gap-2 mt-4 mb-4">
-        <View className={`px-4 py-1.5 rounded-xl border flex-row items-center gap-1.5 ${item.mode === 'online' ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30'}`}>
+        <View className={`px-4 py-1.5 rounded-xl border flex-row items-center gap-1.5 ${item.mode === 'online' ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' : 'bg-cyan-50/90 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30'}`}>
           <Text className={`text-[10px] font-black uppercase tracking-widest ${item.mode === 'online' ? 'text-emerald-600 dark:text-emerald-400' : 'text-cyan-600 dark:text-cyan-400'}`}>
             {item.mode === 'online' ? '💻' : '🏥'} {item.mode}
           </Text>
@@ -90,7 +90,7 @@ export default function ConsultationScreen() {
 
       {/* Office Address Block */}
       {item.office_address && (
-        <View className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 mb-4">
+        <View className="p-4 rounded-2xl bg-neutral-50/90 dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700 mb-4">
           <View className="flex-row items-center gap-1.5 mb-2">
             <Ionicons name="location" size={14} color={isDark ? '#94a3b8' : '#64748b'} />
             <Text className="text-[10px] uppercase font-black tracking-widest text-neutral-500 dark:text-neutral-400">Doctor Office</Text>
@@ -113,7 +113,7 @@ export default function ConsultationScreen() {
       
       {/* Request Button using HeroUI */}
       <Button 
-        className="w-full h-14 rounded-2xl mt-6 flex-row bg-rose-600 dark:bg-rose-500"
+        className="w-full h-14 rounded-2xl mt-6 flex-row bg-rose-600/90 dark:bg-rose-500/90"
         onPress={() => router.push({ pathname: '/consultation/booking', params: { counselorId: item.id } })}
       >
         <Text className="text-white font-black text-sm uppercase tracking-widest text-center flex-shrink mr-2 flex-wrap">Request Appointment</Text>
@@ -131,7 +131,7 @@ export default function ConsultationScreen() {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       <KeyboardAwareScrollView 
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -144,15 +144,13 @@ export default function ConsultationScreen() {
           <View className="flex-row justify-between items-center mb-8 gap-4">
             <TouchableOpacity 
               onPress={() => router.replace('/core/dashboard')} 
-              className="w-12 h-12 shrink-0 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
-            >
+              className="w-12 h-12 shrink-0 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm">
               <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
             </TouchableOpacity>
             
             <Button 
-              className="h-12 rounded-2xl px-5 flex-row shrink bg-rose-600 dark:bg-rose-600"
-              onPress={() => router.push('/consultation/booking_history')}
-            >
+              className="h-12 rounded-2xl px-5 flex-row shrink bg-rose-600/90 dark:bg-rose-600/90"
+              onPress={() => router.push('/consultation/booking_history')}>
               <Ionicons name="calendar" size={16} color="white" />
               <Text numberOfLines={1} className="font-bold text-white ml-2 text-[12px] uppercase tracking-wide">My Bookings</Text>
             </Button>
@@ -169,7 +167,7 @@ export default function ConsultationScreen() {
           </View>
 
           {/* Search Bar */}
-          <View className="flex-row items-center bg-white dark:bg-neutral-900 px-5 py-4 rounded-[1rem] mb-5 shadow-sm border border-neutral-200 dark:border-neutral-800">
+          <View className="flex-row items-center bg-amber-50/90 dark:bg-stone-950/90 px-5 py-4 rounded-[1rem] mb-5 shadow-sm border border-neutral-200 dark:border-neutral-800">
             <Ionicons name="search" size={20} color={isDark ? '#fb7185' : '#e11d48'} />
             <TextInput 
               placeholder="Search by name or specialty..."
@@ -190,8 +188,8 @@ export default function ConsultationScreen() {
                   onPress={() => setMode(filter.id)}
                   className={`flex-1 min-w-[30%] py-3.5 px-2 rounded-xl items-center justify-center border shadow-sm ${
                     isActive 
-                      ? 'bg-rose-600 border-rose-600' 
-                      : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'
+                      ? 'bg-rose-600/90 border-rose-600/90' 
+                      : 'bg-amber-50/90 dark:bg-stone-950/90 border-neutral-200 dark:border-neutral-800'
                   }`}
                 >
                   <Text numberOfLines={1} className={`font-bold text-md uppercase tracking-wide ${isActive ? 'text-white' : 'text-neutral-700 dark:text-neutral-300'}`}>
@@ -206,7 +204,7 @@ export default function ConsultationScreen() {
         {/* Doctor List */}
         <View className="px-5 pb-10">
           {filteredCounselors.length === 0 ? (
-            <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-10 mt-4 text-center shadow-sm border border-neutral-200 dark:border-neutral-800 items-center">
+            <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-10 mt-4 text-center shadow-sm border border-neutral-200 dark:border-neutral-800 items-center">
               <Text className="text-5xl mb-4">🔍</Text>
               <Text className="text-2xl font-black text-neutral-900 dark:text-white text-center flex-wrap tracking-tight">No Counselors</Text>
               <Text className="text-neutral-500 dark:text-neutral-400 mt-3 text-center font-medium text-base flex-wrap">Adjust your filters or try another search.</Text>

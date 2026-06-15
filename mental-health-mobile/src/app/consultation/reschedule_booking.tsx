@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, TouchableOpacity, Alert, ActivityIndicator, View, Modal, Text, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from 'heroui-native';
@@ -7,6 +8,7 @@ import apiClient from '@/api/apiClient';
 
 export default function RescheduleBookingScreen() {
   const { bookingId } = useLocalSearchParams(); 
+  const insets = useSafeAreaInsets();
   
   // Use standard system theme detection
   const colorScheme = useColorScheme();
@@ -121,20 +123,20 @@ export default function RescheduleBookingScreen() {
 
   if (loading || !counselor || !oldBooking) {
     return (
-      <View className="flex-1 justify-center items-center bg-neutral-50 dark:bg-black">
+      <View className="flex-1 justify-center items-center bg-amber-50/90 dark:bg-stone-950/90">
         <ActivityIndicator size="large" color={isDark ? '#fb7185' : '#e11d48'} />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
-      <ScrollView className="flex-1 px-5 pt-14" showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 150}}>
+    <View className="flex-1 bg-transparent">
+      <ScrollView className="flex-1 px-5 pt-14" showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 200}}>
         
         {/* Back Arrow Button */}
         <TouchableOpacity 
           onPress={() => router.back()} 
-          className="w-12 h-12 mb-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm rounded-full items-center justify-center self-start"
+          className="w-12 h-12 mb-6 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 shadow-sm rounded-full items-center justify-center self-start"
         >
           <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
         </TouchableOpacity>
@@ -150,33 +152,33 @@ export default function RescheduleBookingScreen() {
         </View>
 
         {/* --- 1. CURRENT BOOKING CARD --- */}
-        <Card className="bg-amber-50 dark:bg-amber-900/10 rounded-[2.5rem] p-6 border border-amber-200 dark:border-amber-500/20 shadow-sm mb-6">
+        <Card className="bg-amber-50/90 dark:bg-amber-900/40 rounded-[2.5rem] p-6 border border-amber-200 dark:border-amber-500/20 shadow-sm mb-6">
           <Text className="text-md font-bold text-neutral-500 dark:text-amber-200/70 uppercase tracking-widest mb-4 flex-wrap">Current Booking Details</Text>
           
           <View className="flex-row flex-wrap gap-2">
-            <View className="bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <View className="bg-amber-50/90 dark:bg-stone-950/90 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
               <Text className="font-bold text-neutral-700 dark:text-neutral-300 text-md">📅 {formatIndianDate(oldBooking.slot.date)}</Text>
             </View>
-            <View className="bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <View className="bg-amber-50/90 dark:bg-stone-950/90 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
               <Text className="font-bold text-neutral-700 dark:text-neutral-300 text-md">🕒 {formatTimeAMPM(oldBooking.slot.time)}</Text>
             </View>
-            <View className="bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <View className="bg-amber-50/90 dark:bg-stone-950/90 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
               <Text className="font-bold text-neutral-700 dark:text-neutral-300 text-md uppercase">{oldBooking.slot.mode === 'online' ? '💻' : '🏥'} {oldBooking.slot.mode}</Text>
             </View>
           </View>
         </Card>
 
         {/* --- 2. DOCTOR INFO CARD --- */}
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6 items-center text-center">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-6 items-center text-center">
           
           <View className="flex-row justify-center mb-4">
-            <View className="flex-row items-center bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-1.5 rounded-2xl">
+            <View className="flex-row items-center bg-amber-50/90 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-1.5 rounded-2xl">
               <Text className="text-md font-black text-amber-500 dark:text-amber-400">⭐ {counselor.rating}</Text>
               <Text className="text-md font-bold text-amber-700/70 dark:text-amber-300/70 ml-1">({counselor.total_sessions})</Text>
             </View>
           </View>
 
-          <View className="w-24 h-24 bg-rose-50 dark:bg-rose-900/10 rounded-[2rem] items-center justify-center mb-4 shadow-sm border border-rose-100 dark:border-rose-500/20 overflow-hidden">
+          <View className="w-24 h-24 bg-rose-50/90 dark:bg-rose-900/20 rounded-[2rem] items-center justify-center mb-4 shadow-sm border border-rose-100 dark:border-rose-500/20 overflow-hidden">
             <Text className="text-4xl">👨‍⚕️</Text>
           </View>
           
@@ -206,7 +208,7 @@ export default function RescheduleBookingScreen() {
 
           {/* Office Address */}
           {counselor.office_address && (
-            <View className="mt-6 w-full p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-center items-center">
+            <View className="mt-6 w-full p-4 rounded-2xl bg-neutral-50/90 dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700 text-center items-center">
               <Text className="text-md uppercase font-bold tracking-widest text-neutral-500 dark:text-neutral-400">📍 Doctor Office</Text>
               <Text className="mt-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center" allowFontScaling>{counselor.office_address}</Text>
             </View>
@@ -214,26 +216,26 @@ export default function RescheduleBookingScreen() {
 
           {/* Experience & Session Length Grid */}
           <View className="flex-row w-full mt-8 gap-4 flex-wrap">
-            <View className="flex-1 bg-neutral-50 dark:bg-neutral-800 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
+            <View className="flex-1 bg-neutral-50/90 dark:bg-neutral-800/90 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
               <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Experience</Text>
               <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5} className="font-black text-xl text-neutral-900 dark:text-white mt-1 w-full text-center">{counselor.experience}+ Yrs</Text>
             </View>
 
-            <View className="flex-1 bg-neutral-50 dark:bg-neutral-800 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
+            <View className="flex-1 bg-neutral-50/90 dark:bg-neutral-800/90 px-2 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700 items-center">
               <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Session</Text>
               <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5} className="font-black text-xl text-neutral-900 dark:text-white mt-1 w-full text-center">45 min</Text>
             </View>
           </View>
 
           {/* Consultation Fee */}
-          <View className="w-full mt-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-500/20 rounded-3xl p-5 items-center">
+          <View className="w-full mt-4 bg-rose-50/70 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-500/20 rounded-3xl p-5 items-center">
             <Text className="text-md font-bold uppercase tracking-widest text-neutral-600 dark:text-rose-200/70">Consultation Fee</Text>
             <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} className="text-3xl font-black text-rose-600 dark:text-rose-400 mt-1 px-2">₹{counselor.consultation_fee}</Text>
           </View>
         </Card>
 
         {/* --- 3. MIDDLE CARD: SLOT SELECTION --- */}
-        <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm mb-6">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm mb-6">
           <Text className="text-2xl md:text-3xl font-black text-neutral-900 dark:text-white tracking-tight mb-6">
             Choose New Slot
           </Text>
@@ -249,7 +251,7 @@ export default function RescheduleBookingScreen() {
                   key={date}
                   onPress={() => { setSelectedDate(date); setSelectedSlot(null); }}
                   className={`mr-3 px-5 py-4 rounded-[1.5rem] border items-center justify-center shadow-sm ${
-                    isSelected ? 'bg-rose-600 border-rose-600' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'
+                    isSelected ? 'bg-rose-600/90 border-rose-600' : 'bg-neutral-50/90 dark:bg-neutral-800/90 border-neutral-200 dark:border-neutral-700'
                   }`}
                 >
                   <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} className={`text-md font-bold mb-1 ${isSelected ? 'text-rose-100' : 'text-neutral-500 dark:text-neutral-400'}`}>{dayName}</Text>
@@ -267,15 +269,15 @@ export default function RescheduleBookingScreen() {
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
               <View className="flex-row gap-3">
-              <TouchableOpacity onPress={() => setModeFilter('')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === '' ? 'bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+              <TouchableOpacity onPress={() => setModeFilter('')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === '' ? 'bg-rose-50/90 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                 <Text numberOfLines={1} className={`font-bold text-sm ${modeFilter === '' ? 'text-rose-700 dark:text-rose-300' : 'text-neutral-500 dark:text-neutral-400'}`}>All Modes</Text>
               </TouchableOpacity>
                           
-              <TouchableOpacity onPress={() => setModeFilter('online')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'online' ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+              <TouchableOpacity onPress={() => setModeFilter('online')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'online' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                 <Text numberOfLines={1} className={`font-bold text-sm ${modeFilter === 'online' ? 'text-emerald-700 dark:text-emerald-300' : 'text-neutral-500 dark:text-neutral-400'}`}>💻 Online</Text>
               </TouchableOpacity>
                           
-              <TouchableOpacity onPress={() => setModeFilter('offline')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'offline' ? 'bg-cyan-50 border-cyan-200 dark:bg-cyan-500/10 dark:border-cyan-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+              <TouchableOpacity onPress={() => setModeFilter('offline')} className={`px-5 py-2.5 rounded-full border items-center flex-row ${modeFilter === 'offline' ? 'bg-cyan-50/90 border-cyan-200 dark:bg-cyan-500/10 dark:border-cyan-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                 <Text numberOfLines={1} className={`font-bold text-sm ${modeFilter === 'offline' ? 'text-cyan-700 dark:text-cyan-300' : 'text-neutral-500 dark:text-neutral-400'}`}>🏥 Offline</Text>
               </TouchableOpacity>
               </View>
@@ -298,7 +300,7 @@ export default function RescheduleBookingScreen() {
               <TouchableOpacity 
                 key={filter.id}
                 onPress={() => setTimeFilter(filter.id)} 
-                className={`px-5 py-2.5 rounded-full border items-center flex-row ${timeFilter === filter.id ? 'bg-rose-50 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
+                className={`px-5 py-2.5 rounded-full border items-center flex-row ${timeFilter === filter.id ? 'bg-rose-50/90 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30' : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'}`}>
                 <Text numberOfLines={1} className={`font-bold text-sm ${timeFilter === filter.id ? 'text-rose-700 dark:text-rose-300' : 'text-neutral-500 dark:text-neutral-400'}`}>
                   {filter.icon} {filter.label}
                 </Text>
@@ -311,7 +313,7 @@ export default function RescheduleBookingScreen() {
           {/* Time Slots Grid */}
           <View className="flex-row items-center justify-between mb-4 border-t border-neutral-200 dark:border-neutral-800 pt-4 flex-wrap">
             <Text className="font-bold text-neutral-900 dark:text-white text-lg">Available Times</Text>
-            <View className="px-3 py-1 bg-rose-50 dark:bg-rose-900/20 rounded-lg border border-rose-100 dark:border-rose-500/30">
+            <View className="px-3 py-1 bg-rose-50/90 dark:bg-rose-900/20 rounded-lg border border-rose-100 dark:border-rose-500/30">
               <Text className="text-md font-bold text-rose-700 dark:text-rose-300">{filteredSlots?.length || 0} Slots</Text>
             </View>
           </View>
@@ -340,8 +342,8 @@ export default function RescheduleBookingScreen() {
                   <View className="flex-row flex-wrap mt-1">
                     <Text numberOfLines={1} className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
                         s.mode === 'online'
-                          ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                          : 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400'}`}
+                          ? 'bg-emerald-50/90 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
+                          : 'bg-cyan-50/90 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400'}`}
                     >
                       {s.mode === 'online' ? '💻' : '🏥'} {s.mode}
                     </Text>
@@ -354,9 +356,12 @@ export default function RescheduleBookingScreen() {
       </ScrollView>
 
       {/* Floating Sticky Save Button */}
-      <View className="absolute bottom-0 left-0 right-0 pt-4 pb-8 px-5 bg-neutral-50/90 dark:bg-black/90 border-t border-neutral-200 dark:border-neutral-800 backdrop-blur-xl">
+      <View 
+        style={{ paddingBottom: Math.max(insets.bottom + 16, 32) }}
+        className="absolute bottom-0 left-0 right-0 pt-4 px-5 bg-neutral-50/90 dark:bg-black/90 border-t border-neutral-200 dark:border-neutral-800 backdrop-blur-xl"
+      >
         <Button 
-          className={`w-full h-14 rounded-2xl flex-row shadow-sm ${selectedSlot ? 'bg-rose-600 dark:bg-rose-500' : 'bg-neutral-200 dark:bg-neutral-800'}`}
+          className={`w-full h-14 rounded-2xl flex-row shadow-sm ${selectedSlot ? 'bg-rose-600/90 dark:bg-rose-500/90' : 'bg-neutral-200 dark:bg-neutral-800'}`}
           onPress={() => setModalVisible(true)}
           disabled={!selectedSlot}
         >
@@ -370,11 +375,11 @@ export default function RescheduleBookingScreen() {
       {/* Custom Confirmation Modal */}
       <Modal visible={isModalVisible} transparent={true} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/60 px-5">
-          <Card className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <Card className="w-full max-w-sm bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
             
             {isProcessing ? (
               <View className="items-center w-full py-2">
-                <View className="w-24 h-24 rounded-full bg-rose-50 dark:bg-rose-900/10 items-center justify-center mb-6 border-[3px] border-rose-200 dark:border-rose-500/30">
+                <View className="w-24 h-24 rounded-full bg-rose-50/90 dark:bg-rose-900/10 items-center justify-center mb-6 border-[3px] border-rose-200 dark:border-rose-500/30">
                    <ActivityIndicator size="large" color={isDark ? '#fb7185' : '#e11d48'} />
                 </View>
                 <Text className="text-2xl font-black text-neutral-900 dark:text-white mb-3 text-center flex-wrap tracking-tight">
@@ -386,7 +391,7 @@ export default function RescheduleBookingScreen() {
               </View>
             ) : (
               <>
-                <View className="w-20 h-20 bg-rose-50 dark:bg-rose-900/10 rounded-[1.5rem] items-center justify-center mb-6 border border-rose-100 dark:border-rose-500/20">
+                <View className="w-20 h-20 bg-rose-50/90 dark:bg-rose-900/10 rounded-[1.5rem] items-center justify-center mb-6 border border-rose-100 dark:border-rose-500/20">
                   <Ionicons name="swap-horizontal" size={36} color={isDark ? '#fb7185' : '#e11d48'} />
                 </View>
                 
@@ -414,7 +419,7 @@ export default function RescheduleBookingScreen() {
 
                 <View className="flex-row w-full gap-3 flex-wrap">
                   <Button 
-                    className="flex-1 h-14 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
+                    className="flex-1 h-14 bg-neutral-100/90 dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700 rounded-xl"
                     onPress={() => setModalVisible(false)}
                     disabled={isProcessing}
                   >
@@ -422,7 +427,7 @@ export default function RescheduleBookingScreen() {
                   </Button>
                   
                   <Button 
-                    className="flex-[1.5] h-14 rounded-xl bg-rose-600 dark:bg-rose-500"
+                    className="flex-[1.5] h-14 rounded-xl bg-rose-600/90 dark:bg-rose-500/90"
                     onPress={handleReschedule}
                     disabled={isProcessing}
                   >

@@ -415,7 +415,7 @@ export default function DashboardScreen() {
   const pingOpacity = pingAnim.interpolate({ inputRange: [0, 1], outputRange: [0.8, 0] });
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-[#0B1120]">
+    <View className="flex-1 bg-transparent">
       <ScrollView 
         contentContainerClassName="p-5 pb-36 pt-16"
         showsVerticalScrollIndicator={false}

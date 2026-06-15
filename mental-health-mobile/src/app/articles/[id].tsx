@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, ActivityIndicator, Text, Modal, Linking, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from 'heroui-native';
@@ -11,6 +12,7 @@ export default function ArticleDetailScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const insets = useSafeAreaInsets();
 
   const [article, setArticle] = useState<any>(null);
   const [allArticles, setAllArticles] = useState<any[]>([]);
@@ -147,14 +149,14 @@ export default function ArticleDetailScreen() {
   const theme = getMoodTheme(article.mood);
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-[#0a0a0f]">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 130 }}>
+    <View className="flex-1 bg-transparent">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 200 }}>
         
         {/* Top Header */}
         <View className="flex-row justify-between items-center px-6 pt-16 pb-4">
           <TouchableOpacity 
             onPress={() => { Speech.stop(); router.back(); }}
-            className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm"
+            className="w-12 h-12 bg-amber-50/90 dark:bg-stone-950/90 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm"
           >
             <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
           </TouchableOpacity>
@@ -165,7 +167,7 @@ export default function ArticleDetailScreen() {
 
         {/* Main Content Card */}
         <View className="px-5 pb-6">
-          <Card className={`bg-white dark:bg-[#13131a] border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm overflow-hidden`}>
+          <Card className={`bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm overflow-hidden`}>
             
             {/* Subtle mood background tint */}
             <View className={`absolute inset-0 opacity-40 dark:opacity-20 pointer-events-none ${theme.bg}`} />
@@ -241,11 +243,11 @@ export default function ArticleDetailScreen() {
         {/* Beautiful Media Suggestions */}
         <View className="px-5 mb-8 flex-col gap-4">
           
-          <View className="bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-500/30 rounded-[2.5rem] p-6 shadow-sm relative overflow-hidden">
+          <View className="bg-rose-50/90 dark:bg-rose-900/60 border border-rose-200 dark:border-rose-500/30 rounded-[2.5rem] p-6 shadow-sm relative overflow-hidden">
              <View className="absolute -top-10 -right-10 w-32 h-32 bg-rose-200 dark:bg-rose-500/20 rounded-full blur-3xl pointer-events-none" />
              
              <View className="flex-row items-center gap-4 mb-4 relative z-10">
-                <View className="w-14 h-14 bg-rose-500 rounded-2xl items-center justify-center shadow-md">
+                <View className="w-14 h-14 bg-rose-500/90 rounded-2xl items-center justify-center shadow-md">
                    <Ionicons name="play" size={24} color="white" style={{ marginLeft: 3 }} />
                 </View>
                 <View className="flex-1">
@@ -267,11 +269,11 @@ export default function ArticleDetailScreen() {
              </TouchableOpacity>
           </View>
 
-          <View className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-500/30 rounded-[2.5rem] p-6 shadow-sm relative overflow-hidden">
+          <View className="bg-purple-50/90 dark:bg-purple-900/60 border border-purple-200 dark:border-purple-500/30 rounded-[2.5rem] p-6 shadow-sm relative overflow-hidden">
              <View className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-200 dark:bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
 
              <View className="flex-row items-center gap-4 mb-4 relative z-10">
-                <View className="w-14 h-14 bg-purple-500 rounded-2xl items-center justify-center shadow-md">
+                <View className="w-14 h-14 bg-purple-500/90 rounded-2xl items-center justify-center shadow-md">
                    <Ionicons name="musical-notes" size={24} color="white" />
                 </View>
                 <View className="flex-1">
@@ -307,12 +309,15 @@ export default function ArticleDetailScreen() {
       </ScrollView>
 
       {/* --- Sticky Bottom Navigation --- */}
-      <View className="absolute bottom-0 left-0 right-0 px-5 pt-4 pb-8 bg-neutral-50/90 dark:bg-black/90 border-t border-neutral-200 dark:border-neutral-800 backdrop-blur-xl flex-row items-center justify-between">
+      <View 
+        style={{ paddingBottom: Math.max(insets.bottom + 16, 32) }}
+        className="absolute bottom-0 left-0 right-0 px-5 pt-4 bg-neutral-50/90 dark:bg-black/90 border-t border-neutral-200 dark:border-neutral-800 backdrop-blur-xl flex-row items-center justify-between"
+      >
         
         {/* Previous Button (Loops) */}
         <TouchableOpacity 
           onPress={handlePrev}
-          className="w-14 h-14 rounded-full border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 items-center justify-center shadow-sm"
+          className="w-14 h-14 rounded-full border bg-amber-50/90 dark:bg-stone-950/90 border-neutral-200 dark:border-neutral-700 items-center justify-center shadow-sm"
         >
           <Ionicons name="chevron-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
         </TouchableOpacity>
@@ -321,7 +326,7 @@ export default function ArticleDetailScreen() {
         <Button 
           color="default"
           onPress={() => { Speech.stop(); router.replace('/articles/all_articles'); }}
-          className="flex-1 mx-4 h-14 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-sm flex-row"
+          className="flex-1 mx-4 h-14 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-sm flex-row"
         >
           <Ionicons name="grid-outline" size={18} color={isDark ? '#9ca3af' : '#64748b'} />
           <Text className="font-bold text-neutral-600 dark:text-neutral-300 text-sm uppercase tracking-widest ml-2">View All</Text>
@@ -330,7 +335,7 @@ export default function ArticleDetailScreen() {
         {/* Next Button (Loops) */}
         <TouchableOpacity 
           onPress={handleNext}
-          className="w-14 h-14 rounded-full border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 items-center justify-center shadow-sm"
+          className="w-14 h-14 rounded-full border bg-amber-50/90 dark:bg-stone-950/90 border-neutral-200 dark:border-neutral-700 items-center justify-center shadow-sm"
         >
           <Ionicons name="chevron-forward" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
         </TouchableOpacity>

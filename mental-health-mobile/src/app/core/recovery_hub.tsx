@@ -97,14 +97,14 @@ export default function RecoveryHubScreen() {
   };
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       <ScrollView contentContainerClassName="p-6 pb-20 pt-16" showsVerticalScrollIndicator={false}>
         
         {/* --- TOP NAVIGATION BAR --- */}
         <View className="flex-row justify-between items-center mb-6">
           <TouchableOpacity 
             onPress={() => router.push('/core/dashboard')}
-            className="w-12 h-12 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
+            className="w-12 h-12 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
           >
             <ArrowLeft size={24} color={isDarkMode ? "#94a3b8" : "#475569"} />
           </TouchableOpacity>
@@ -186,7 +186,7 @@ export default function RecoveryHubScreen() {
               <View className="mb-10">
                 <View className="mb-4 ml-2 flex-row items-center gap-2">
                   <Sparkles size={16} color={isDarkMode ? "#818cf8" : "#4f46e5"} />
-                  <Text className="text-md font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                  <Text className="text-md font-black uppercase tracking-widest text-indigo-800 dark:text-indigo-300">
                     Recommended Right Now
                   </Text>
                 </View>
@@ -229,15 +229,15 @@ export default function RecoveryHubScreen() {
               <View className="mb-10">
                 <View className="mb-4 ml-2 flex-row items-center gap-2">
                   <BookOpen size={16} color={isDarkMode ? "#818cf8" : "#4f46e5"} />
-                  <Text className="text-md font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                  <Text className="text-md font-black uppercase tracking-widest text-indigo-700 dark:text-indigo-300">
                     Therapeutic Guidance
                   </Text>
                 </View>
                 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="overflow-visible" contentContainerStyle={{ gap: 14 }}>
                   {data.advice_cards.map((card, i) => (
-                    <Card key={i} className="w-72 bg-indigo-50/50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 p-5 rounded-3xl shadow-none">
-                      <View className="w-11 h-11 rounded-2xl bg-white dark:bg-indigo-950/40 items-center justify-center mb-3.5 border border-indigo-200 dark:border-indigo-500/30">
+                    <Card key={i} className="w-72 bg-amber-50/80 dark:bg-stone-950/80 border border-indigo-100 dark:border-indigo-500/20 p-5 rounded-3xl shadow-none">
+                      <View className="w-11 h-11 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 items-center justify-center mb-3.5 border border-indigo-200 dark:border-indigo-500/30">
                         <Text className="text-xl">{card.icon}</Text>
                       </View>
                       <Text className="text-base font-black text-indigo-950 dark:text-indigo-100 mb-1.5">{card.title}</Text>
@@ -252,7 +252,7 @@ export default function RecoveryHubScreen() {
             <View className="mb-10">
               <View className="mb-5 ml-2 flex-row items-center gap-2">
                 <BookOpen size={18} color={isDarkMode ? "#818cf8" : "#4f46e5"} />
-                <Text className="text-md font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                <Text className="text-md font-black uppercase tracking-widest text-indigo-700 dark:text-indigo-300">
                   Explore the Library
                 </Text>
               </View>
@@ -260,7 +260,7 @@ export default function RecoveryHubScreen() {
               <View className="gap-4">
                 
                 {/* Panic & Anxiety Card - Rose Theme */}
-                <Card className="bg-rose-50/60 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 p-5 rounded-3xl shadow-none">
+                <Card className="bg-rose-50/80 dark:bg-rose-500/30 border border-rose-100 dark:border-rose-500/20 p-5 rounded-3xl shadow-none">
                   <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/core/calm_now')}>
                     <View className="flex-row justify-between items-start mb-4">
                       <View className="w-12 h-12 bg-white dark:bg-rose-950/40 border border-rose-200 dark:border-rose-500/30 rounded-2xl items-center justify-center">
@@ -286,7 +286,7 @@ export default function RecoveryHubScreen() {
                 </Card>
 
                 {/* Sleep Optimization Card - Indigo Theme */}
-                <Card className="bg-indigo-50/60 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 p-5 rounded-3xl shadow-none">
+                <Card className="bg-indigo-50/80 dark:bg-indigo-500/30 border border-indigo-100 dark:border-indigo-500/20 p-5 rounded-3xl shadow-none">
                   <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/core/sleep_support')}>
                     <View className="flex-row justify-between items-start mb-4">
                       <View className="w-12 h-12 bg-white dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-500/30 rounded-2xl items-center justify-center">
@@ -312,7 +312,7 @@ export default function RecoveryHubScreen() {
                 </Card>
 
                 {/* Burnout Recovery Card - Emerald Theme */}
-                <Card className="bg-emerald-50/60 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 p-5 rounded-3xl shadow-none">
+                <Card className="bg-emerald-50/80 dark:bg-emerald-500/30 border border-emerald-100 dark:border-emerald-500/20 p-5 rounded-3xl shadow-none">
                   <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/core/burnout_recovery')}>
                     <View className="flex-row justify-between items-start mb-4">
                       <View className="w-12 h-12 bg-white dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl items-center justify-center">

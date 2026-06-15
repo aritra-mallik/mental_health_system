@@ -420,12 +420,12 @@ export default function ExportDataScreen() {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
 
       {/* --- CUSTOM THEMED MODAL USING HERO-UI CARD & BUTTON --- */}
       <Modal transparent visible={alertConfig.visible} animationType="fade" onRequestClose={closeAlert}>
         <View className="flex-1 bg-black/60 items-center justify-center px-6">
-          <Card className="w-full bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <Card className="w-full bg-white/90 dark:bg-neutral-900/90 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
             
             {alertConfig.type && (
               <View className={`w-20 h-20 rounded-full items-center justify-center mb-6 border ${getModalStyles(alertConfig.type).bg} ${getModalStyles(alertConfig.type).border}`}>
@@ -457,7 +457,7 @@ export default function ExportDataScreen() {
         <View className="flex-row justify-between items-center mb-8">
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm">
+            className="w-12 h-12 bg-amber-50/90 dark:bg-stone-950/90 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm">
             <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
           </TouchableOpacity>
           <Text className="text-4xl font-black text-neutral-900 dark:text-white tracking-tight">
@@ -467,7 +467,7 @@ export default function ExportDataScreen() {
         </View>
 
         {/* HERO REPORT CARD */}
-        <Card className="bg-indigo-600 dark:bg-indigo-500 rounded-[3rem] p-8 mb-8 items-center shadow-sm dark:shadow-none border border-indigo-500 dark:border-indigo-400/50 overflow-hidden">
+        <Card className="bg-indigo-600/90 dark:bg-indigo-500/90 rounded-[3rem] p-8 mb-8 items-center shadow-sm dark:shadow-none border border-indigo-500 dark:border-indigo-400/50 overflow-hidden">
           <View className="absolute -top-10 -right-10 w-40 h-40 bg-fuchsia-400 dark:bg-fuchsia-500 rounded-full blur-3xl opacity-60" />
           <View className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500 dark:bg-blue-600 rounded-full blur-3xl opacity-60" />
 
@@ -506,32 +506,32 @@ export default function ExportDataScreen() {
         </View>
 
         <View className="flex-row flex-wrap justify-between gap-y-4 mb-8">
-          <Card className="w-full bg-indigo-50 dark:bg-indigo-900/10 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-indigo-100 dark:border-indigo-800/50">
+          <Card className="w-full bg-indigo-50/90 dark:bg-indigo-900/60 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-indigo-100 dark:border-indigo-800/50">
             <Text className="text-md font-bold text-indigo-500 dark:text-indigo-400/70 uppercase tracking-widest mb-1">Full Name</Text>
             <Text className="text-2xl font-black text-indigo-700 dark:text-indigo-300">{report?.profile?.name || '--'}</Text>
           </Card>
 
-          <Card className="w-full bg-fuchsia-50 dark:bg-fuchsia-900/10 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-fuchsia-100 dark:border-fuchsia-800/50">
+          <Card className="w-full bg-fuchsia-50/90 dark:bg-fuchsia-900/60 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-fuchsia-100 dark:border-fuchsia-800/50">
             <Text className="text-md font-bold text-fuchsia-500 dark:text-fuchsia-400/70 uppercase tracking-widest mb-1">Email Address</Text>
             <Text className="text-xl font-bold text-fuchsia-700 dark:text-fuchsia-300" adjustsFontSizeToFit numberOfLines={1}>{report?.profile?.email || '--'}</Text>
           </Card>
 
-          <Card className="w-[48%] bg-emerald-50 dark:bg-emerald-900/10 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-emerald-100 dark:border-emerald-800/50">
+          <Card className="w-[48%] bg-emerald-50/90 dark:bg-emerald-900/60 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-emerald-100 dark:border-emerald-800/50">
             <Text className="text-md font-bold text-emerald-500 dark:text-emerald-400/70 uppercase tracking-widest mb-1">Age</Text>
             <Text className="text-2xl font-black text-emerald-700 dark:text-emerald-300">{report?.profile?.age || '--'}</Text>
           </Card>
 
-          <Card className="w-[48%] bg-amber-50 dark:bg-amber-900/10 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-amber-100 dark:border-amber-800/50">
+          <Card className="w-[48%] bg-amber-50/90 dark:bg-amber-900/60 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-amber-100 dark:border-amber-800/50">
             <Text className="text-md font-bold text-amber-500 dark:text-amber-400/70 uppercase tracking-widest mb-1">D.O.B</Text>
             <Text className="text-xl font-black text-amber-700 dark:text-amber-300">{report?.profile?.dob || '--'}</Text>
           </Card>
 
-          <Card className="w-[48%] bg-blue-50 dark:bg-blue-900/10 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-blue-100 dark:border-blue-800/50">
+          <Card className="w-[48%] bg-blue-50/90 dark:bg-blue-900/60 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-blue-100 dark:border-blue-800/50">
             <Text className="text-md font-bold text-blue-500 dark:text-blue-400/70 uppercase tracking-widest mb-1">Journals</Text>
             <Text className="text-2xl font-black text-blue-700 dark:text-blue-300">{report?.profile?.journal_count || '0'}</Text>
           </Card>
 
-          <Card className="w-[48%] bg-violet-50 dark:bg-violet-900/10 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-violet-100 dark:border-violet-800/50">
+          <Card className="w-[48%] bg-violet-50/90 dark:bg-violet-900/60 p-5 rounded-[2rem] shadow-sm dark:shadow-none border border-violet-100 dark:border-violet-800/50">
             <Text className="text-md font-bold text-violet-500 dark:text-violet-400/70 uppercase tracking-widest mb-1">Joined</Text>
             <Text className="text-xl font-black text-violet-700 dark:text-violet-300" adjustsFontSizeToFit numberOfLines={1}>{report?.profile?.member_since || '--'}</Text>
           </Card>
@@ -544,7 +544,7 @@ export default function ExportDataScreen() {
             Emotional Timeline
           </Text>
         </View>
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2rem] p-5 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8 items-center justify-center">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2rem] p-5 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8 items-center justify-center">
           {moodChartImg ? (
             <Image source={{ uri: moodChartImg }} style={{ width: '100%', height: 220, resizeMode: 'contain' }} />
           ) : (
@@ -559,7 +559,7 @@ export default function ExportDataScreen() {
             7-Day Mood Events
           </Text>
         </View>
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2rem] p-5 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8 items-center justify-center">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2rem] p-5 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8 items-center justify-center">
           {rawEventsChartImg ? (
             <Image source={{ uri: rawEventsChartImg }} style={{ width: '100%', height: 220, resizeMode: 'contain' }} />
           ) : (
@@ -574,7 +574,7 @@ export default function ExportDataScreen() {
             Assessment History (30-Days)
           </Text>
         </View>
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-4 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-4 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8">
           {report?.assessments?.length > 0 ? (
             report.assessments.map((a: any, i: number) => (
               <View key={i} className={`flex-row items-center justify-between p-4 ${i !== report.assessments.length -1 ? 'border-b border-neutral-100 dark:border-neutral-800/50' : ''}`}>
@@ -604,7 +604,7 @@ export default function ExportDataScreen() {
             Clinical Consultations (30-Days)
           </Text>
         </View>
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-4 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-4 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-8">
           {report?.consultations?.length > 0 ? (
             report.consultations.map((c: any, i: number) => (
               <View key={i} className={`flex-col p-4 ${i !== report.consultations.length -1 ? 'border-b border-neutral-100 dark:border-neutral-800/50' : ''}`}>
@@ -631,7 +631,7 @@ export default function ExportDataScreen() {
             Suggested Action Plan
           </Text>
         </View>
-        <Card className="bg-emerald-50 dark:bg-emerald-900/10 rounded-[2.5rem] p-6 shadow-sm dark:shadow-none border border-emerald-200 dark:border-emerald-800/50 mb-8">
+        <Card className="bg-emerald-50/90 dark:bg-emerald-900/70 rounded-[2.5rem] p-6 shadow-sm dark:shadow-none border border-emerald-200 dark:border-emerald-800/50 mb-8">
           {report?.recommendations?.map((rec: string, index: number) => (
             <View key={index} className="flex-row items-start mb-4 last:mb-0">
               <View className="w-7 h-7 rounded-full bg-emerald-200 dark:bg-emerald-800/60 items-center justify-center mr-3 mt-0.5 border border-emerald-300 dark:border-emerald-700/50">
@@ -646,8 +646,8 @@ export default function ExportDataScreen() {
 
         {/* DISCLAIMER */}
         <View className="items-center px-4 mt-4">
-          <Text className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">Clinical Disclaimer</Text>
-          <Text className="text-md text-neutral-500 dark:text-neutral-500 font-medium text-center leading-relaxed italic">
+          <Text className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-300 mb-2">Clinical Disclaimer</Text>
+          <Text className="text-md text-neutral-700 dark:text-neutral-300 font-medium text-center leading-relaxed italic">
             {report?.disclaimer}
           </Text>
         </View>

@@ -131,12 +131,12 @@ export default function ProfileScreen() {
   const initial = dynamicDisplayName.charAt(0).toUpperCase();
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       
       {/* CUSTOM THEMED MODAL */}
       <Modal transparent visible={alertConfig.visible} animationType="fade" onRequestClose={closeAlert}>
         <View className="flex-1 bg-black/60 items-center justify-center px-6">
-          <Card className="w-full bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <Card className="w-full bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-8 items-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
             
             {alertConfig.type && (
               <View className={`w-20 h-20 rounded-full items-center justify-center mb-6 border ${getModalStyles(alertConfig.type).bg} ${getModalStyles(alertConfig.type).border}`}>
@@ -175,7 +175,7 @@ export default function ProfileScreen() {
         <View className="flex-row justify-between items-center mb-8">
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="w-12 h-12 bg-white dark:bg-neutral-900 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm">
+            className="w-12 h-12 bg-amber-50/90 dark:bg-stone-950/90 rounded-full items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-sm">
             <Ionicons name="arrow-back" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
           </TouchableOpacity>
           <Text className="text-4xl font-black text-neutral-900 dark:text-white tracking-tight">Profile</Text>
@@ -183,8 +183,8 @@ export default function ProfileScreen() {
         </View>
 
         {/* HERO IDENTITY CARD */}
-        <Card className="bg-indigo-50 dark:bg-indigo-900/10 rounded-[3rem] p-8 mb-10 items-center shadow-sm dark:shadow-none border border-indigo-100 dark:border-indigo-500/20">
-          <View className="w-28 h-28 rounded-full bg-white dark:bg-neutral-900 items-center justify-center mb-5 border border-neutral-200 dark:border-neutral-800 shadow-sm">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[3rem] p-8 mb-10 items-center shadow-sm dark:shadow-none border border-indigo-100 dark:border-indigo-500/20">
+          <View className="w-28 h-28 rounded-full bg-white/90 dark:bg-neutral-900/90 items-center justify-center mb-5 border border-neutral-200 dark:border-neutral-800 shadow-sm">
             <Text className="text-6xl font-black text-indigo-600 dark:text-indigo-400 text-center" maxFontSizeMultiplier={1.2} style={{ includeFontPadding: false, textAlignVertical: 'center' }}>
               {initial}
             </Text>
@@ -192,7 +192,7 @@ export default function ProfileScreen() {
           
           <Text className="text-3xl font-black text-neutral-900 dark:text-white mb-3 text-center tracking-tight">{dynamicDisplayName}</Text>
         
-          <View className="flex-row items-center justify-between bg-white dark:bg-neutral-900 px-5 py-3 rounded-full mb-8 border border-neutral-200 dark:border-neutral-800 w-full shadow-sm">
+          <View className="flex-row items-center justify-between bg-white/90 dark:bg-neutral-900/90 px-5 py-3 rounded-full mb-8 border border-neutral-200 dark:border-neutral-800 w-full shadow-sm">
             <View className="flex-row items-center flex-1 pr-3">
               <Ionicons name="mail" size={16} color={isDark ? '#818cf8' : '#4f46e5'} style={{ marginRight: 8 }} />
               <Text className="text-sm font-bold text-neutral-700 dark:text-neutral-300 flex-1" numberOfLines={1} ellipsizeMode="tail">{profile.email}</Text>
@@ -201,11 +201,11 @@ export default function ProfileScreen() {
           </View>
 
           <View className="flex-row flex-wrap gap-3 w-full justify-center mt-2">
-            <View className="flex-row items-center bg-white dark:bg-neutral-900 py-3 px-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+            <View className="flex-row items-center bg-white/90 dark:bg-neutral-900/90 py-3 px-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
               <Ionicons name="calendar" size={16} color={isDark ? '#94a3b8' : '#64748b'} style={{ marginRight: 6 }} />
               <Text className="text-sm font-bold text-neutral-700 dark:text-neutral-300">{profile.date_of_birth || 'N/A'}</Text>
             </View>
-            <View className="flex-row items-center bg-white dark:bg-neutral-900 py-3 px-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+            <View className="flex-row items-center bg-white/90 dark:bg-neutral-900/90 py-3 px-5 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
               <Ionicons name="hourglass" size={16} color={isDark ? '#94a3b8' : '#64748b'} style={{ marginRight: 6 }} />
               <Text className="text-sm font-bold text-neutral-700 dark:text-neutral-300">{profile.age ? `${profile.age} yrs` : 'N/A'}</Text>
             </View>
@@ -218,8 +218,8 @@ export default function ProfileScreen() {
           <Text className="text-md font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 ml-2">Personal Details</Text>
         </View>
         
-        <Card className="bg-white dark:bg-neutral-900 rounded-3xl p-5 mb-10 border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
-          <View className="flex-row items-center bg-neutral-50 dark:bg-neutral-800 rounded-2xl px-5 mb-4 border border-neutral-200 dark:border-neutral-700">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-3xl p-5 mb-10 border border-neutral-200 dark:border-neutral-800 shadow-sm dark:shadow-none">
+          <View className="flex-row items-center bg-neutral-50/90 dark:bg-neutral-800/90 rounded-2xl px-5 mb-4 border border-neutral-200 dark:border-neutral-700">
             <Ionicons name="person" size={18} color={isDark ? '#94a3b8' : '#cbd5e1'} />
             <TextInput 
               className="flex-1 py-4 px-4 text-neutral-900 dark:text-white font-bold text-base"
@@ -229,7 +229,7 @@ export default function ProfileScreen() {
               placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}/>
           </View>
 
-          <View className="flex-row items-center bg-neutral-50 dark:bg-neutral-800 rounded-2xl px-5 mb-4 border border-neutral-200 dark:border-neutral-700">
+          <View className="flex-row items-center bg-neutral-50/90 dark:bg-neutral-800/90 rounded-2xl px-5 mb-4 border border-neutral-200 dark:border-neutral-700">
             <Ionicons name="person" size={18} color={isDark ? '#94a3b8' : '#cbd5e1'} opacity={0.5} />
             <TextInput 
               className="flex-1 py-4 px-4 text-neutral-900 dark:text-white font-bold text-base"
@@ -239,7 +239,7 @@ export default function ProfileScreen() {
               placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}/>
           </View>
 
-          <View className="flex-row items-center bg-neutral-50 dark:bg-neutral-800 rounded-2xl px-5 mb-6 border border-neutral-200 dark:border-neutral-700">
+          <View className="flex-row items-center bg-neutral-50/90 dark:bg-neutral-800/90 rounded-2xl px-5 mb-6 border border-neutral-200 dark:border-neutral-700">
             <Ionicons name="person" size={18} color={isDark ? '#94a3b8' : '#cbd5e1'} />
             <TextInput 
               className="flex-1 py-4 px-4 text-neutral-900 dark:text-white font-bold text-base"
@@ -271,8 +271,8 @@ export default function ProfileScreen() {
           <Text className="text-md font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 ml-2">Security</Text>
         </View>
 
-        <Card className="bg-white dark:bg-neutral-900 rounded-3xl p-5 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-6">
-          <View className="flex-row items-center bg-neutral-50 dark:bg-neutral-800 rounded-2xl px-5 mb-4 border border-neutral-200 dark:border-neutral-700">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-3xl p-5 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 mb-6">
+          <View className="flex-row items-center bg-neutral-50/90 dark:bg-neutral-800/90 rounded-2xl px-5 mb-4 border border-neutral-200 dark:border-neutral-700">
             <Ionicons name="key" size={18} color={isDark ? '#94a3b8' : '#cbd5e1'} />
             <TextInput 
               className="flex-1 py-4 px-4 text-neutral-900 dark:text-white font-bold text-base"
@@ -286,7 +286,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <View className="flex-row items-center bg-neutral-50 dark:bg-neutral-800 rounded-2xl px-5 border border-neutral-200 dark:border-neutral-700">
+          <View className="flex-row items-center bg-neutral-50/90 dark:bg-neutral-800/90 rounded-2xl px-5 border border-neutral-200 dark:border-neutral-700">
             <Ionicons name="lock-closed" size={18} color={isDark ? '#94a3b8' : '#cbd5e1'} />
             <TextInput 
               className="flex-1 py-4 px-4 text-neutral-900 dark:text-white font-bold text-base"

@@ -41,12 +41,12 @@ export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarPro
       className={`flex-row items-center p-4 mb-3 rounded-2xl border ${
         isDestructive 
           ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' 
-          : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700/50'
+          : 'bg-stone-50 dark:bg-stone-800/40 border-stone-100 dark:border-stone-700/50'
       }`}>
       <View className={`w-10 h-10 rounded-xl items-center justify-center mr-4 ${
         isDestructive 
           ? 'bg-rose-100 dark:bg-rose-500/20' 
-          : 'bg-indigo-50 dark:bg-slate-700/50'
+          : 'bg-indigo-50 dark:bg-stone-700/50'
       }`}>
         <Ionicons 
           name={icon} 
@@ -58,7 +58,7 @@ export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarPro
       <Text className={`text-base font-bold flex-1 ${
         isDestructive 
           ? 'text-rose-600 dark:text-rose-500' 
-          : 'text-slate-700 dark:text-slate-200'
+          : 'text-stone-700 dark:text-stone-200'
       }`}>
         {label}
       </Text>
@@ -72,7 +72,7 @@ export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarPro
 
   return (
     <Animated.View 
-      className="absolute top-0 left-0 bottom-0 z-20 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl"
+      className="absolute top-0 left-0 bottom-0 z-20 border-r border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-2xl"
       style={{ 
         width: width * 0.75,
         transform: [{ translateX: slideAnim }]
@@ -80,7 +80,7 @@ export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarPro
     >
       
       {/* --- Beautiful Header Section --- */}
-      <View className="px-6 pt-16 pb-8 border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 relative overflow-hidden">
+      <View className="px-6 pt-16 pb-8 border-b border-stone-100 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 relative overflow-hidden">
         {/* Subtle background glow */}
         <View className="absolute -top-10 -left-10 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl" />
         
@@ -90,12 +90,12 @@ export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarPro
           </View>
           <TouchableOpacity 
             onPress={toggleSidebar}
-            className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-full items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm">
+            className="w-10 h-10 bg-stone-50 dark:bg-stone-800 rounded-full items-center justify-center border border-stone-200 dark:border-stone-700 shadow-sm">
             <Ionicons name="close" size={20} color={isDark ? '#94a3b8' : '#64748b'} />
           </TouchableOpacity>
         </View>
-        <Text className="text-3xl font-black text-slate-900 dark:text-white tracking-tight z-10">Smera</Text>
-        <Text className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 z-10">Your personal sanctuary</Text>
+        <Text className="text-3xl font-black text-stone-900 dark:text-white tracking-tight z-10">Smera</Text>
+        <Text className="text-sm font-medium text-stone-500 dark:text-stone-400 mt-1 z-10">Your personal sanctuary</Text>
       </View>
       
       {/* --- Scrollable Menu Content --- */}
@@ -104,7 +104,7 @@ export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarPro
         contentContainerStyle={{ padding: 20, paddingBottom: 60 }} 
         showsVerticalScrollIndicator={false}>
         
-        <Text className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-2 mt-2">Account</Text>
+        <Text className="text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3 ml-2 mt-2">Account</Text>
         <NavItem 
           icon="person-outline" 
           label="My Profile" 
@@ -120,7 +120,7 @@ export default function Sidebar({ slideAnim, toggleSidebar, logout }: SidebarPro
 
         <View className="h-4" />
 
-        <Text className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-2">Data & Session</Text>
+        <Text className="text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3 ml-2">Data & Session</Text>
         <NavItem 
           icon="download-outline" 
           label="Export Data" 

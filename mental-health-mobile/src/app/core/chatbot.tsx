@@ -381,13 +381,13 @@ export default function ChatbotScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       enabled={Platform.OS === 'ios'}>
-      <View className="flex-1 bg-neutral-50 dark:bg-black relative">
+      <View className="flex-1 bg-transparent relative">
         <LinearGradient colors={isDarkMode ? ['rgba(63,94,251,0.08)', 'transparent'] : ['rgba(99,102,241,0.1)', 'transparent']} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 450 }} />
 
         {/* --- CUSTOM ALERT MODAL --- */}
         <Modal visible={customAlert.visible} transparent animationType="fade">
           <View className="flex-1 items-center justify-center bg-black/60 px-4">
-            <View className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-slate-200 dark:border-neutral-800 shadow-2xl">
+            <View className="w-full max-w-sm bg-amber-50/90 dark:bg-stone-950/90 rounded-3xl p-6 border border-slate-200 dark:border-neutral-800 shadow-2xl">
               <Text className="text-xl font-black text-slate-800 dark:text-white mb-2">{customAlert.title}</Text>
               <Text className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-6">{customAlert.message}</Text>
               <Button onPress={() => setCustomAlert({ ...customAlert, visible: false })} className="w-full bg-indigo-600 rounded-xl h-12">
@@ -437,7 +437,7 @@ export default function ChatbotScreen() {
         {/* --- HEADER --- */}
         <View className="pt-14 pb-4 px-4 bg-white/70 dark:bg-black/50 border-b border-slate-200/40 dark:border-neutral-800/40 flex-row items-center justify-between z-30">
           <View className="flex-row items-center gap-4">
-            <TouchableOpacity onPress={() => setSidebarOpen(true)} className="p-2 bg-white dark:bg-indigo-600 border border-slate-200/50 dark:border-neutral-800 rounded-xl items-center justify-center shadow-sm">
+            <TouchableOpacity onPress={() => setSidebarOpen(true)} className="p-2 bg-amber-50/90 dark:bg-indigo-600 border border-slate-200/50 dark:border-neutral-800 rounded-xl items-center justify-center shadow-sm">
               <Menu size={22} className="text-slate-700 dark:text-slate-300" />
             </TouchableOpacity>
             <View className="flex-row items-center gap-3">
@@ -459,7 +459,7 @@ export default function ChatbotScreen() {
                 <Text className="text-md font-bold text-indigo-600 dark:text-indigo-400">Export</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={() => router.push('/core/dashboard')} className="px-4 py-2.5 bg-white dark:bg-neutral-900 border border-slate-200/50 dark:border-neutral-800 rounded-xl shadow-sm">
+            <TouchableOpacity onPress={() => router.push('/core/dashboard')} className="px-4 py-2.5 bg-amber-50/90 dark:bg-stone-950/90 border border-slate-200/50 dark:border-neutral-800 rounded-xl shadow-sm">
               <Text className="text-md font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Exit</Text>
             </TouchableOpacity>
           </View>
@@ -478,7 +478,7 @@ export default function ChatbotScreen() {
             <View className="flex-1 items-center justify-center">
               <SmeraAvatar size={100} />
               <Text className="text-2xl font-black text-slate-800 dark:text-white tracking-tight mb-2 mt-6 text-center">How can I help you today?</Text>
-              <Text className="text-slate-400 dark:text-neutral-500 text-center text-sm mb-8 max-w-sm leading-relaxed">
+              <Text className="text-slate-600 dark:text-neutral-500 text-center text-sm mb-8 max-w-sm leading-relaxed">
                 Feel free to share what's on your mind or explore some topics below.
               </Text>
               <View className="gap-2.5 w-full max-w-sm">
@@ -488,7 +488,7 @@ export default function ChatbotScreen() {
                   "Just need to chat",
                   "I would like to explore options for professional consultation."
                 ].map((suggest, idx) => (
-                  <TouchableOpacity key={idx} onPress={() => sendMessage(suggest)} className={`p-4 bg-white dark:bg-neutral-900 border rounded-2xl shadow-sm hover:scale-105 transition-transform ${idx === 3 ? 'border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-900/10' : 'border-slate-200/60 dark:border-neutral-800/80'}`}>
+                  <TouchableOpacity key={idx} onPress={() => sendMessage(suggest)} className={`p-4 bg-amber-50/90 dark:bg-stone-950/90 border rounded-2xl shadow-sm hover:scale-105 transition-transform ${idx === 3 ? 'border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-900/10' : 'border-slate-200/60 dark:border-neutral-800/80'}`}>
                     <Text className={`font-bold text-sm text-center ${idx === 3 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>{suggest}</Text>
                   </TouchableOpacity>
                 ))}
@@ -547,7 +547,7 @@ export default function ChatbotScreen() {
               {isTyping && (
                 <View className="flex-row items-center gap-3 mt-1">
                   <SmeraAvatar size={32} />
-                  <View className="bg-white/90 dark:bg-neutral-900/95 border border-violet-200/70 dark:border-violet-500/20 px-5 py-4 rounded-3xl rounded-tl-sm shadow-lg shadow-violet-500/5">
+                  <View className="bg-amber-50/90 dark:bg-stone-950/90 border border-violet-200/70 dark:border-violet-500/20 px-5 py-4 rounded-3xl rounded-tl-sm shadow-lg shadow-violet-500/5">
   
                     <View className="flex-row items-center gap-3">
                       <View>
@@ -599,7 +599,7 @@ export default function ChatbotScreen() {
                 {isListening && (
                   <View className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-50" />
                 )}
-                <View className={`absolute inset-0 w-11 h-11 rounded-full items-center justify-center shadow-sm ${isListening ? 'bg-red-500 shadow-red-500/40' : 'bg-white dark:bg-neutral-800 border border-slate-200/60 dark:border-neutral-700'}`}>
+                <View className={`absolute inset-0 w-11 h-11 rounded-full items-center justify-center shadow-sm ${isListening ? 'bg-red-500 shadow-red-500/40' : 'bg-white/95 dark:bg-stone-950/90 border border-slate-200/60 dark:border-neutral-700'}`}>
                   {isTranscribing ? <ActivityIndicator size="small" color={isDarkMode ? "#ffffff" : "#4f46e5"} /> : isListening ? <MicOff size={18} color="#ffffff" /> : <Mic size={18} color={isDarkMode ? "#6b7280" : "#94a3b8"} />}
                 </View>
               </TouchableOpacity>

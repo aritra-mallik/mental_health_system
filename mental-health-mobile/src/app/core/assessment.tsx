@@ -258,7 +258,7 @@ export default function AssessmentScreen() {
       case 0: // Welcome
         return (
           <View className="flex-1 items-center justify-center py-10 px-4">
-            <View className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-[2rem] items-center justify-center mb-8 border border-indigo-100 dark:border-indigo-500/20 transform -rotate-3 shadow-sm">
+            <View className="w-20 h-20 bg-indigo-50/40 dark:bg-indigo-500/10 rounded-[2rem] items-center justify-center mb-8 border border-indigo-100 dark:border-indigo-500/20 transform -rotate-3 shadow-sm">
               <ClipboardCheck size={40} color={isDarkMode ? "#818cf8" : "#4f46e5"} strokeWidth={2} />
             </View>
             <Text className="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-4 text-center">
@@ -269,7 +269,7 @@ export default function AssessmentScreen() {
             </Text>
             
             <View className="w-full max-w-sm gap-4">
-              <Button color="primary" className="w-full h-14 rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30" onPress={() => setStep(1)}>
+              <Button color="primary" className="w-full h-14 rounded-2xl bg-indigo-600/90 shadow-lg shadow-indigo-500/30" onPress={() => setStep(1)}>
                 <Text className="font-bold text-white text-base">Begin Assessment</Text>
                 <ArrowRight size={18} color="#ffffff" className="ml-2" />
               </Button>
@@ -293,7 +293,7 @@ export default function AssessmentScreen() {
               {Object.keys(QUESTIONS).map((t) => (
                 <TouchableOpacity 
                   key={t} activeOpacity={0.7} onPress={() => selectType(t)}
-                  className="p-6 bg-white dark:bg-neutral-900 border-2 border-slate-100 dark:border-neutral-800 rounded-[2rem] flex-row items-center justify-between shadow-sm dark:shadow-none"
+                  className="p-6 bg-amber-50/90 dark:bg-stone-950/90 border-2 border-slate-100 dark:border-neutral-800 rounded-[2rem] flex-row items-center justify-between shadow-sm dark:shadow-none"
                 >
                   <View className="flex-1 pr-4">
                     <Text className="font-black text-lg text-slate-800 dark:text-slate-100 mb-1">{TITLES[t]}</Text>
@@ -351,7 +351,7 @@ export default function AssessmentScreen() {
               <Text className="text-md font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                 Question {index + 1} of {totalQ}
               </Text>
-              <Text className="text-md font-bold text-slate-400">{pctText}% Complete</Text>
+              <Text className="text-md font-bold text-slate-800 dark:text-slate-400">{pctText}% Complete</Text>
             </View>
             
             <Text className="text-3xl font-black text-slate-900 dark:text-white mb-10 leading-tight">
@@ -368,15 +368,15 @@ export default function AssessmentScreen() {
                     onPress={() => handleAnswer(o.value)}
                     className={`p-4 rounded-[2rem] border-2 flex-row justify-between items-center transition-all ${
                       isSelected 
-                        ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-500 shadow-lg shadow-indigo-500/20' 
-                        : 'bg-white dark:bg-neutral-900 border-transparent shadow-md shadow-slate-200/40 dark:shadow-none'
+                        ? 'bg-indigo-50/10 dark:bg-indigo-500/10 border-indigo-500 shadow-lg shadow-indigo-500/20' 
+                        : 'bg-amber-50/90 dark:bg-stone-950/90 border-transparent shadow-md shadow-slate-200/40 dark:shadow-none'
                     }`}
                   >
                     <Text className={`font-bold text-lg ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200'}`}>
                       {o.label}
                     </Text>
                     <View className={`w-7 h-7 rounded-full border-[2.5px] items-center justify-center ${isSelected ? 'border-indigo-600' : 'border-slate-300 dark:border-neutral-600'}`}>
-                      {isSelected && <View className="w-3.5 h-3.5 rounded-full bg-indigo-600" />}
+                      {isSelected && <View className="w-3.5 h-3.5 rounded-full bg-indigo-600/90" />}
                     </View>
                   </TouchableOpacity>
                 );
@@ -388,7 +388,7 @@ export default function AssessmentScreen() {
                 <Text className="font-bold text-slate-500 dark:text-slate-400">← Previous</Text>
               </TouchableOpacity>
               <Button 
-                color="primary" className="h-14 px-10 rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30" 
+                color="primary" className="h-14 px-10 rounded-2xl bg-indigo-600/90 shadow-lg shadow-indigo-500/30" 
                 onPress={() => { if (selected !== undefined) { if (index + 1 < totalQ) setIndex(index + 1); else setStep(4); } }}
                 isDisabled={selected === undefined}
               >
@@ -411,9 +411,9 @@ export default function AssessmentScreen() {
               {answers.map((ans, i) => (
                 <TouchableOpacity 
                   key={i} activeOpacity={0.7} onPress={() => { setIndex(i); setStep(3); }}
-                  className="p-5 bg-white dark:bg-neutral-900 rounded-[1.5rem] shadow-sm border border-slate-100 dark:border-neutral-800 flex-row items-start gap-4 transition-all"
+                  className="p-5 bg-amber-50/90 dark:bg-stone-950/90 rounded-[1.5rem] shadow-sm border border-slate-100 dark:border-neutral-800 flex-row items-start gap-4 transition-all"
                 >
-                  <View className="w-10 h-10 rounded-full bg-slate-50 dark:bg-neutral-800 items-center justify-center border border-slate-200 dark:border-neutral-700 shrink-0">
+                  <View className="w-10 h-10 rounded-full bg-slate-50/50 dark:bg-neutral-800/50 items-center justify-center border border-slate-200 dark:border-neutral-700 shrink-0">
                     <Text className="text-slate-500 dark:text-slate-400 font-black text-sm">{i + 1}</Text>
                   </View>
                   
@@ -441,7 +441,7 @@ export default function AssessmentScreen() {
               <Button 
                 onPress={submitAssessment} 
                 isDisabled={isSubmitting}
-                className="w-full h-16 rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30 flex-row justify-center items-center" 
+                className="w-full h-16 rounded-2xl bg-indigo-600/90 shadow-lg shadow-indigo-500/30 flex-row justify-center items-center" 
               >
                 {isSubmitting ? (
                   <>
@@ -462,7 +462,7 @@ export default function AssessmentScreen() {
       case 5: // Success
         return (
           <View className="flex-1 items-center justify-center py-10 px-4">
-            <View className="w-24 h-24 bg-emerald-50 dark:bg-emerald-500/10 rounded-full items-center justify-center mb-8 border border-emerald-100 dark:border-emerald-500/20 shadow-lg shadow-emerald-500/20">
+            <View className="w-24 h-24 bg-emerald-50/90 dark:bg-emerald-500/10 rounded-full items-center justify-center mb-8 border border-emerald-100 dark:border-emerald-500/20 shadow-lg shadow-emerald-500/20">
               <Check size={48} color="#10b981" strokeWidth={3} />
             </View>
             <Text className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-4 text-center">Assessment Complete</Text>
@@ -473,7 +473,7 @@ export default function AssessmentScreen() {
             <Button 
               onPress={handleViewReport} 
               isDisabled={isGeneratingReport}
-              className="w-full max-w-sm h-14 rounded-2xl bg-emerald-600 shadow-lg shadow-emerald-500/30 mb-4 flex-row items-center justify-center" 
+              className="w-full max-w-sm h-14 rounded-2xl bg-emerald-600/90 shadow-lg shadow-emerald-500/30 mb-4 flex-row items-center justify-center" 
             >
               {isGeneratingReport ? (
                 <>
@@ -535,7 +535,7 @@ export default function AssessmentScreen() {
             </View>
 
             {/* Recommendations */}
-            <View className="bg-white dark:bg-neutral-900 p-6 rounded-3xl border border-slate-200 dark:border-neutral-800 mb-8 shadow-sm">
+            <View className="bg-slate-50/60 dark:bg-stone-950/90 p-6 rounded-3xl border border-slate-200 dark:border-neutral-800 mb-8 shadow-sm">
               <View className="flex-row items-center gap-2 mb-5">
                 <CheckCircle2 size={20} color="#10b981" />
                 <Text className="text-sm font-bold uppercase tracking-widest text-slate-800 dark:text-slate-200">Actionable Next Steps</Text>
@@ -557,7 +557,7 @@ export default function AssessmentScreen() {
               <Button 
                 onPress={goToChatWithContext} 
                 isLoading={isStartingChat}
-                className="w-full h-16 rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30"
+                className="w-full h-16 rounded-2xl bg-indigo-600/90 shadow-lg shadow-indigo-500/30"
               >
                 {!isStartingChat && <Sparkles size={20} color="#ffffff" className="mr-2" />}
                 <Text className="font-bold text-white text-base tracking-wide">Discuss with Smera</Text>
@@ -567,7 +567,7 @@ export default function AssessmentScreen() {
                 <Button variant="bordered" className="flex-1 h-12 rounded-xl border-slate-200 dark:border-neutral-700" onPress={() => router.push('/core/dashboard')}>
                   <Text className="font-bold text-slate-600 dark:text-slate-300">Dashboard</Text>
                 </Button>
-                <Button variant="flat" className="flex-1 h-12 rounded-xl bg-slate-100 dark:bg-neutral-800" onPress={() => setStep(1)}>
+                <Button variant="flat" className="flex-1 h-12 rounded-xl bg-amber-100/90 dark:bg-amber-300/30" onPress={() => setStep(1)}>
                   <RefreshCcw size={16} color={isDarkMode ? "#cbd5e1" : "#475569"} className="mr-2" />
                   <Text className="font-bold text-slate-600 dark:text-slate-300">Retake</Text>
                 </Button>
@@ -583,10 +583,10 @@ export default function AssessmentScreen() {
   const isFloatingStep = step === 1 || step === 3 || step === 4;
   const containerClass = isFloatingStep 
     ? "w-full flex-1" 
-    : "w-full bg-white/70 dark:bg-neutral-900/80 border border-white/60 dark:border-neutral-800 rounded-[2.5rem] shadow-xl overflow-hidden min-h-[500px] p-2 flex-col";
+    : "w-full bg-amber-50/90 dark:bg-stone-950/90 border border-white/60 dark:border-neutral-800 rounded-[2.5rem] shadow-xl overflow-hidden min-h-[500px] p-2 flex-col";
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       <LinearGradient
         colors={isDarkMode ? ['rgba(30,27,75,0.15)', 'transparent'] : ['rgba(224,231,255,0.6)', 'transparent']}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 300 }}

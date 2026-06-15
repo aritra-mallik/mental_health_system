@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await SecureStore.deleteItemAsync('refresh_token');
       await SecureStore.deleteItemAsync('smera_journal_key');
       await SecureStore.deleteItemAsync('user_preferences');
+      await SecureStore.deleteItemAsync('device_theme_mode');
       
       setUserToken(null);
       

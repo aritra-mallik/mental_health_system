@@ -95,7 +95,7 @@ export default function SleepSupportScreen() {
   const currentFeedback = PHYSIOLOGY_DATA[feedbackIndex];
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       <KeyboardAwareScrollView 
         /* Changed pb-20 to pb-32 here */
         contentContainerClassName="p-6 pb-32 pt-16" 
@@ -109,7 +109,7 @@ export default function SleepSupportScreen() {
         <View className="flex-row justify-between items-center mb-6">
           <TouchableOpacity 
             onPress={() => router.back()} 
-            className="w-12 h-12 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
+            className="w-12 h-12 bg-amber-50/90 dark:bg-stone-950/90 border border-neutral-200 dark:border-neutral-800 rounded-full items-center justify-center shadow-sm"
           >
             <ArrowLeft size={24} color={isDarkMode ? "#94a3b8" : "#475569"} />
           </TouchableOpacity>
@@ -140,7 +140,7 @@ export default function SleepSupportScreen() {
         </Card>
 
         {/* --- PRE-SLEEP PROTOCOL PROTOCOL PROTOCOL --- */}
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-6 mb-10 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 w-full">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-6 mb-10 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 w-full">
           <View className="flex-row justify-between items-center mb-4">
             <View className="flex-row items-center gap-2">
               <ListTodo size={20} color="#10b981" />
@@ -150,7 +150,7 @@ export default function SleepSupportScreen() {
             <TouchableOpacity 
               activeOpacity={0.7}
               onPress={resetTasks} 
-              className="flex-row items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700"
+              className="flex-row items-center gap-1.5 bg-neutral-100/80 dark:bg-neutral-800/80 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700"
             >
               <RotateCcw size={12} color={isDarkMode ? "#94a3b8" : "#64748b"} />
               <Text className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">Reset</Text>
@@ -213,7 +213,7 @@ export default function SleepSupportScreen() {
             <View className={`p-4 rounded-2xl border ${
               completed.length === tasks.length 
                 ? 'bg-emerald-500/10 border-emerald-500/20 dark:border-emerald-500/30' 
-                : 'bg-neutral-50 dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800'
+                : 'bg-neutral-50/80 dark:bg-neutral-950/80 border-neutral-200 dark:border-neutral-800'
             } flex-row items-start gap-3`}>
               <Text className="text-2xl mt-0.5">{currentFeedback.emoji}</Text>
               <Text className={`flex-1 font-bold text-md leading-relaxed ${
@@ -226,7 +226,7 @@ export default function SleepSupportScreen() {
         </Card>
 
         {/* --- SLEEP CYCLE CALCULATOR --- */}
-        <Card className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-6 mb-10 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 w-full">
+        <Card className="bg-amber-50/90 dark:bg-stone-950/90 rounded-[2.5rem] p-6 mb-10 shadow-sm dark:shadow-none border border-neutral-200 dark:border-neutral-800 w-full">
           <View className="flex-row items-center gap-2 mb-3">
             <Calculator size={20} color={isDarkMode ? "#818cf8" : "#4f46e5"} />
             <Text className="text-lg font-black text-neutral-900 dark:text-white">Cycle Calculator</Text>
@@ -262,7 +262,7 @@ export default function SleepSupportScreen() {
             <TouchableOpacity 
               activeOpacity={0.7}
               onPress={() => setIsPM(!isPM)}
-              className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-20 h-14 items-center justify-center"
+              className="bg-neutral-50/90 dark:bg-neutral-950/90 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-20 h-14 items-center justify-center"
             >
               <Text className="text-base font-black text-indigo-600 dark:text-indigo-400">{isPM ? 'PM' : 'AM'}</Text>
             </TouchableOpacity>
@@ -289,7 +289,7 @@ export default function SleepSupportScreen() {
                   className={`flex-row justify-between items-center p-4 rounded-2xl border ${
                     i === 0 
                       ? 'bg-emerald-500/10 border-emerald-500/30 dark:border-emerald-500/20' 
-                      : 'bg-neutral-50 dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800'
+                      : 'bg-neutral-50/80 dark:bg-neutral-950/80 border-neutral-200 dark:border-neutral-800'
                   }`}
                 >
                   <View className="flex-1 pr-3">
@@ -309,7 +309,7 @@ export default function SleepSupportScreen() {
         </Card>
 
         {/* --- DYNAMIC INTERACTION: FALLBACK TO CALM NOW --- */}
-        <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-[2.5rem] items-center text-center shadow-sm dark:shadow-none w-full">
+        <Card className="bg-amber-50/80 dark:bg-stone-950/80 border border-neutral-200 dark:border-neutral-800 p-6 rounded-[2.5rem] items-center text-center shadow-sm dark:shadow-none w-full">
           <View className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 rounded-2xl items-center justify-center mb-4 border border-blue-100 dark:border-blue-500/20">
             <Wind size={24} color={isDarkMode ? "#60a5fa" : "#2563eb"} />
           </View>
@@ -324,7 +324,7 @@ export default function SleepSupportScreen() {
           <Button 
             variant="flat"
             color="default"
-            className="w-full h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700"
+            className="w-full h-14 rounded-2xl bg-neutral-100/90 dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700"
             onPress={() => router.push('/core/calm_now')} 
           >
             <Text className="font-black text-neutral-700 dark:text-neutral-300 text-sm">Start 4-7-8 Breathing</Text>

@@ -7,14 +7,14 @@ import { Card, Button } from 'heroui-native';
 
 export default function BurnoutRecoveryScreen() {
   const MICRO_TASKS = [
-    { id: 1, title: "Hydrate", desc: "Drink exactly one glass of water. Notice the cool temperature. That is your only goal right now.", Icon: Droplets, color: "#3b82f6", bgClass: "bg-blue-50 dark:bg-blue-500/10", borderClass: "border-blue-100 dark:border-blue-500/20", iconBg: "bg-blue-100 dark:bg-blue-500/20", iconBorder: "border-blue-200 dark:border-blue-500/30" },
-    { id: 2, title: "Change Scenery", desc: "Move from the bed to the couch, or open a single window to feel the fresh air on your face.", Icon: Sun, color: "#10b981", bgClass: "bg-emerald-50 dark:bg-emerald-500/10", borderClass: "border-emerald-100 dark:border-emerald-500/20", iconBg: "bg-emerald-100 dark:bg-emerald-500/20", iconBorder: "border-emerald-200 dark:border-emerald-500/30" },
-    { id: 3, title: "Brain Dump", desc: "Write down 3 things weighing heavily on your mind, fold the paper, and physically put it away.", Icon: Brain, color: "#ef4444", bgClass: "bg-rose-50 dark:bg-rose-500/10", borderClass: "border-rose-100 dark:border-rose-500/20", iconBg: "bg-rose-100 dark:bg-rose-500/20", iconBorder: "border-rose-200 dark:border-rose-500/30" },
-    { id: 4, title: "Sensory Shift", desc: "Play one familiar, calming song. Close your eyes and just listen. Do not look at a screen.", Icon: Headphones, color: "#06b6d4", bgClass: "bg-cyan-50 dark:bg-cyan-500/10", borderClass: "border-cyan-100 dark:border-cyan-500/20", iconBg: "bg-cyan-100 dark:bg-cyan-500/20", iconBorder: "border-cyan-200 dark:border-cyan-500/30" }
+    { id: 1, title: "Hydrate", desc: "Drink exactly one glass of water. Notice the cool temperature. That is your only goal right now.", Icon: Droplets, color: "#3b82f6", bgClass: "bg-blue-50/90 dark:bg-blue-500/30", borderClass: "border-blue-100 dark:border-blue-500/20", iconBg: "bg-blue-100 dark:bg-blue-500/20", iconBorder: "border-blue-200 dark:border-blue-500/30" },
+    { id: 2, title: "Change Scenery", desc: "Move from the bed to the couch, or open a single window to feel the fresh air on your face.", Icon: Sun, color: "#10b981", bgClass: "bg-emerald-50/90 dark:bg-emerald-500/30", borderClass: "border-emerald-100 dark:border-emerald-500/20", iconBg: "bg-emerald-100 dark:bg-emerald-500/20", iconBorder: "border-emerald-200 dark:border-emerald-500/30" },
+    { id: 3, title: "Brain Dump", desc: "Write down 3 things weighing heavily on your mind, fold the paper, and physically put it away.", Icon: Brain, color: "#ef4444", bgClass: "bg-rose-50/90 dark:bg-rose-500/30", borderClass: "border-rose-100 dark:border-rose-500/20", iconBg: "bg-rose-100 dark:bg-rose-500/20", iconBorder: "border-rose-200 dark:border-rose-500/30" },
+    { id: 4, title: "Sensory Shift", desc: "Play one familiar, calming song. Close your eyes and just listen. Do not look at a screen.", Icon: Headphones, color: "#06b6d4", bgClass: "bg-cyan-50/90 dark:bg-cyan-500/30", borderClass: "border-cyan-100 dark:border-cyan-500/20", iconBg: "bg-cyan-100 dark:bg-cyan-500/20", iconBorder: "border-cyan-200 dark:border-cyan-500/30" }
   ];
 
   return (
-    <View className="flex-1 bg-neutral-50 dark:bg-black">
+    <View className="flex-1 bg-transparent">
       <ScrollView contentContainerClassName="p-6 pb-20 pt-12" showsVerticalScrollIndicator={false}>
         
         <TouchableOpacity onPress={() => router.back()} className="w-12 h-12 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 items-center justify-center mb-8 shadow-sm">
@@ -37,7 +37,7 @@ export default function BurnoutRecoveryScreen() {
           </Text>
         </LinearGradient>
 
-        <Card className="flex-row items-start gap-4 p-6 rounded-3xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 mb-12 shadow-none">
+        <Card className="flex-row items-start gap-4 p-6 rounded-3xl bg-amber-50/90 dark:bg-amber-500/30 border border-amber-200 dark:border-amber-500/30 mb-12 shadow-none">
           <AlertTriangle size={24} color="#fbbf24" className="mt-1" />
           <View className="flex-1">
             <Text className="font-black text-lg text-amber-700 dark:text-amber-400 mb-2">Permission to Rest</Text>
@@ -74,7 +74,7 @@ export default function BurnoutRecoveryScreen() {
           ))}
         </View>
 
-        <Card className="bg-white dark:bg-neutral-900 p-8 rounded-3xl border border-neutral-200 dark:border-neutral-800 mb-12 shadow-sm dark:shadow-none">
+        <Card className="bg-amber-50/80 dark:bg-stone-950/80 p-8 rounded-3xl border border-neutral-200 dark:border-neutral-800 mb-12 shadow-sm dark:shadow-none">
           <Text className="text-lg font-black text-neutral-900 dark:text-white mb-3">Energy Pacing Rule</Text>
           <Text className="text-sm text-neutral-500 dark:text-neutral-400 mb-8 font-medium leading-relaxed">
             When recovering from burnout, your perception of your energy is skewed. Whatever you think you have the energy to do today—cut it in half immediately.
@@ -92,7 +92,7 @@ export default function BurnoutRecoveryScreen() {
         </Card>
         
         <Button 
-          className="bg-emerald-600 dark:bg-emerald-500 rounded-2xl h-14 w-full"
+          className="bg-emerald-600/80 dark:bg-emerald-500/80 rounded-2xl h-14 w-full"
           onPress={() => router.push('/core/chatbot')}>
           <Text className="text-white font-black text-base tracking-wide">Talk to Smera about Burnout</Text>
         </Button>
