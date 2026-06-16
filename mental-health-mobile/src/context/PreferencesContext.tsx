@@ -93,8 +93,8 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       <ImageBackground 
         source={
           isDarkMode 
-            ? require('@/assets/images/dark-background.png') 
-            : require('@/assets/images/light-background.png')
+            ? require('@/assets/images/dark_b.png') 
+            : require('@/assets/images/light_b.png')
         }
         className="flex-1"
         resizeMode="cover">

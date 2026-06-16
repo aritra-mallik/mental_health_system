@@ -9,8 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Path, Polygon, Defs, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Speech from 'expo-speech'; // <-- IMPORT EXPO SPEECH
-import { useAuth } from '../../context/AuthContext';
-import apiClient from '../../api/apiClient';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/api/apiClient';
 import Sidebar from '../sidebar';
 
 const { width, height } = Dimensions.get('window');
@@ -88,7 +88,24 @@ export default function DashboardScreen() {
   // Curated Content Slider
   const [articles, setArticles] = useState<any[]>([]);
   const [articleIndex, setArticleIndex] = useState(0);
-  const [isAutoFeed, setIsAutoFeed] = useState(true);
+  const [isAutoFeed, setIsAutoFeed] = useState(true);const alertPulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(alertPulseAnim, {
+          toValue: 0.5, // Fades to 50% opacity
+          duration: 1000, // Takes 1 second to fade out
+          useNativeDriver: true,
+        }),
+        Animated.timing(alertPulseAnim, {
+          toValue: 1, // Fades back to 100%
+          duration: 1000, // Takes 1 second to fade in
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [alertPulseAnim]);
 
   // --- Clean up Speech on unmount to prevent ghost talking ---
   useEffect(() => {
@@ -102,7 +119,8 @@ export default function DashboardScreen() {
     const hour = new Date().getHours();
     if (hour < 12) setGreetingText("Good Morning");
     else if (hour < 18) setGreetingText("Good Afternoon");
-    else setGreetingText("Good Evening");
+    else if (hour < 22) setGreetingText("Good Evening");
+    else setGreetingText("Late Night");
   }, []);
 
   const recentDates = Array.from({length: 14}, (_, i) => {
@@ -268,7 +286,7 @@ export default function DashboardScreen() {
 
   // --- QuickChart Engine Builders ---
   const themeText = isDark ? '#9ca3af' : '#4b5563';
-  const themeGrid = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const themeGrid = isDark ? '#3F444B' : '#C0C0C0';
   const pointBgBase = isDark ? '#1e293b' : '#ffffff';
 
   const getMoodTrendsChartUrl = () => {
@@ -287,21 +305,51 @@ export default function DashboardScreen() {
         datasets: [{
           data: mappedScores,
           showLine: false,
-          pointBackgroundColor: isDark ? 'rgba(30,41,59,0.8)' : '#fff',
+          pointBackgroundColor: isDark ? '#0c0a09e6' : '#fffbebe6',
           pointBorderColor: pointBorders,
           pointBorderWidth: 4,
           pointRadius: 10
         }]
       },
       options: {
-        plugins: { legend: { display: false } },
+        layout: { 
+          // Added general padding so the chart doesn't hug the very edges of the image container
+          padding: { top: 10, bottom: 10, left: 10, right: 20 } 
+        },
+        plugins: { 
+          legend: { display: false },
+          title: {
+            display: true,
+            text: [
+              '🤩 GREAT   •   🙂 GOOD   •   😐 NEUTRAL', 
+              '😰 STRESSED   •   😔 LOW   •   😫 OVERWHELMED'
+            ],
+            color: themeText,
+            // Added lineHeight to give the two rows of text some vertical breathing room
+            font: { size: 23, weight: 'bold', lineHeight: 1.5 },
+            // Doubled the bottom padding to push the chart grid further down away from the text
+            padding: { top: 10, bottom: 40 }
+          }
+        },
         scales: {
-          y: { min: 0, max: 5, ticks: { padding: 12, callback: `(val) => { return ['OVERWHELMED', 'LOW', 'STRESSED', 'NEUTRAL', 'GOOD', 'GREAT'][val]; }`, color: themeText, font: { size: 12, weight: 'bold' } }, grid: { color: themeGrid, drawBorder: false }, border: { display: false } },
+          y: { 
+            min: 0, 
+            max: 5, 
+            ticks: { 
+              padding: 12, 
+              callback: `(val) => { return ['😫', '😔', '😰', '😐', '🙂', '🤩'][val]; }`, 
+              color: themeText, 
+              font: { size: 16, weight: 'bold' } 
+            }, 
+            grid: { color: themeGrid, drawBorder: false }, 
+            border: { display: false } 
+          },
           x: { ticks: { padding: 8, color: themeText, font: { size: 13, weight: 'bold' } }, grid: { display: false }, border: { display: false } }
         }
       }
     };
-    return `https://quickchart.io/chart?v=3&w=600&h=300&devicePixelRatio=2&bkg=transparent&c=${encodeURIComponent(JSON.stringify(config).replace(/"(\(val\).*?)"/g, '$1'))}`;
+    // Increased the QuickChart height parameter (h=400) to give the 6 rows of emojis proper space
+    return `https://quickchart.io/chart?v=3&w=600&h=530&devicePixelRatio=2&bkg=transparent&c=${encodeURIComponent(JSON.stringify(config).replace(/"(\(val\).*?)"/g, '$1'))}`;
   };
 
   const getRawEventsChartUrl = () => {
@@ -320,14 +368,44 @@ export default function DashboardScreen() {
         }]
       },
       options: {
-        plugins: { legend: { display: false } },
+        layout: { 
+          // Added global padding to prevent graph cropping on the canvas edges
+          padding: { top: 10, bottom: 10, left: 10, right: 20 } 
+        },
+        plugins: { 
+          legend: { display: false },
+          // Added the two-row text map legend at the top
+          title: {
+            display: true,
+            text: [
+              '🤩 GREAT   •   🙂 GOOD   •   😐 NEUTRAL', 
+              '😰 STRESSED   •   😔 LOW   •   😫 OVERWHELMED'
+            ],
+            color: themeText,
+            font: { size: 23, weight: 'bold', lineHeight: 1.5 },
+            padding: { top: 10, bottom: 40 }
+          }
+        },
         scales: {
-          y: { min: 0, max: 5, ticks: { padding: 12, callback: `(val) => { return ['Overwhelmed', 'Low', 'Stressed', 'Neutral', 'Good', 'Great'][val]; }`, color: themeText, font: { size: 12, weight: 'bold' }, stepSize: 1 }, grid: { color: themeGrid } },
+          y: { 
+            min: 0, 
+            max: 5, 
+            ticks: { 
+              padding: 12, 
+              // Replaced text labels with emojis
+              callback: `(val) => { return ['😫', '😔', '😰', '😐', '🙂', '🤩'][val]; }`, 
+              color: themeText, 
+              font: { size: 16, weight: 'bold' }, // Bumped up for readability
+              stepSize: 1 
+            }, 
+            grid: { color: themeGrid } 
+          },
           x: { ticks: { display: false }, grid: { display: false } }
         }
       }
     };
-    return `https://quickchart.io/chart?v=3&w=600&h=300&devicePixelRatio=2&bkg=transparent&c=${encodeURIComponent(JSON.stringify(config).replace(/"(\(val\).*?)"/g, '$1'))}`;
+    // Increased chart height parameter from h=300 to h=400 to make room for the new elements
+    return `https://quickchart.io/chart?v=3&w=640&h=600&devicePixelRatio=2&bkg=transparent&c=${encodeURIComponent(JSON.stringify(config).replace(/"(\(val\).*?)"/g, '$1'))}`;
   };
 
   const getAssessmentChartUrl = () => {
@@ -378,7 +456,7 @@ export default function DashboardScreen() {
         }
       }
     };
-    return `https://quickchart.io/chart?v=3&w=600&h=300&devicePixelRatio=2&bkg=transparent&c=${encodeURIComponent(JSON.stringify(config))}`;
+    return `https://quickchart.io/chart?v=3&w=600&h=600&devicePixelRatio=2&bkg=transparent&c=${encodeURIComponent(JSON.stringify(config))}`;
   };
 
   // --- NATIVE EXPO SPEECH TRIGGER ---
@@ -423,16 +501,49 @@ export default function DashboardScreen() {
       >
         {/* --- Top Navbar --- */}
         <View className="flex-row justify-between items-center mb-6">
-          <TouchableOpacity onPress={toggleSidebar} className="w-12 h-12 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 rounded-full items-center justify-center shadow-sm z-10">
+          <TouchableOpacity onPress={toggleSidebar} className="w-12 h-12 bg-amber-50/90 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-700/50 rounded-full items-center justify-center shadow-sm z-10">
             <Ionicons name="menu" size={24} color={isDark ? '#f8fafc' : '#0f172a'} />
           </TouchableOpacity>
         </View>
 
+        {appointment && (
+          <Animated.View 
+            style={{ opacity: alertPulseAnim }} 
+            className="mb-8 shadow-lg shadow-orange-500/30">
+            <LinearGradient 
+              colors={['#f59e0b', '#ea580c']} 
+              style={{ borderRadius: 9999 }} // <--- This forces the rounding
+              className="p-2 pr-5 flex-row items-center border border-orange-300/40">
+              {/* Calendar Icon */}
+              <View className="w-11 h-11 bg-white/20 rounded-full items-center justify-center mr-3 border border-white/20">
+                  <Text className="text-xl">🗓️</Text>
+              </View>
+              
+              {/* Content Section */}
+              <View className="flex-1 justify-center">
+                  
+                  {/* Header with Blinker */}
+                  <View className="flex-row items-center mb-0.5">
+                    {/* The Blinker Dot */}
+                    <View className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse mr-2 border border-white/50" />
+                    <Text className="text-white font-black text-xs tracking-wider uppercase">
+                      Upcoming Session
+                    </Text>
+                  </View>
+                  
+                  {/* Condensed Details */}
+                  <Text className="text-orange-50 text-xs leading-snug pr-2" numberOfLines={2}>
+                    You have an <Text className="font-extrabold uppercase">{appointment.mode}</Text> consultation today with {appointment.counselor} at <Text className="font-extrabold text-white">{appointment.time}</Text>
+                  </Text>
+                  
+              </View>
+            </LinearGradient>
+          </Animated.View>
+        )}
+
         {/* --- 1. Smera Hero Segment --- */}
-        <LinearGradient 
-          colors={isDark ? ['#1e1b4b', '#0f172a'] : ['#eef2ff', '#ffffff']}
-          className="border border-white/50 dark:border-slate-800/50 rounded-[3.5rem] p-8 md:p-12 mb-8 shadow-sm items-center overflow-hidden"
-        >
+        <View className="h-auto rounded-[3.5rem] pt-8 pb-4 px-4 mb-2 items-center justify-start overflow-hidden">
+            
            <View className="relative w-36 h-36 items-center justify-center mb-6">
              <Animated.View style={{ transform: [{ scale: guidePulseAnim }] }} className="absolute inset-0 bg-indigo-400/20 rounded-full" />
              <Animated.View style={{ transform: [{ translateY: smeraFloatAnim }] }} className="bg-white dark:bg-slate-700 p-5 rounded-full border-4 border-white dark:border-slate-600 shadow-xl z-10">
@@ -453,213 +564,518 @@ export default function DashboardScreen() {
            <Text className="text-4xl font-black text-slate-800 dark:text-white tracking-tight mb-2 text-center">
              {greetingText}, <Text className="text-indigo-600 dark:text-indigo-400">{userName}.</Text>
            </Text>
-           <Text className="text-base font-medium text-slate-500 dark:text-slate-400 text-center mb-8 px-4">
+           <Text className="text-base font-medium text-slate-700 dark:text-slate-300 text-center mb-0 px-4 -mt-0">
              I'm Smera. Whenever things feel heavy, or if you just need a friendly chat, I'm right here for you.
            </Text>
+        </View>
 
-           <View className="flex-col w-full gap-4">
-             <TouchableOpacity onPress={() => router.push('/core/chatbot')} className="w-full bg-indigo-600 py-4 rounded-2xl shadow-lg flex-row items-center justify-center">
-               <Text className="text-white font-bold text-base mr-2">Chat with Smera</Text>
-               <Ionicons name="arrow-forward" size={18} color="#fff" />
-             </TouchableOpacity>
-             
-             <TouchableOpacity onPress={() => router.push('/core/assessment')} className="w-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 py-3 px-4 rounded-2xl flex-row items-center justify-center shadow-sm">
-               <View className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 items-center justify-center mr-3">
-                 <Ionicons name="shield-checkmark" size={18} color={isDark ? '#818cf8' : '#4f46e5'} />
-               </View>
-               <View className="flex-1">
-                 <Text className="text-slate-800 dark:text-white font-black text-sm">Mindful Check-in</Text>
-                 <Text className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Take a moment to map your feelings</Text>
-               </View>
-             </TouchableOpacity>
-           </View>
-        </LinearGradient>
+        {/* --- Dual Action Row: Assessment Board & Cloud Chat --- */}
+        <View className="w-full flex-row gap-4 mb-8">
 
-        {/* --- 2. Live Alert & Up Next Dashboard Block --- */}
-        <LinearGradient 
-          colors={isDark ? ['#1e1b4b', '#2e1065'] : ['#e0e7ff', '#fae8ff']}
-          className="rounded-[2.5rem] p-6 mb-8 shadow-sm overflow-hidden border border-white/60 dark:border-indigo-900/50"
-        >
-          <View className="flex-row items-stretch gap-4 mb-5">
-             <TouchableOpacity onPress={triggerVoiceSynthesis} className="w-12 h-12 rounded-xl bg-[#fef3c7] dark:bg-amber-900/40 items-center justify-center border border-[#fde68a] dark:border-amber-800/50">
-               <Animated.View style={{ transform: [{ rotate: bellRotation }] }}>
-                 <Ionicons name="notifications" size={22} color={isVoiceEnabled ? '#d97706' : '#f59e0b'} />
-               </Animated.View>
-             </TouchableOpacity>
-             <View className="flex-1 justify-center">
-                <Text className="font-black text-xl text-slate-800 dark:text-white tracking-tight">Smera's Live Alert</Text>
-                <Text className="text-sm text-slate-500 dark:text-slate-300 font-medium">Real-time wellbeing status</Text>
-             </View>
-          </View>
-          
-          <View className={`rounded-2xl p-4 border flex-row items-center gap-3 mb-5 ${activeAlertTheme.bg} ${activeAlertTheme.border}`}>
-             <View className={`w-2 h-2 rounded-full ${activeAlertTheme.dot}`} />
-             <Text className={`flex-1 text-sm font-bold leading-relaxed ${activeAlertTheme.text}`}>{alertData.msg}</Text>
-          </View>
+          {/* LEFT: Mindful Check-in (The Realistic Clipboard) */}
+          <TouchableOpacity 
+            onPress={() => router.push('/core/assessment')} 
+            activeOpacity={0.9} 
+            className="flex-1 h-[150px] relative">
+            
+            {/* border-b-4 and border-r-2 create the 3D thickness of the physical board */}
+            <View className="absolute inset-0 bg-[#D4A373] dark:bg-[#6b3805] rounded-xl shadow-md border-b-4 border-r-2 border-[#A67C52] dark:border-[#874f17]" />
 
-          <View className="border-t border-indigo-200/50 dark:border-indigo-800/50 pt-5">
-            <Text className="text-[10px] font-black text-[#8b5cf6] dark:text-purple-400 uppercase tracking-widest mb-3">Up Next For You:</Text>
-            {recommendation.recommended.length > 0 ? (
-              <View>
-                <Text className="text-sm font-bold text-[#ea580c] dark:text-orange-400 mb-3">A gentle check-in might help today</Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {recommendation.recommended.map((rec, i) => (
-                    <TouchableOpacity key={i} onPress={() => router.push('/core/assessment')} className="px-4 py-2 bg-[#fff7ed] dark:bg-orange-900/30 border border-[#ffedd5] dark:border-orange-800/50 rounded-xl shadow-sm">
-                      <Text className="text-[#ea580c] dark:text-orange-400 text-md font-black tracking-wide">⏳ {rec.toUpperCase()} due</Text>
-                    </TouchableOpacity>
-                  ))}
+            {/* Positioned slightly inward to show the board around the edges */}
+            <View 
+              className="absolute top-5 left-3 right-3 bottom-2 bg-[#fcfbf9] dark:bg-slate-800 rounded-sm overflow-hidden z-10" 
+              style={{ elevation: 3, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 3, shadowOffset: {width: 0, height: 2} }}>
+              
+              {/* Classic Legal Pad Lines */}
+              <View className="absolute left-4 top-0 bottom-0 w-[1px] bg-red-300/80 dark:bg-red-900/50" />
+              <View className="absolute top-[25px] w-full h-[1px] bg-blue-200/60 dark:bg-slate-500/60" />
+              <View className="absolute top-[50px] w-full h-[1px] bg-blue-200/60 dark:bg-slate-500/60" />
+              <View className="absolute top-[75px] w-full h-[1px] bg-blue-200/60 dark:bg-slate-500/60" />
+              <View className="absolute top-[100px] w-full h-[1px] bg-blue-200/60 dark:bg-slate-500/60" />
+
+              {/* Paper Content */}
+              <View className="flex-1 pt-5 px-1 pb-5 items-center justify-center relative z-20">
+                <View className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/50 items-center justify-center border border-indigo-100 dark:border-indigo-800/50 shadow-sm mb-1.5">
+                  <Ionicons name="shield-checkmark" size={14} color={isDark ? '#818cf8' : '#4f46e5'} />
                 </View>
-              </View>
-            ) : (
-              <View className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-xl self-start">
-                <Text className="text-emerald-600 dark:text-emerald-400 text-sm font-bold">You're doing well — no check-ins needed now</Text>
-              </View>
-            )}
-          </View>
-        </LinearGradient>
-
-        {/* --- 3. Dynamic Clinical Appointment Alert Banner --- */}
-        {appointment && (
-          <LinearGradient colors={['#f59e0b', '#d97706']} className="rounded-2xl p-5 mb-8 shadow-md flex-row items-center">
-             <View className="w-12 h-12 bg-white/20 rounded-xl items-center justify-center mr-4 border border-white/20"><Text className="text-2xl">🗓️</Text></View>
-             <View className="flex-1">
-                <Text className="text-white font-black text-base tracking-tight">Upcoming Session</Text>
-                <Text className="text-amber-50 text-md mt-0.5 leading-relaxed">
-                  You have a <Text className="font-bold uppercase bg-white/20 px-1 rounded">{appointment.mode}</Text> consultation today with {appointment.counselor} at {appointment.time}
+                
+                <Text className="text-slate-800 dark:text-white font-black text-[17px] text-center tracking-tight mb-0.3">
+                  Mindful Check-in
                 </Text>
-             </View>
+                <Text className="text-[12px] font-bold text-slate-500 dark:text-slate-400 text-center leading-tight px-1">
+                  Map your feelings
+                </Text>
+              </View>
+
+            </View>
+
+            {/* LAYER 3: The Metallic Clip Mechanism */}
+            
+            {/* Part A: Clip Base (Attached to the board) */}
+            <View className="absolute top-1 left-1/2 -ml-7 w-14 h-4 bg-slate-400 dark:bg-slate-700 rounded-sm border border-slate-500 dark:border-slate-600 shadow-sm z-10 flex-row justify-between items-center px-1.5">
+              {/* Two metallic rivets bolting it to the board */}
+              <View className="w-1.5 h-1.5 rounded-full bg-slate-600 dark:bg-slate-900 shadow-inner" />
+              <View className="w-1.5 h-1.5 rounded-full bg-slate-600 dark:bg-slate-900 shadow-inner" />
+            </View>
+            
+            {/* Part B: Clip Lever (Pressing down on the paper) */}
+            <View className="absolute top-4 left-1/2 -ml-5 w-10 h-4 bg-slate-300 dark:bg-slate-600 rounded-b-md shadow-md border-x border-b border-slate-400 dark:border-slate-500 z-20 items-center">
+              {/* Metallic shine/reflection highlight on the curve */}
+              <View className="w-6 h-0.5 bg-white/60 dark:bg-white/10 mt-0.5 rounded-full" />
+            </View>
+
+          </TouchableOpacity>
+
+
+          {/* RIGHT: Chat with Smera (The Oval Cloud Bot) */}
+          <TouchableOpacity 
+            onPress={() => router.push('/core/chatbot')} 
+            activeOpacity={0.9} 
+            className="flex-1 h-[150px] relative">
+            {/* Main Oval Cloud Body */}
+            <View className="absolute inset-0 rounded-[45px] rounded-bl-[12px] overflow-hidden shadow-md bg-white dark:bg-indigo-950 border border-sky-100 dark:border-indigo-800">
+              
+              <LinearGradient 
+                colors={isDark ? ['#1e1b4b', '#312e81', '#1e1b4b'] : ['#ffffff', '#f0f9ff', '#e0f2fe']} 
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                className="w-full h-full absolute inset-0"/>
+
+              {/* Cloud Fluff (Volumetric overlapping circles) */}
+              <View className="absolute -top-8 -right-4 w-28 h-28 bg-sky-100/60 dark:bg-indigo-500/20 rounded-full" />
+              <View className="absolute top-8 -left-12 w-32 h-32 bg-sky-200/40 dark:bg-purple-500/20 rounded-full" />
+              <View className="absolute -bottom-8 right-6 w-24 h-24 bg-white/80 dark:bg-indigo-400/20 rounded-full" />
+              <View className="absolute top-1/2 left-1/2 -ml-12 -mt-12 w-24 h-24 bg-sky-300/20 dark:bg-indigo-300/10 rounded-full blur-xl" />
+
+              {/*  Cloud Content */}
+              <View className="flex-1 items-center justify-center px-2 py-3 relative z-10">
+                
+                {/* Smera's AI Face Avatar */}
+                <View className="relative w-11 h-11 items-center justify-center mb-2 drop-shadow-sm">
+                  
+                  <Svg width="44" height="44" viewBox="0 0 100 100" fill="none">
+                    <Circle cx="50" cy="50" r="45" fill="#EEF2FF" stroke="#C7D2FE" strokeWidth="2" />
+                    <Circle cx="35" cy="45" r="4" fill="#4F46E5" />
+                    <Circle cx="65" cy="45" r="4" fill="#4F46E5" />
+                    <Path d="M40 65C40 65 45 70 50 70C55 70 60 65 60 65" stroke="#4F46E5" strokeWidth="3.5" strokeLinecap="round" />
+                    <Circle cx="30" cy="55" r="5" fill="#FED7AA" opacity="0.8" />
+                    <Circle cx="70" cy="55" r="5" fill="#FED7AA" opacity="0.8" />
+                  </Svg>
+
+                  {/* Tiny green "online" indicator light */}
+                  <View className="absolute top-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-[2px] border-white dark:border-[#312E81] shadow-sm z-20" />
+                </View>
+
+                <Text className="text-slate-700 dark:text-indigo-50 font-black text-[13px] text-center tracking-tight mb-2">
+                  Chat with Smera
+                </Text>
+
+                {/* Ethereal Action Pill */}
+                <View className="flex-row items-center bg-sky-500 dark:bg-indigo-500 px-3.5 py-1.5 rounded-full shadow-sm">
+                  <Text className="text-white text-[9px] font-black uppercase tracking-widest mr-1.5">Connect</Text>
+                  <Ionicons name="chatbubble-ellipses" size={10} color="#fff" />
+                </View>
+
+              </View>
+            </View>
+            
+            {/* External Cloud Puff Tail */}
+            <View className="absolute -bottom-1 -left-1 w-6 h-6 bg-[#e0f2fe] dark:bg-[#1e1b4b] rounded-full border border-sky-100 dark:border-indigo-800 -z-10 shadow-sm" />
+
+          </TouchableOpacity>
+
+        </View>
+
+        {/* --- 2. Live Alert & Up Next Dashboard Block (Giant Bell UI) --- */}
+        <View className="items-center w-full mb-12 px-4">
+
+          {/* 1. Bell Top Loop / Hanger (U-shape handle) - slightly enlarged to match the steeper dome */}
+          <View className="w-12 h-12 border-[6px] border-[#b45309] dark:border-[#78350f] rounded-t-full -mb-6 z-0" />
+
+          {/* 2. Bell Body - Dramatically curved top and rounded bottom corners */}
+          <LinearGradient 
+            colors={isDark ? ['#5c2404', '#270f01'] : ['#fde047', '#d97706']}
+            className="w-full p-6 pt-10 shadow-2xl border-2 border-white/40 dark:border-amber-600/30 z-10 overflow-hidden"
+            style={{
+              borderTopLeftRadius: 120,   // Dramatically increased to create a steep, proper bell dome
+              borderTopRightRadius: 120,
+              borderBottomLeftRadius: 32, // Smooth rounded bottom corners for the body
+              borderBottomRightRadius: 32
+            }}
+          >
+            {/* Header Section */}
+            <View className="mb-6 items-center">
+              <Text className="font-black text-2xl text-amber-950 dark:text-amber-50 tracking-tight">Smera's Live Alert</Text>
+              <Text className="text-sm text-amber-800 dark:text-amber-200/80 font-medium mt-1">Real-time wellbeing status</Text>
+            </View>
+            
+            {/* Alert Data */}
+            <View className={`rounded-2xl p-4 border flex-row items-center gap-3 mb-6 bg-white/20 dark:bg-black/20 border-white/40 dark:border-white/10`}>
+              <View className={`w-3 h-3 rounded-full ${activeAlertTheme.dot || 'bg-amber-500'}`} />
+              <Text className={`flex-1 text-sm font-bold leading-relaxed text-amber-950 dark:text-amber-50`}>
+                {alertData.msg}
+              </Text>
+            </View>
+
+            {/* Up Next Section */}
+            <View className="border-t border-amber-700/20 dark:border-amber-500/20 pt-5 items-center">
+              <Text className="text-[10px] font-black text-amber-900 dark:text-amber-400 uppercase tracking-widest mb-3">
+                Up Next For You:
+              </Text>
+              
+              {recommendation.recommended.length > 0 ? (
+                <View className="items-center w-full">
+                  <Text className="text-sm font-bold text-amber-900 dark:text-amber-300 mb-3 text-center">
+                    A gentle check-in might help today
+                  </Text>
+                  <View className="flex-row flex-wrap justify-center gap-2">
+                    {recommendation.recommended.map((rec, i) => (
+                      <TouchableOpacity 
+                        key={i} 
+                        onPress={() => router.push('/core/assessment')} 
+                        className="px-4 py-2 bg-white/30 dark:bg-black/30 border border-white/50 dark:border-amber-500/30 rounded-xl shadow-sm"
+                      >
+                        <Text className="text-amber-950 dark:text-amber-100 text-md font-black tracking-wide">
+                          ⏳ {rec.toUpperCase()} due
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              ) : (
+                <View className="px-4 py-2 bg-white/30 dark:bg-black/30 border border-white/50 dark:border-amber-500/30 rounded-xl">
+                  <Text className="text-amber-950 dark:text-amber-100 text-sm font-bold text-center">
+                    You're doing well — no check-ins needed now
+                  </Text>
+                </View>
+              )}
+            </View>
           </LinearGradient>
-        )}
+
+          {/* 3. Bell Lip (Flared bottom edge with perfectly matching rounded corners) */}
+          <LinearGradient 
+            colors={isDark ? ['#4a1c02', '#270f01'] : ['#eab308', '#b45309']}
+            className="w-[106%] h-10 -mt-6 z-20 border-2 border-white/30 dark:border-black/50 shadow-lg" 
+            style={{
+              borderRadius: 24 
+            }}/>
+
+          {/* 4. Bell Clapper (The TTS Trigger - fully exposed below the lip) */}
+          <TouchableOpacity 
+            onPress={triggerVoiceSynthesis} 
+            activeOpacity={0.8}
+            className="w-16 h-16 bg-[#78350f] dark:bg-[#1a0901] rounded-full -mt-3 z-0 items-center justify-center shadow-2xl border-2 border-amber-600/50 dark:border-black"
+          >
+            <Ionicons 
+              name={isVoiceEnabled ? "volume-high" : "volume-medium"} 
+              size={26} 
+              color={isVoiceEnabled ? '#fde047' : '#d97706'} 
+            />
+          </TouchableOpacity>
+
+        </View>
 
         {/* --- 4. Overview Cards --- */}
         <View className="flex-col gap-6 mb-8">
-          {/* Current Mood Card */}
-          <View className="w-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[2.5rem] p-6 shadow-sm overflow-hidden relative">
-             <View className="absolute -right-10 -top-10 w-40 h-40 bg-fuchsia-100 dark:bg-fuchsia-900/20 rounded-full opacity-50" />
-             <View className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-50 dark:bg-indigo-900/20 rounded-full opacity-50" />
-             
-             <View className="relative z-10 flex-row items-center gap-4 mb-8">
-                <View className="w-14 h-14 bg-blue-50 dark:bg-blue-900/30 rounded-2xl items-center justify-center border border-blue-100 dark:border-blue-800/50">
-                    <Ionicons name="happy-outline" size={28} color={isDark ? "#60a5fa" : "#3b82f6"} />
-                </View>
-                <View className="flex-1">
-                   <Text className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight capitalize">{currentMood}</Text>
-                   <Text className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">Current Mood</Text>
-                </View>
-             </View>
+          {/* --- Cloud-Themed Current Mood Card --- */}
+          <View className="w-full mb-8 pt-10 px-2 relative">
 
-             <View className="relative z-10 flex-row pt-5 justify-between">
+            
+            {/* Left Puff */}
+            <View className="absolute top-4 left-6 w-28 h-28 bg-amber-50/90 dark:bg-slate-950 rounded-full" />
+            {/* Center-Right Large Puff */}
+            <View className="absolute -top-2 right-10 w-36 h-36 bg-amber-50/90 dark:bg-slate-950 rounded-full" />
+            {/* Small Connector Puff */}
+            <View className="absolute top-2 right-1/2 w-20 h-20 bg-amber-50/90 dark:bg-slate-950 rounded-full translate-x-10" />
+
+            {/* Uses extreme rounded corners to form the pill-like bottom of the cloud */}
+            <View className="w-full bg-amber-50/90 dark:bg-slate-950 rounded-[3.5rem] p-8 relative overflow-hidden z-10">
+              
+              {/* Soft atmospheric internal gradients (Airy sky tones instead of fuchsia) */}
+              <View className="absolute -right-10 -top-10 w-48 h-48 bg-sky-50 dark:bg-sky-900/20 rounded-full opacity-60" />
+              <View className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-50 dark:bg-indigo-900/20 rounded-full opacity-60" />
+
+              {/* Header Section */}
+              <View className="relative z-20 flex-row items-center gap-5 mb-8">
+                {/* Soft Floating Icon Bubble */}
+                <View className="w-16 h-16 bg-sky-100/50 dark:bg-sky-900/40 rounded-full items-center justify-center">
+                  <Ionicons name="happy-outline" size={32} color={isDark ? "#60a5fa" : "#3b82f6"} />
+                </View>
+
+                <View className="flex-1">
+                  <Text className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight capitalize">
+                    {currentMood}
+                  </Text>
+                  <Text className="text-[10px] font-bold text-sky-500 dark:text-sky-400 uppercase tracking-widest mt-1">
+                    Current Mood
+                  </Text>
+                </View>
+              </View>
+
+              {/* Data Section */}
+              <View className="relative z-20 flex-row pt-5 justify-between border-t border-slate-100 dark:border-slate-700/50">
                 <View className="items-start flex-1">
-                   <Text className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Latest Test</Text>
-                   <Text className="text-lg font-black text-slate-800 dark:text-slate-200 uppercase">{latestTestName}</Text>
+                  <Text className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+                    Latest Test
+                  </Text>
+                  <Text className="text-lg font-black text-slate-800 dark:text-slate-200 uppercase">
+                    {latestTestName}
+                  </Text>
                 </View>
+
                 <View className="items-end flex-1">
-                   <Text className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Last Check-In</Text>
-                   <Text className="text-lg font-black text-slate-800 dark:text-slate-200">{lastCheckInDate}</Text>
+                  <Text className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+                    Last Check-In
+                  </Text>
+                  <Text className="text-lg font-black text-slate-800 dark:text-slate-200">
+                    {lastCheckInDate}
+                  </Text>
                 </View>
-             </View>
+              </View>
+
+            </View>
           </View>
 
-          {/* Fundamental Guidance Room */}
-          <TouchableOpacity onPress={() => router.push('/core/recovery_hub')} className="w-full rounded-[2.5rem] overflow-hidden shadow-sm">
-             <View className="w-full bg-[#059669] dark:bg-[#047857] p-8 justify-between relative overflow-hidden">
-                <View className="absolute -right-12 -top-12 w-48 h-48 bg-white/10 rounded-full" />
-                <View className="flex-row justify-between mb-5 relative z-10">
-                  <View className="w-14 h-14 bg-white/20 rounded-2xl items-center justify-center border border-white/20 shadow-inner">
-                      <Ionicons name="flash" size={28} color="#fff" />
+          {/* --- Fundamental Guidance Room (Architectural UI) --- */}
+          <TouchableOpacity 
+            onPress={() => router.push('/core/recovery_hub')} activeOpacity={0.9} 
+            className="w-full rounded-[2.5rem] overflow-hidden shadow-lg mb-8 h-[250px]">
+            <View className="w-full h-full relative bg-[#064e3b] dark:bg-[#022c22]">
+              
+              {/* --- ARCHITECTURE --- */}
+              
+              {/* 1. The Floor (Warm Wood/Taupe) */}
+              <View className="absolute bottom-0 w-full h-[35%] bg-[#8b5a2b] dark:bg-[#3f2a14]">
+                {/* Floor Depth Gradient */}
+                <LinearGradient 
+                  colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0)']} 
+                  className="w-full h-5 absolute top-0"
+                />
+                {/* A soft oval "rug" on the floor for depth */}
+                <View 
+                  className="absolute bottom-6 left-10 w-40 h-12 bg-[#022c22]/30 border border-[#0f5132]/20 rounded-full"
+                  style={{ transform: [{ scaleY: 0.6 }] }}
+                />
+              </View>
+
+              {/* 2. The Baseboard (Separates Wall and Floor) */}
+              <View className="absolute bottom-[35%] w-full h-2 bg-[#022c22] dark:bg-[#011a14] border-t border-[#0f5132]" />
+
+              {/* 3. The Doorway / Arch (Navigation Action) */}
+              <View className="absolute right-6 bottom-[35%] w-16 h-36 border-t-4 border-x-4 border-[#022c22] dark:border-[#011a14] bg-[#022c22] rounded-t-full justify-end items-center overflow-hidden z-10">
+                <LinearGradient 
+                  colors={['#10b981', '#064e3b']} 
+                  start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}
+                  className="absolute inset-0 top-1 opacity-80 rounded-t-full"
+                />
+                <View className="mb-6 w-8 h-8 rounded-full bg-white/20 items-center justify-center backdrop-blur-md shadow-sm border border-white/30">
+                  <Ionicons name="enter-outline" size={16} color="#fff" style={{ transform: [{ translateX: 1 }] }} />
+                </View>
+              </View>
+
+              {/* 4. Ceiling & Lighting */}
+              <View className="absolute top-0 right-[25%] items-center z-10 pointer-events-none">
+                <View className="w-0.5 h-8 bg-[#022c22]" />
+                <View className="w-10 h-4 bg-amber-600 rounded-t-full border border-amber-800" /> 
+                <View className="w-4 h-1.5 bg-yellow-100 rounded-b-full shadow-[0_0_10px_rgba(253,224,71,0.8)]" /> 
+                <LinearGradient 
+                  colors={['rgba(253,224,71,0.15)', 'transparent']} 
+                  className="w-32 h-40 absolute top-12 rounded-full blur-2xl"
+                />
+              </View>
+
+
+              {/* --- CONTENT --- */}
+
+              {/* Header & Icon (Wall Mounted) */}
+              <View className="absolute top-6 left-6 right-32 z-20 pointer-events-none">
+                <View className="flex-row items-center mb-3">
+                  <View className="w-10 h-10 bg-[#022c22]/80 rounded-xl items-center justify-center border border-[#10b981]/30 shadow-sm">
+                    <Ionicons name="flash" size={20} color="#34d399" />
                   </View>
-                  <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center">
-                      <Ionicons name="chevron-forward" size={16} color="#fff" />
+                  <View className="ml-3 px-2 py-1 bg-white/5 rounded-md border border-white/10">
+                    <Text className="text-[#6ee7b7] text-[9px] font-black uppercase tracking-widest">Sanctuary</Text>
                   </View>
                 </View>
-                <View className="relative z-10">
-                  <Text className="text-2xl font-black text-white leading-tight mb-2 tracking-tight">Fundamental Guidance Room</Text>
-                  <Text className="text-emerald-50 text-sm font-medium leading-relaxed">Access grounded routines, sleep protocols, and immediate panic relief tools.</Text>
-                </View>
-             </View>
+                <Text 
+                  className="text-[22px] font-black text-white leading-tight"
+                  style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 }}
+                >
+                  Fundamental{'\n'}Guidance Room
+                </Text>
+              </View>
+
+              {/* WIDE DESCRIPTION BOX (Floating Foreground HUD) */}
+              {/* Spreads left-5 to right-5, overlapping the floor like a sleek modern dashboard */}
+              <View className="absolute bottom-5 left-5 right-5 z-40 px-4 py-3.5 bg-white/10 dark:bg-black/40 border border-white/20 dark:border-white/10 rounded-2xl backdrop-blur-xl shadow-lg flex-row items-center">
+                {/* Small green accent line to add premium UI polish */}
+                <View className="w-1.5 h-full min-h-[30px] bg-[#34d399] rounded-full mr-3 opacity-80" />
+                <Text className="text-emerald-50 text-xs font-medium leading-relaxed flex-1">
+                  Access grounded routines, sleep protocols, and immediate panic relief tools.
+                </Text>
+              </View>
+
+            </View>
           </TouchableOpacity>
         </View>
 
         {/* --- 5. Private Diary Box Banner --- */}
-        <TouchableOpacity onPress={() => router.push('/core/journal')} className="mb-8 relative w-full rounded-[2.5rem] overflow-hidden shadow-md border border-indigo-100 dark:border-white/10">
+        <TouchableOpacity 
+          onPress={() => router.push('/core/journal')} 
+          activeOpacity={0.9}
+          className="mb-8 relative w-full h-[220px]"
+        >
+          {/* LAYER 1: "Paper" Pages Peeking Out */}
+          {/* These sit slightly to the right of the cover to look like the edge of the book's pages */}
+          <View className="absolute top-2 bottom-2 right-0 left-8 bg-[#fdfbf7] dark:bg-slate-300 rounded-r-3xl shadow-sm border border-amber-900/10 dark:border-white/10" />
+          <View className="absolute top-3 bottom-3 right-[-4px] left-8 bg-[#f4ebd8] dark:bg-slate-400 rounded-r-3xl shadow-sm" />
+
+          {/* LAYER 2: Main Leather Cover */}
           <LinearGradient 
-            colors={isDark ? ['#312e81', '#1e293b', '#4c1d95'] : ['#fef3c7', '#ffffff', '#fdf4ff']}
+            // Rich saddle brown leather for light mode, deep midnight blue/purple leather for dark mode
+            colors={isDark ? ['#1e1b4b', '#2e1065', '#172554'] : ['#8B4513', '#A0522D', '#6b3e1b']}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            className="w-full p-6 py-8 relative overflow-hidden"
+            className="absolute top-0 bottom-0 left-0 right-3 p-6 py-8 rounded-l-md rounded-r-[2rem] shadow-2xl overflow-hidden"
           >
-            <View className="absolute -right-8 -bottom-8 opacity-30 dark:opacity-10">
-               <Ionicons name="lock-closed" size={180} color={isDark ? "#c7d2fe" : "#a78bfa"} />
+            {/* SPINE SHADOW: Dark gradient on the left edge to simulate the book's spine */}
+            <LinearGradient
+              colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.1)', 'transparent']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              className="absolute left-0 top-0 bottom-0 w-10 z-10"
+            />
+
+            {/* STITCHING: Dashed border set inward from the edge */}
+            <View 
+              pointerEvents="none" 
+              className="absolute inset-2 border-[1.5px] border-dashed border-white/30 dark:border-white/20 rounded-l-sm rounded-r-[1.5rem] z-20" 
+            />
+
+            {/* EMBOSSED WATERMARK: The lock icon pushed back into the leather */}
+            <View className="absolute -right-4 -bottom-4 opacity-10 dark:opacity-20 z-0">
+              <Ionicons name="lock-closed" size={160} color="#000000" />
             </View>
 
-            <View className="absolute right-8 top-[-2] z-20 shadow-lg">
-              <Svg width="28" height="60" viewBox="0 0 28 60">
+            {/* BOOKMARK RIBBON: Hanging over the pages */}
+            <View className="absolute right-6 top-[-2] z-30 shadow-lg drop-shadow-xl">
+              <Svg width="32" height="70" viewBox="0 0 28 60">
                 <Defs>
                   <SvgLinearGradient id="ribbonGrad" x1="0" y1="0" x2="0" y2="1">
-                    <Stop offset="0" stopColor="#fbbf24" />
-                    <Stop offset="1" stopColor="#d97706" />
+                    <Stop offset="0" stopColor={isDark ? "#b91c1c" : "#991b1b"} /> 
+                    <Stop offset="1" stopColor={isDark ? "#7f1d1d" : "#450a0a"} />
                   </SvgLinearGradient>
                 </Defs>
                 <Polygon points="0,0 28,0 28,60 14,48 0,60" fill="url(#ribbonGrad)" />
               </Svg>
             </View>
 
-            <View className="relative z-30 pr-10">
-              <View className="flex-row flex-wrap items-center gap-3 mb-4">
-                <View className="px-3 py-1.5 bg-green-50 dark:bg-white/5 rounded-full border border-green-200 dark:border-white/10 flex-row items-center shadow-sm">
+            {/* MAIN CONTENT AREA */}
+            <View className="relative z-30 pr-12 pl-4">
+              {/* Badges/Stickers */}
+              <View className="flex-row flex-wrap items-center gap-3 mb-3">
+                <View className="px-3 py-1 bg-black/20 dark:bg-black/30 rounded-full border border-white/20 flex-row items-center backdrop-blur-md">
                   <View className="relative w-2 h-2 mr-2">
                     <Animated.View style={{ transform: [{ scale: pingScale }], opacity: pingOpacity }} className="absolute inset-0 rounded-full bg-green-400" />
                     <View className="relative w-2 h-2 rounded-full bg-green-500" />
                   </View>
-                  <Text className="text-green-700 dark:text-indigo-100 text-[10px] font-black uppercase tracking-widest">Private-Insights</Text>
+                  <Text className="text-amber-50 dark:text-indigo-100 text-[9px] font-bold uppercase tracking-widest">Secured</Text>
                 </View>
-                <View className="px-3 py-1.5 bg-indigo-50/80 dark:bg-indigo-900/30 rounded-full border border-indigo-200 dark:border-indigo-800/50 flex-row items-center shadow-sm">
-                  <Ionicons name="lock-closed" size={10} color={isDark ? '#a5b4fc' : '#4f46e5'} style={{ marginRight: 4 }} />
-                  <Text className="text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest">{journalCount} Entries</Text>
+                
+                <View className="px-3 py-1 bg-white/10 rounded-full border border-white/20 flex-row items-center">
+                  <Ionicons name="journal" size={10} color="#fef3c7" style={{ marginRight: 4 }} />
+                  <Text className="text-amber-50 dark:text-indigo-100 text-[9px] font-bold uppercase tracking-widest">{journalCount} Entries</Text>
                 </View>
               </View>
-              <Text className="text-3xl font-black text-slate-800 dark:text-white mb-2 tracking-wide" style={{ fontFamily: 'Georgia' }}>Private Diary</Text>
-              <Text className="text-slate-500 dark:text-indigo-100/70 text-sm font-medium leading-relaxed w-full">
-                A secure sanctuary for your mind. Document your journey and release your thoughts freely. No one else has the key.
+
+              {/* Title & Subtitle */}
+              <Text 
+                className="text-3xl font-black text-[#fef3c7] dark:text-indigo-50 mb-1 tracking-wider" 
+                style={{ fontFamily: 'Georgia', textShadowColor: 'rgba(0, 0, 0, 0.5)', textShadowOffset: {width: 0, height: 2}, textShadowRadius: 2 }}
+              >
+                Private Diary
+              </Text>
+              
+              <Text className="text-[#e2e8f0] dark:text-indigo-200/80 text-md font-medium leading-relaxed w-[70%] italic" style={{ fontFamily: 'Georgia' }}>
+                A secure sanctuary for your mind. Document your journey freely—no one else has the key.
               </Text>
             </View>
 
-            <View className="absolute right-6 bottom-6 w-12 h-12 bg-indigo-50 dark:bg-white/10 border border-indigo-100 dark:border-white/20 rounded-full items-center justify-center z-30 shadow-sm">
-              <Ionicons name="add" size={24} color={isDark ? '#fff' : '#4f46e5'} />
+            {/* METAL CLASP / ADD BUTTON: Redesigned to look like a metallic or leather journal clasp */}
+            <View className="absolute right-0 top-1/2 -mt-2 w-10 h-12 bg-amber-600/90 dark:bg-slate-700/90 border border-amber-400/50 dark:border-slate-400/50 rounded-l-2xl items-center justify-center z-40 shadow-xl">
+              <Ionicons name="key-outline" size={20} color="#fef3c7" />
             </View>
+
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* --- 6. Clinical Expert Care Section --- */}
-        <TouchableOpacity onPress={() => router.push('/consultation/consultation')} className="mb-8 relative w-full rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700">
-           <LinearGradient colors={isDark ? ['#1e293b', '#0f172a'] : ['#ffffff', '#f8fafc']} className="p-8 items-center text-center relative overflow-hidden">
-             
-             <View className="absolute -top-4 -left-4 opacity-5 pointer-events-none transform -rotate-12">
-               <Ionicons name="medkit" size={120} color="#f43f5e" />
-             </View>
-             
-             <View className="absolute top-5 right-5 flex-row items-center gap-1.5 bg-white/90 dark:bg-slate-800/90 border border-emerald-100 dark:border-emerald-800/50 px-2.5 py-1 rounded-full shadow-sm z-10">
+        {/* --- 6. Clinical Expert Care Section (Doctor's Bag) --- */}
+        <TouchableOpacity 
+          onPress={() => router.push('/consultation/consultation')} 
+          activeOpacity={0.9}
+          // Added mt-6 to make room for the bag handle peeking out the top
+          className="mb-8 mt-6 relative w-full"
+        >
+          {/* LAYER 1: The Leather Handle */}
+          <View className="absolute -top-5 left-1/2 -ml-12 w-24 h-12 border-[6px] border-[#3E1F15] dark:border-[#1A0D08] rounded-t-3xl z-0 shadow-sm" />
+
+          {/* LAYER 2: The Outer Leather Bag Shell */}
+          <LinearGradient 
+            // Rich mahogany/vintage maroon for the bag exterior
+            colors={isDark ? ['#2D1610', '#1A0D08'] : ['#5A2D1F', '#3E1F15']} 
+            className="w-full rounded-[2rem] shadow-xl overflow-hidden pt-4 pb-6 px-3 relative z-10"
+          >
+            {/* Brass Hardware Frame (The open metal mouth of the bag) */}
+            <View className="absolute top-0 w-full h-4 bg-amber-600/90 border-b border-amber-900 shadow-sm flex-row justify-between px-10 items-center">
+              <View className="w-5 h-2 bg-amber-300 border border-amber-200 rounded-sm shadow-sm" /> 
+              <View className="w-5 h-2 bg-amber-300 border border-amber-200 rounded-sm shadow-sm" /> 
+            </View>
+
+            {/* LAYER 3: The Open Interior (Lining & Contents) */}
+            <View className="w-full bg-amber-100/20 dark:bg-stone-800/30 rounded-xl p-6 items-center shadow-inner relative border border-[#3E1F15]/20 dark:border-black/50 mt-1">
+              
+              {/* Background Watermark inside the bag */}
+              <View className="absolute top-1/2 left-1/2 -mt-16 -ml-16 opacity-5 pointer-events-none transform -rotate-12">
+                <Ionicons name="medkit" size={120} color="#e11d48" />
+              </View>
+              
+              {/* Availability Badge */}
+              <View className="absolute top-4 right-4 flex-row items-center gap-1.5 bg-emerald-50 dark:bg-slate-700 border border-emerald-100 dark:border-emerald-800 px-2.5 py-1 rounded-full shadow-sm z-10">
                 <View className="relative w-1.5 h-1.5">
                   <Animated.View style={{ transform: [{ scale: pingScale }], opacity: pingOpacity }} className="absolute inset-0 rounded-full bg-emerald-400" />
                   <View className="relative w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 </View>
-                <Text className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Bookings</Text>
-             </View>
-             
-             <LinearGradient colors={['#e11d48', '#ec4899']} className="w-16 h-16 rounded-2xl items-center justify-center mb-5 shadow-md border border-white/20 mt-4">
-                <Ionicons name="shield-checkmark" size={28} color="#fff" />
-             </LinearGradient>
-             
-             <Text className="text-2xl font-black text-slate-800 dark:text-white tracking-tight mb-2">Clinical Care</Text>
-             <Text className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-2 mt-1">Board-Certified Providers</Text>
-             <Text className="text-md font-medium text-slate-500 dark:text-slate-400 text-center mb-6 leading-relaxed px-2">
-               Consult securely with a licensed specialist to evaluate and manage your mental wellbeing.
-             </Text>
-             
-             <LinearGradient colors={['#e11d48', '#ec4899']} className="w-full py-4 rounded-xl flex-row justify-center items-center shadow-md">
-               <Text className="text-white font-black text-md uppercase tracking-widest mr-2">Request Appointment</Text>
-               <Ionicons name="arrow-forward" size={16} color="#fff" />
-             </LinearGradient>
-           </LinearGradient>
+                <Text className="text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Available</Text>
+              </View>
+              
+              {/* Clinical Emblem */}
+              <View className="w-14 h-14 bg-rose-50 dark:bg-rose-900/30 rounded-full items-center justify-center mb-3 mt-2 shadow-sm border border-rose-100 dark:border-rose-800/50">
+                <Ionicons name="medkit" size={26} color="#e11d48" />
+              </View>
+              
+              {/* Typography adjusted for a more formal, trusted medical look */}
+              <Text className="text-2xl font-black text-white tracking-tight mb-1" style={{ fontFamily: 'Georgia' }}>
+                Clinical Care
+              </Text>
+              <Text className="text-[9px] font-bold text-rose-300/80 dark:text-rose-400 uppercase tracking-widest mb-3">
+                Board-Certified Providers
+              </Text>
+              
+              <Text className="text-sm font-medium text-slate-300 dark:text-slate-400 text-center mb-6 leading-relaxed px-2">
+                Consult securely with a licensed specialist to evaluate and manage your mental wellbeing.
+              </Text>
+              
+              {/* Action Button - Styled like a medical prescription pad or modern pill block */}
+              <LinearGradient colors={['#e11d48', '#be123c']} className="w-full py-3.5 rounded-2xl flex-row justify-center items-center shadow-md border border-rose-400/30">
+                <Text className="text-white font-black text-sm uppercase tracking-widest mr-2">Request Appointment</Text>
+                <Ionicons name="arrow-forward" size={16} color="#fff" />
+              </LinearGradient>
+
+            </View>
+
+            {/* LAYER 4: The Bottom Fold (Gives depth to the leather exterior) */}
+            <View className="absolute bottom-0 w-full h-6 bg-black/20 justify-center items-center rounded-b-[2rem]">
+              <View className="w-12 h-1 rounded-full bg-white/20" />
+            </View>
+
+          </LinearGradient>
         </TouchableOpacity>
 
         {/* =========================================
@@ -671,7 +1087,7 @@ export default function DashboardScreen() {
           </View>
           
           {/* A. Mood Trends Chart */}
-          <View className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[2rem] p-6 mb-6 shadow-sm overflow-hidden">
+          <View className="bg-amber-50/90 dark:bg-stone-950/90 border border-slate-100 dark:border-slate-700 rounded-[2rem] p-6 mb-6 shadow-sm overflow-hidden">
              <View className="flex-row justify-between items-start mb-6">
                <View className="flex-row items-center gap-3">
                  <View className="w-10 h-10 bg-cyan-50 dark:bg-cyan-900/30 rounded-xl items-center justify-center border border-cyan-100 dark:border-cyan-800/50">
@@ -696,7 +1112,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* B. Raw Mood Events Timeline */}
-          <View className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[2rem] p-6 mb-6 shadow-sm overflow-hidden">
+          <View className="bg-amber-50/90 dark:bg-stone-950/90 border border-slate-100 dark:border-slate-700 rounded-[2rem] p-6 mb-6 shadow-sm overflow-hidden">
              <View className="flex-col sm:flex-row justify-between items-start mb-6 gap-4">
                <View className="flex-row items-center gap-3">
                  <View className="w-10 h-10 bg-pink-50 dark:bg-pink-900/30 rounded-xl items-center justify-center border border-pink-100 dark:border-pink-800/50">
@@ -731,7 +1147,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* C. Clinical Assessment Score Tracker */}
-          <View className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[2rem] p-6 shadow-sm overflow-hidden">
+          <View className="bg-amber-50/90 dark:bg-stone-950/90 border border-slate-100 dark:border-slate-700 rounded-[2rem] p-6 shadow-sm overflow-hidden">
              <View className="flex-col md:flex-row justify-between items-start mb-4 gap-4">
                <View className="flex-row items-center gap-3">
                  <View className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl items-center justify-center border border-emerald-100 dark:border-emerald-800/50">
@@ -744,7 +1160,7 @@ export default function DashboardScreen() {
                </View>
 
                <View className="flex-col w-full items-end gap-3">
-                 <View className="flex-row items-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-1.5 shadow-inner border border-slate-200/60 dark:border-slate-700/50 w-full justify-between sm:justify-start">
+                 <View className="flex-row items-center bg-amber-50/90 dark:bg-stone-950/90 rounded-2xl p-1.5 shadow-inner border border-slate-200/60 dark:border-slate-700/50 w-full justify-between sm:justify-start">
                    <TouchableOpacity onPress={() => setAssessMode('all')} className={`flex-1 sm:flex-none items-center justify-center px-4 py-2 rounded-xl transition-all ${assessMode === 'all' ? 'bg-emerald-500 shadow-md' : ''}`}>
                       <Text className={`text-md font-bold ${assessMode === 'all' ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}>All Time</Text>
                    </TouchableOpacity>
@@ -793,7 +1209,7 @@ export default function DashboardScreen() {
                    <TouchableOpacity 
                       key={type}
                       onPress={() => setAssessVisible(prev => ({...prev, [type]: !prev[type as keyof typeof assessVisible]}))}
-                      className={`flex-row items-center px-4 py-2 rounded-full border bg-white dark:bg-slate-800 shadow-sm flex-shrink-0 ${isChecked ? 'border-slate-300 dark:border-slate-500' : 'border-slate-100 dark:border-slate-700'}`}
+                      className={`flex-row items-center px-4 py-2 rounded-full border bg-amber-50/90 dark:bg-stone-950/90 shadow-sm flex-shrink-0 ${isChecked ? 'border-slate-300 dark:border-slate-500' : 'border-slate-100 dark:border-slate-700'}`}
                    >
                      <View style={{ backgroundColor: isChecked ? flags[type] : 'transparent', borderColor: isChecked ? flags[type] : '#cbd5e1' }} className="w-5 h-5 rounded-full border-2 mr-2 items-center justify-center flex-shrink-0">
                        {isChecked && <Ionicons name="checkmark" size={12} color="#fff" />}
@@ -817,10 +1233,10 @@ export default function DashboardScreen() {
         </View>
 
         {/* --- 8. Curated Content Slider Component --- */}
-        <View className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-6 rounded-[2rem] shadow-sm mb-6">
+        <View className="bg-amber-50/90 dark:bg-stone-950/90 border border-slate-100 dark:border-slate-700 p-6 rounded-[2rem] shadow-sm mb-6">
           <View className="flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
              <View className="flex-row items-center gap-4">
-               <View className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/30 items-center justify-center border border-purple-100 dark:border-purple-800/50 shadow-inner">
+               <View className="w-12 h-12 rounded-2xl bg-amber-50/70 dark:bg-stone-900/70 items-center justify-center border border-purple-100 dark:border-purple-800/50 shadow-inner">
                   <Ionicons name="book" size={24} color="#9333ea" />
                </View>
                <View>
@@ -884,7 +1300,7 @@ export default function DashboardScreen() {
       </ScrollView>
 
       {/* --- Floating Action Component Widget (Smera Mini) --- */}
-      <View className="absolute bottom-6 right-6 z-50 flex-col items-end">
+      <View className="absolute bottom-10 right-6 z-50 flex-col items-end">
          <View className="mb-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-3xl rounded-br-none shadow-2xl border border-indigo-100 dark:border-slate-700 max-w-[200px]">
            <Text className="text-slate-700 dark:text-slate-200 text-sm font-medium leading-relaxed">{smeraQuote}</Text>
          </View>
